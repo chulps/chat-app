@@ -4,7 +4,11 @@ import socketIOClient from 'socket.io-client';
 import TranslationWrapper from './TranslationWrapper';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const socket = socketIOClient('http://localhost:3001');
+const SOCKET_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://limitless-lake-38337.herokuapp.com' 
+  : 'http://localhost:3001';
+
+const socket = socketIOClient(SOCKET_URL);
 
 interface Message {
   sender: string;
@@ -22,27 +26,32 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
 
+  const cleanupSocketListeners = () => {
+    socket.off("connect");
+    socket.off("message");
+    socket.off("disconnect");
+    socket.off("languageChangeAcknowledged");
+    socket.off("messageHistory"); // Add this line
+  };
+
   useEffect(() => {
     const handleLanguageChange = () => {
-      // Emit a language change event to the server
       socket.emit("languageChange", preferredLanguage);
     };
-  
+
     socket.on("connect", () => {
       socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
     });
-  
+
     socket.on("message", (message: Message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
-  
+
     socket.on("disconnect", () => {
-      // Handle disconnect event if needed
+      socket.emit("leaveRoom", { chatroomId, name });
     });
-  
-    // Listen for language change event from the server
+
     socket.on("languageChangeAcknowledged", () => {
-      // Update the chat messages with the new language
       setMessages((prevMessages) =>
         prevMessages.map((message) => ({
           ...message,
@@ -51,14 +60,13 @@ const ChatRoom: React.FC = () => {
       );
     });
 
+    socket.on('messageHistory', (history: Message[]) => {
+      setMessages(history);
+    });
+
     handleLanguageChange();
-  
-    return () => {
-      socket.off("connect");
-      socket.off("message");
-      socket.off("disconnect");
-      socket.off("languageChangeAcknowledged");
-    };
+
+    return cleanupSocketListeners; // Call the cleanup function when the component unmounts
   }, [chatroomId, name, preferredLanguage]);
 
   const sendMessage = () => {

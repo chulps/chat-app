@@ -1,14 +1,20 @@
-// This function determines the environment based on the current window.location.origin
-export default function getEnv(): string {
-  // Check the origin of the current window location
-  switch (window.location.origin) {
-    // If the origin is http://localhost:3000, return 'development'
-    case "http://localhost:3000":
-      return "development";
-    // If the origin is https://chulps.github.io, return 'production'
-    case "https://chulps.github.io":
-      return "production";
-    default:
-      return "production";
-  }
+interface EnvironmentConfig {
+  socketUrl: string;
+  translateUrl: string;
 }
+
+const environments: { [key: string]: EnvironmentConfig } = {
+  local: {
+    socketUrl: 'http://localhost:3001',
+    translateUrl: 'http://localhost:3001',
+  },
+  production: {
+    socketUrl: 'https://limitless-lake-38337.herokuapp.com',
+    translateUrl: 'https://limitless-lake-38337.herokuapp.com',
+  },
+};
+
+export const getEnv = (): EnvironmentConfig => {
+  const isLocalhost = window.location.hostname === 'localhost';
+  return isLocalhost ? environments.local : environments.production;
+};

@@ -9,10 +9,12 @@ const App: React.FC = () => {
   return (
     <div>
       <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/chatroom/:chatroomId" element={<ChatRoom />} />
-      </Routes>
+      <div style={{maxWidth: 'var(--space-7)', margin: '0 auto'}}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/chatroom/:chatroomId" element={<ChatRoom />} />
+        </Routes>
+      </div>
     </div>
   );
 };

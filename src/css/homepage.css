@@ -1,0 +1,41 @@
+/* homepage.css */
+
+.homepage-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.or-container {
+    display: flex;
+    width: 100%;
+    justify-content: stretch;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.or-container * {
+    flex-shrink: 1;
+    white-space: nowrap;
+}
+
+.main-buttons-container {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.main-buttons-container button {
+    flex-grow: 1;
+}
+
+.chatroom-id-input-container {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.home-bottom-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}

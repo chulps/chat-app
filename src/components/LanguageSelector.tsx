@@ -14,7 +14,7 @@ const LanguageSelector: React.FC = () => {
     <CustomDropdown 
       options={languages} 
       onChange={handleLanguageChange} 
-      defaultOption="en" 
+      defaultOption={navigator.language} 
       description="Select your preferred language"
       label="Language"
       targetLanguage="en"

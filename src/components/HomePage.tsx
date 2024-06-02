@@ -47,13 +47,26 @@ const HomePage: React.FC = () => {
   return (
     <div className="homepage-content">
       <div>
-        <label>About this app...</label>
+        <label>
+          <TranslationWrapper targetLanguage={language}>
+            About this app...
+          </TranslationWrapper>
+          </label>
         <h1>
           <span>T</span>-Chat
         </h1>
         <p>
           <TranslationWrapper targetLanguage={language}>
-            "T" is for <span className="italic">"Translation"</span>. Chat with
+            "T" is for 
+            </TranslationWrapper>
+            <span className="italic">
+              <TranslationWrapper targetLanguage={language}>
+                "Translation"
+              </TranslationWrapper>
+            </span>
+            
+            <TranslationWrapper targetLanguage={language}>
+            . Chat with
             anyone anywhere without any language barriers. Enter your name and
             then either create a chatroom or join one using the Chatroom ID. Be
             safe, and have fun!

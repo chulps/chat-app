@@ -28,9 +28,9 @@ const ChatRoom: React.FC = () => {
   const { chatroomId } = useParams<{ chatroomId: string }>();
   const query = new URLSearchParams(useLocation().search);
   const name = query.get("name") || "Anonymous";
-  const { language: preferredLanguage } = useLanguage();
+  const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
-
+  const [tooltipText, setTooltipText] = useState(content['tooltip-copy-chatroom-id']);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
@@ -168,6 +168,10 @@ const ChatRoom: React.FC = () => {
     return cleanupSocketListeners;
   }, [chatroomId, name, preferredLanguage]);
 
+  useEffect(() => {
+    setTooltipText(content['tooltip-copy-chatroom-id']);
+  }, [content]);
+
   const sendMessage = () => {
     const message: Message = {
       text: inputMessage,
@@ -208,11 +212,22 @@ const ChatRoom: React.FC = () => {
     }
   };
 
+  const handleCopyChatroomId = () => {
+    if (chatroomId) {
+      navigator.clipboard.writeText(chatroomId);
+      setTooltipText(content['tooltip-id-copied']);
+      setTimeout(() => {
+        setTooltipText(content['tooltip-copy-chatroom-id']);
+      }, 3000);
+    }
+  };
+
   return (
     <div>
       <div className="chatroom-header">
         <button
-          className="back-button small"
+          data-tooltip={content['tooltip-exit-chatroom']}
+          className="back-button small tooltip bottom-right"
           style={{ color: "var(--danger-300)", background: "var(--dark)" }}
           onClick={() => {
             socket.emit("sendSystemMessage", {
@@ -238,12 +253,8 @@ const ChatRoom: React.FC = () => {
           <label>Chatroom ID:</label>
           <data
             className="copy-chatroom-id tooltip bottom-left"
-            data-tooltip="Copy Chatroom ID"
-            onClick={() => {
-              if (chatroomId) {
-                navigator.clipboard.writeText(chatroomId);
-              }
-            }}
+            data-tooltip={tooltipText}
+            onClick={handleCopyChatroomId}
           >
             <FontAwesomeIcon icon={faCopy} /> {chatroomId}
           </data>

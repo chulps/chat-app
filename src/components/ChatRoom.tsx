@@ -33,8 +33,9 @@ const ChatRoom: React.FC = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
   const conversationContainerRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -87,9 +88,12 @@ const ChatRoom: React.FC = () => {
 
     socket.on("userTyping", (userName: string) => {
       console.log("User typing:", userName);
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
+      setTypingUser(userName);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        setTypingUser(null);
       }, 2000);
     });
 
@@ -180,26 +184,26 @@ const ChatRoom: React.FC = () => {
     setInputMessage("");
   };
 
+  const emitUserTyping = () => {
+    socket.emit("userTyping", { chatroomId, name });
+  };
+
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       sendMessage();
+      setTypingUser(null);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     } else {
-      socket.emit("userTyping", name);
+      emitUserTyping();
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        setTypingUser(null);
+      }, 2000); // Debounce for 2 seconds after user stops typing
     }
-  };
-
-  const handleExit = () => {
-    socket.emit("sendSystemMessage", {
-      text: `${name} has left the chat.`,
-      chatroomId,
-      type: 'system',
-      timestamp: new Date().toLocaleTimeString(navigator.language, {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
-    });
-    navigate('/');
   };
 
   return (
@@ -208,7 +212,22 @@ const ChatRoom: React.FC = () => {
         <button
           className="back-button small"
           style={{ color: "var(--danger-300)", background: "var(--dark)" }}
-          onClick={handleExit}
+          onClick={() => {
+            socket.emit("sendSystemMessage", {
+              text: `${name} has left the chat.`,
+              chatroomId,
+              type: 'system',
+              timestamp: new Date().toLocaleTimeString(navigator.language, {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }),
+            });
+            socket.emit("leaveRoom", { chatroomId, name });
+            setTimeout(() => {
+              navigate('/');
+            }, 100); // Small delay to ensure the message is sent
+          }}
         >
           <FontAwesomeIcon icon={faArrowLeft} />
           Exit
@@ -229,28 +248,31 @@ const ChatRoom: React.FC = () => {
         </div>
       </div>
       <div className="conversation-container" ref={conversationContainerRef}>
-        {messages.map((message, index) => (
-          <div className="message-row" key={index}>
-            <div
-              className={`message-wrapper ${
-                message.sender === name ? "me" : ""
-              } ${message.type === 'system' ? 'system-message' : ''}`}
-            >
-              {message.type !== 'system' && (
-                <small className="sender-name">{message.sender}</small>
-              )}
-              <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
-                <TranslationWrapper targetLanguage={preferredLanguage}>
-                  {message.text}
-                </TranslationWrapper>
+        {messages.map((message, index) => {
+          console.log("Rendering message:", message);
+          return (
+            <div className="message-row" key={index}>
+              <div
+                className={`message-wrapper ${
+                  message.sender === name ? "me" : ""
+                } ${message.type === 'system' ? 'system-message' : ''}`}
+              >
+                {message.type !== 'system' && (
+                  <small className="sender-name">{message.sender}</small>
+                )}
+                <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
+                  <TranslationWrapper targetLanguage={preferredLanguage}>
+                    {message.text}
+                  </TranslationWrapper>
+                </div>
+                <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
+                  {message.timestamp}
+                </small>
               </div>
-              <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
-                {message.timestamp}
-              </small>
             </div>
-          </div>
-        ))}
-        {isTyping && <div className="typing-notification">Someone is typing...</div>}
+          );
+        })}
+        {typingUser && <div className="typing-notification">{typingUser} is typing...</div>}
       </div>
       <div className="message-input-container">
         <input

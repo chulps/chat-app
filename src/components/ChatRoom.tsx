@@ -40,7 +40,9 @@ const ChatRoom: React.FC = () => {
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
       setTimeout(() => {
-        conversationContainerRef.current!.scrollTop = conversationContainerRef.current!.scrollHeight;
+        if (conversationContainerRef.current) {
+          conversationContainerRef.current.scrollTop = conversationContainerRef.current.scrollHeight;
+        }
       }, 100);
     }
   };

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="text/javascript">
-      var path = window.location.pathname.split('/');
-      var newPathname = path.slice(1, path.length).join('/');
-      var newURL = '/chat-app/' + newPathname;
-      window.location.href = newURL;
-    </script>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=/#/">
   </head>
   <body>
     <p>Redirecting...</p>
+    <script type="text/javascript">
+      // Redirect to the HashRouter URL
+      var redirectTo = '/chat-app#' + window.location.pathname + window.location.search;
+      window.location.replace(redirectTo);
+    </script>
   </body>
 </html>
-

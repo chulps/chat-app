@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
   const [chatroomId, setChatroomId] = useState("");
   const [isChatroomIdValid, setIsChatroomIdValid] = useState(false);
   const [isJoiningChatroom, setIsJoiningChatroom] = useState(false);
-  const { language } = useLanguage();
+  const { language, content } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,19 +75,19 @@ const HomePage: React.FC = () => {
       </div>
       <div>
         <TranslationWrapper targetLanguage={language}>
-          <label>Enter your name</label>
+        <label>{content['placeholder-name']}</label>
         </TranslationWrapper>
         <input
           className="name-input"
           type="text"
-          placeholder="Your name"
+          placeholder={content['placeholder-name']}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="main-buttons-container">
         <button
-          data-tooltip="Create a chatroom and invite your friends to chat with them."
+          data-tooltip={content['tooltip-create']}
           className={`tooltip bottom-right ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
           onClick={createChatroom}
         >
@@ -102,7 +102,8 @@ const HomePage: React.FC = () => {
           </TranslationWrapper>
         </span>
         <button
-          className={`tooltip join-chatroom-button bottom-right ${
+          data-tooltip={content['tooltip-join']}
+          className={`tooltip join-chatroom-button bottom-left ${
             name === "" ? "disabled" : ""
           }`}
           onClick={() => setIsJoiningChatroom(true)}
@@ -131,7 +132,7 @@ const HomePage: React.FC = () => {
             <input
               className="chatroom-id-input"
               type="text"
-              placeholder="Chatroom ID"
+              placeholder={content['placeholder-chatroom-id']}
               value={chatroomId}
               onChange={(e) => setChatroomId(e.target.value)}
             />

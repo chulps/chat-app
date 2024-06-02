@@ -1,27 +1,63 @@
-// src/LanguageContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useRef } from 'react';
 
-interface LanguageContextType {
+interface LanguageContextProps {
   language: string;
   setLanguage: (language: string) => void;
+  content: { [key: string]: string };
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState(navigator.language);
-
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-export const useLanguage = (): LanguageContextType => {
+export const useLanguage = (): LanguageContextProps => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
+};
+
+const defaultContent = {
+  'create-chatroom': 'Create Chatroom',
+  'join-chatroom': 'Join a Chatroom',
+  'tooltip-create': 'Create a chatroom and invite your friends to chat with them.',
+  'tooltip-join': 'Join an existing chatroom using a Chatroom ID.',
+  'placeholder-name': 'Your name',
+  'placeholder-chatroom-id': 'Chatroom ID',
+  'tooltip-copy-chatroom-id': 'Copy the chatroom ID to share with your friends.',
+  'tooltip-theme-light': 'Switch to light theme',
+  'tooltip-theme-dark': 'Switch to dark theme',
+  'tooltip-exit-chatroom': 'Exit the current chatroom',
+  'tooltip-id-copied': 'Chatroom ID copied to clipboard',
+  // Add more translations as needed
+};
+
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState<string>(() => navigator.language);
+  const [content, setContent] = useState<{ [key: string]: string }>(defaultContent);
+  const translationsFetched = useRef<{ [key: string]: boolean }>({});
+
+  const fetchContent = useCallback(async (language: string) => {
+    const userLanguage = language.split("-")[0];
+    if (!translationsFetched.current[userLanguage]) {
+      // Fetch translated content from your translation API
+      const response = await fetch(`/api/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: defaultContent, targetLanguage: userLanguage }),
+      });
+      const translatedContent = await response.json();
+      setContent(translatedContent);
+      translationsFetched.current[userLanguage] = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchContent(language);
+  }, [language, fetchContent]);
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, content }}>
+      {children}
+    </LanguageContext.Provider>
+  );
 };

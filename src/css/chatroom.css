@@ -36,6 +36,7 @@
   width: fit-content;
   display: flex;
   flex-direction: column;
+  max-width: 70%;
 }
 
 .sender-name {
@@ -49,7 +50,6 @@
   background-color: var(--neutral-800);
   justify-self: start;
   width: fit-content;
-  max-width: calc(var(--space-6) + var(--space-4));
 }
 
 .message-wrapper.me .sender-name {

@@ -3,16 +3,13 @@ import { useParams, useLocation } from 'react-router-dom';
 import socketIOClient from 'socket.io-client';
 import TranslationWrapper from './TranslationWrapper';
 import { useLanguage } from '../contexts/LanguageContext';
-import getEnv from '../utils/getEnv';
+import { getEnv } from '../utils/getEnv';
 
-const currentEnv = getEnv();
-const SOCKET_URL = currentEnv === 'production'
-  ? 'https://limitless-lake-38337.herokuapp.com'
-  : 'http://localhost:3001';
+const { socketUrl } = getEnv();
 
-console.log('Connecting to:', SOCKET_URL);
+console.log('Connecting to:', socketUrl);
 
-const socket = socketIOClient(SOCKET_URL);
+const socket = socketIOClient(socketUrl);
 
 interface Message {
   sender: string;

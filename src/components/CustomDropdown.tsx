@@ -146,9 +146,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                 className="custom-dropdown-option"
                 onClick={() => handleOptionClick(option)}
               >
-                <TranslationWrapper targetLanguage={targetLanguage}>
                   {option.label}
-                </TranslationWrapper>
               </div>
             ))}
           </div>

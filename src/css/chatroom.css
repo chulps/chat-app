@@ -86,9 +86,20 @@
   border-bottom: 1px solid var(--dark);
 }
 
-.system-message {
-    color: gray; /* Change this to any color that will stand out */
-    font-style: italic;
-    text-align: center; /* Center-align system messages */
-    padding: 0.5em; /* Add some padding for better visibility */
+.conversation-container .message-wrapper.system-message {
+    color: var(--neutral-500); /* Change this to any color that will stand out */
+    gap: 0;
   }
+
+  .message.system-message {
+    gap: unset;
+    background-color: transparent;
+  }
+
+  .typing-notification {
+    color: var(--neutral-500);
+    margin:0;
+    font-size: var(--font-size-small);
+    z-index: 10;
+  }
+  

@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="refresh" content="0; url=/chat-app" />
+    <script type="text/javascript">
+      var path = window.location.pathname.split('/');
+      var newPathname = path.slice(1, path.length).join('/');
+      var newURL = '/chat-app/' + newPathname;
+      window.location.href = newURL;
+    </script>
   </head>
   <body>
     <p>Redirecting...</p>
   </body>
 </html>
+

@@ -222,26 +222,35 @@ data,
   scroll-behavior: smooth;
 }
 
-.text-regular,
+
+
 body {
-  font-size: var(--font-size-default);
-  font-family: var(--font-family-default); /* Duplicate declaration */
   background: var(--background-color);
   color: var(--white);
-  max-width: var(--space-8);
-  margin: 0 auto;
-  padding: var(--space-3);
-  transition: all 0.3s;
-  font-weight: 400;
-  font-style: normal;
-  text-transform: math-auto;
   display: grid;
+  font-family: var(--font-family-default); /* Duplicate declaration */
+  font-size: var(--font-size-default);
+  font-style: normal;
+  font-weight: 400;
+  margin: 0 auto;
+  max-width: var(--space-8);
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  padding: var(--space-2);
+  text-transform: math-auto;
+  transition: all 0.3s;
+}
+
+@media screen and (min-width: 576px) {
+  body {
+    padding: 0 var(--space-3);
+  }
 }
 
 @media screen and (min-width: 1198px) {
   body {
-    padding: var(--space-3) 0;
+    padding: 0 0 var(--space-3) 0;
     overflow-x: visible;
   }
 }
@@ -447,6 +456,14 @@ button.hollow,
 input[type="submit"].hollow {
   outline: 1px solid var(--primary);
   outline-offset: -1px;
+}
+
+button.success {
+  background: var(--success);
+}
+
+button.info {
+  background: var(--info);
 }
 
 /* normal inputs */
@@ -695,7 +712,7 @@ input:hover {
 /* if used on buttons it will always try to appear center */
 /* any "flex-centered" element will center the tooltip */
 .tooltip::after {
-  content: attr(tooltip);
+  content: attr(data-tooltip);
   position: absolute;
   font-size: var(--font-size-small);
   background: var(--background-color);

@@ -189,7 +189,7 @@ i,
   font-family: var(--font-family-italic);
   font-optical-sizing: auto;
   font-weight: 400;
-  font-style: italic;
+  font-style: unset;
   font-variation-settings: "wdth" 100, "GRAD" 0;
 }
 

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, KeyboardEvent } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import React, { useEffect, useState, useRef, KeyboardEvent } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import TranslationWrapper from "./TranslationWrapper";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -20,7 +20,8 @@ interface Message {
   text: string;
   language: string;
   chatroomId: string;
-  timestamp: string; // Add timestamp field
+  timestamp: string;
+  type?: 'system' | 'user';
 }
 
 const ChatRoom: React.FC = () => {
@@ -28,9 +29,20 @@ const ChatRoom: React.FC = () => {
   const query = new URLSearchParams(useLocation().search);
   const name = query.get("name") || "Anonymous";
   const { language: preferredLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const conversationContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    if (conversationContainerRef.current) {
+      setTimeout(() => {
+        conversationContainerRef.current!.scrollTop = conversationContainerRef.current!.scrollHeight;
+      }, 100);
+    }
+  };
 
   const cleanupSocketListeners = () => {
     socket.off("connect");
@@ -38,6 +50,9 @@ const ChatRoom: React.FC = () => {
     socket.off("disconnect");
     socket.off("languageChangeAcknowledged");
     socket.off("messageHistory");
+    socket.off("userTyping");
+    socket.off("userJoined");
+    socket.off("userLeft");
   };
 
   useEffect(() => {
@@ -46,19 +61,85 @@ const ChatRoom: React.FC = () => {
     };
 
     socket.on("connect", () => {
+      console.log("Connected to socket");
       socket.emit("joinRoom", {
         chatroomId,
         name,
         language: preferredLanguage,
       });
+      socket.emit("sendSystemMessage", {
+        text: `${name} has joined the chat.`,
+        chatroomId,
+        type: 'system',
+        timestamp: new Date().toLocaleTimeString(navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+      });
     });
 
     socket.on("message", (message: Message) => {
+      console.log("Received message:", message);
       setMessages((prevMessages) => [...prevMessages, message]);
+      scrollToBottom();
+    });
+
+    socket.on("userTyping", (userName: string) => {
+      console.log("User typing:", userName);
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 2000);
+    });
+
+    socket.on("userJoined", (userName: string) => {
+      console.log("User joined:", userName);
+      const systemMessage: Message = {
+        sender: "",
+        text: `${userName} has joined the chat.`,
+        language: "",
+        chatroomId: chatroomId || "", 
+        timestamp: new Date().toLocaleTimeString(navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        type: "system",
+      };
+      setMessages((prevMessages) => [...prevMessages, systemMessage]);
+    });
+
+    socket.on("userLeft", (userName: string) => {
+      console.log("User left:", userName);
+      const systemMessage: Message = {
+        sender: "",
+        text: `${userName} has left the chat.`,
+        language: "",
+        chatroomId: chatroomId || "",
+        timestamp: new Date().toLocaleTimeString(navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        type: "system",
+      };
+      setMessages((prevMessages) => [...prevMessages, systemMessage]);
     });
 
     socket.on("disconnect", () => {
+      console.log("Disconnected from socket");
       socket.emit("leaveRoom", { chatroomId, name });
+      socket.emit("sendSystemMessage", {
+        text: `${name} has left the chat.`,
+        chatroomId,
+        type: 'system',
+        timestamp: new Date().toLocaleTimeString(navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+      });
     });
 
     socket.on("languageChangeAcknowledged", () => {
@@ -71,7 +152,9 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("messageHistory", (history: Message[]) => {
+      console.log("Received message history:", history);
       setMessages(history);
+      scrollToBottom();
     });
 
     handleLanguageChange();
@@ -80,17 +163,19 @@ const ChatRoom: React.FC = () => {
   }, [chatroomId, name, preferredLanguage]);
 
   const sendMessage = () => {
-    const message = {
+    const message: Message = {
       text: inputMessage,
       sender: name,
       language: preferredLanguage,
-      chatroomId,
+      chatroomId: chatroomId || "", 
       timestamp: new Date().toLocaleTimeString(navigator.language, {
-        hour: '2-digit',
-        minute: '2-digit',
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: false,
-      }), // Add timestamp when message is sent in 24-hour format
+      }),
+      type: "user",
     };
+    console.log("Sending message:", message);
     socket.emit("sendMessage", message);
     setInputMessage("");
   };
@@ -98,7 +183,23 @@ const ChatRoom: React.FC = () => {
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       sendMessage();
+    } else {
+      socket.emit("userTyping", name);
     }
+  };
+
+  const handleExit = () => {
+    socket.emit("sendSystemMessage", {
+      text: `${name} has left the chat.`,
+      chatroomId,
+      type: 'system',
+      timestamp: new Date().toLocaleTimeString(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+    });
+    navigate('/');
   };
 
   return (
@@ -107,7 +208,7 @@ const ChatRoom: React.FC = () => {
         <button
           className="back-button small"
           style={{ color: "var(--danger-300)", background: "var(--dark)" }}
-          onClick={() => window.history.back()}
+          onClick={handleExit}
         >
           <FontAwesomeIcon icon={faArrowLeft} />
           Exit
@@ -127,26 +228,29 @@ const ChatRoom: React.FC = () => {
           </data>
         </div>
       </div>
-      <div className="conversation-container">
+      <div className="conversation-container" ref={conversationContainerRef}>
         {messages.map((message, index) => (
           <div className="message-row" key={index}>
             <div
               className={`message-wrapper ${
                 message.sender === name ? "me" : ""
-              }`}
+              } ${message.type === 'system' ? 'system-message' : ''}`}
             >
-              <small className="sender-name">{message.sender}</small>
-              <div className="message">
+              {message.type !== 'system' && (
+                <small className="sender-name">{message.sender}</small>
+              )}
+              <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
                 <TranslationWrapper targetLanguage={preferredLanguage}>
                   {message.text}
                 </TranslationWrapper>
               </div>
-                <small style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
-                  {message.timestamp}
-                </small>
+              <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
+                {message.timestamp}
+              </small>
             </div>
           </div>
         ))}
+        {isTyping && <div className="typing-notification">Someone is typing...</div>}
       </div>
       <div className="message-input-container">
         <input

@@ -85,3 +85,10 @@
   padding: 1em;
   border-bottom: 1px solid var(--dark);
 }
+
+.system-message {
+    color: gray; /* Change this to any color that will stand out */
+    font-style: italic;
+    text-align: center; /* Center-align system messages */
+    padding: 0.5em; /* Add some padding for better visibility */
+  }

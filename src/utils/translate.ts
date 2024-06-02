@@ -1,11 +1,12 @@
-// src/utils/translate.ts
 import axios from 'axios';
+import getEnv from './getEnv';
 
-const baseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://limitless-lake-38337.herokuapp.com'
+const currentEnv = getEnv();
+const baseUrl = currentEnv === 'production'
+  ? 'https://limitless-lake-38337.herokuapp.com' || 'http://192.168.40.215:3000/chat-app'
   : 'http://localhost:3001';
 
-export const translateText = async (text: string, targetLanguage: string): Promise<string> => {
+export const translateText = async (text: string, targetLanguage: string) => {
   if (targetLanguage === 'en' || targetLanguage === 'en-US') {
     return text;
   }

@@ -26,32 +26,37 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
 
-  const cleanupSocketListeners = () => {
-    socket.off("connect");
-    socket.off("message");
-    socket.off("disconnect");
-    socket.off("languageChangeAcknowledged");
-    socket.off("messageHistory"); // Add this line
-  };
-
   useEffect(() => {
+    console.log('Component mounted');
+
     const handleLanguageChange = () => {
+      console.log('Language change:', preferredLanguage);
       socket.emit("languageChange", preferredLanguage);
     };
 
     socket.on("connect", () => {
+      console.log('Connected to socket');
       socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
+      console.log(`joinRoom event emitted for chatroom: ${chatroomId}, user: ${name}, language: ${preferredLanguage}`);
     });
 
     socket.on("message", (message: Message) => {
+      console.log('Message received:', message);
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
+    socket.on("messageHistory", (history: Message[]) => {
+      console.log('Message history received:', history);
+      setMessages(history);
+    });
+
     socket.on("disconnect", () => {
+      console.log('Disconnected from socket');
       socket.emit("leaveRoom", { chatroomId, name });
     });
 
     socket.on("languageChangeAcknowledged", () => {
+      console.log('Language change acknowledged');
       setMessages((prevMessages) =>
         prevMessages.map((message) => ({
           ...message,
@@ -60,13 +65,16 @@ const ChatRoom: React.FC = () => {
       );
     });
 
-    socket.on('messageHistory', (history: Message[]) => {
-      setMessages(history);
-    });
-
     handleLanguageChange();
 
-    return cleanupSocketListeners; // Call the cleanup function when the component unmounts
+    return () => {
+      console.log('Component unmounting');
+      socket.off("connect");
+      socket.off("message");
+      socket.off("disconnect");
+      socket.off("languageChangeAcknowledged");
+      socket.off("messageHistory");
+    };
   }, [chatroomId, name, preferredLanguage]);
 
   const sendMessage = () => {
@@ -76,11 +84,12 @@ const ChatRoom: React.FC = () => {
       language: preferredLanguage,
       chatroomId,
     };
+    console.log('Sending message:', message);
     socket.emit("sendMessage", message);
     setInputMessage("");
   };
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       sendMessage();
     }
@@ -103,7 +112,7 @@ const ChatRoom: React.FC = () => {
         type="text"
         value={inputMessage}
         onChange={(e) => setInputMessage(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         placeholder="Type a message"
       />
       <button onClick={sendMessage}>Send</button>

@@ -8,9 +8,13 @@ import RotatingText from "./RotatingText";
 import "../css/header.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
+import { useLanguage } from "../contexts/LanguageContext";
+
 
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
+  const { language: preferredLanguage, content } = useLanguage();
+
 
   useEffect(() => {
     document.documentElement.className = theme;
@@ -46,8 +50,8 @@ const Header: React.FC = () => {
           className="theme-toggle tooltip bottom-left"
           data-tooltip={
             theme === "dark"
-              ? `Switch to light mode`
-              : `Switch to dark mode`
+              ? content['tooltip-theme-light']
+              : content['tooltip-theme-dark']
           }
           style={{
             background: theme === "dark" ? "" : "var(--white)",

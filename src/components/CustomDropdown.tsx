@@ -96,9 +96,9 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
             <div className="menu-header">
               {label && (
                 <label htmlFor="search-input">
-                  <TranslationWrapper targetLanguage={targetLanguage}>
+                  {/* <TranslationWrapper targetLanguage={targetLanguage}> */}
                     {label}
-                  </TranslationWrapper>
+                  {/* </TranslationWrapper> */}
                 </label>
               )}
 
@@ -127,16 +127,16 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                   className="small secondary language-search-clear-button"
                   onClick={() => setSearchTerm('')}
                 >
-                  <TranslationWrapper targetLanguage={targetLanguage}>
+                  {/* <TranslationWrapper targetLanguage={targetLanguage}> */}
                     Clear
-                  </TranslationWrapper>
+                  {/* </TranslationWrapper> */}
                 </button>
               )}
             </div>
 
-            <TranslationWrapper targetLanguage={targetLanguage}>
+            {/* <TranslationWrapper targetLanguage={targetLanguage}> */}
               {description && <p>{description}</p>}
-            </TranslationWrapper>
+            {/* </TranslationWrapper> */}
             <hr />
           </div>
           <div className="custom-dropdown-options">

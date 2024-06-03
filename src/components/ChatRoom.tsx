@@ -30,12 +30,31 @@ const ChatRoom: React.FC = () => {
   const name = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
-  const [tooltipText, setTooltipText] = useState(content['tooltip-copy-chatroom-id']);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [tooltipText, setTooltipText] = useState(content['tooltip-copy-chatroom-id']);
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+        } else {
+          console.log('Notification permission denied.');
+        }
+      });
+    }
+  }, []);
+
+  const showNotification = (title: string, options: NotificationOptions) => {
+    if (Notification.permission === 'granted') {
+      new Notification(title, options);
+    }
+  };
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -64,7 +83,6 @@ const ChatRoom: React.FC = () => {
     };
 
     socket.on("connect", () => {
-      console.log("Connected to socket");
       socket.emit("joinRoom", {
         chatroomId,
         name,
@@ -83,13 +101,15 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("message", (message: Message) => {
-      console.log("Received message:", message);
       setMessages((prevMessages) => [...prevMessages, message]);
+      showNotification('New Message', {
+        body: `${message.sender}: ${message.text}`,
+        icon: '/path/to/icon.png'
+      });
       scrollToBottom();
     });
 
     socket.on("userTyping", (userName: string) => {
-      console.log("User typing:", userName);
       setTypingUser(userName);
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -100,12 +120,11 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("userJoined", (userName: string) => {
-      console.log("User joined:", userName);
       const systemMessage: Message = {
         sender: "",
         text: `${userName} has joined the chat.`,
         language: "",
-        chatroomId: chatroomId || "", 
+        chatroomId: chatroomId || "",
         timestamp: new Date().toLocaleTimeString(navigator.language, {
           hour: "2-digit",
           minute: "2-digit",
@@ -117,7 +136,6 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("userLeft", (userName: string) => {
-      console.log("User left:", userName);
       const systemMessage: Message = {
         sender: "",
         text: `${userName} has left the chat.`,
@@ -134,7 +152,6 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected from socket");
       socket.emit("leaveRoom", { chatroomId, name });
       socket.emit("sendSystemMessage", {
         text: `${name} has left the chat.`,
@@ -158,7 +175,6 @@ const ChatRoom: React.FC = () => {
     });
 
     socket.on("messageHistory", (history: Message[]) => {
-      console.log("Received message history:", history);
       setMessages(history);
       scrollToBottom();
     });
@@ -177,14 +193,14 @@ const ChatRoom: React.FC = () => {
       text: inputMessage,
       sender: name,
       language: preferredLanguage,
-      chatroomId: chatroomId || "", 
+      chatroomId: chatroomId || "",
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
       type: "user",
-    };
+    };    
     console.log("Sending message:", message);
     socket.emit("sendMessage", message);
     setInputMessage("");
@@ -261,7 +277,7 @@ const ChatRoom: React.FC = () => {
         </div>
       </div>
       <div className="conversation-container" ref={conversationContainerRef}>
-        {messages.map((message, index) => {
+      {messages.map((message, index) => {
           console.log("Rendering message:", message);
           return (
             <div className="message-row" key={index}>
@@ -274,9 +290,9 @@ const ChatRoom: React.FC = () => {
                   <small className="sender-name">{message.sender}</small>
                 )}
                 <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
-                  <TranslationWrapper targetLanguage={preferredLanguage}>
+                  {/* <TranslationWrapper targetLanguage={preferredLanguage}> */}
                     {message.text}
-                  </TranslationWrapper>
+                  {/* </TranslationWrapper> */}
                 </div>
                 <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
                   {message.timestamp}

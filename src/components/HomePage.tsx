@@ -48,35 +48,37 @@ const HomePage: React.FC = () => {
     <div className="homepage-content">
       <div>
         <label>
-          <TranslationWrapper targetLanguage={language}>
+          {/* <TranslationWrapper targetLanguage={language}> */}
             About this app...
-          </TranslationWrapper>
+          {/* </TranslationWrapper> */}
           </label>
         <h1>
           <span>T</span>-Chat
         </h1>
         <p>
-          <TranslationWrapper targetLanguage={language}>
+          {/* <TranslationWrapper targetLanguage={language}> */}
             "T" is for 
-            </TranslationWrapper>
+            {/* </TranslationWrapper> */}
             <span className="italic">
-              <TranslationWrapper targetLanguage={language}>
+              {/* <TranslationWrapper targetLanguage={language}> */}
                 "Translation"
-              </TranslationWrapper>
+              {/* </TranslationWrapper> */}
             </span>
             
-            <TranslationWrapper targetLanguage={language}>
+            {/* <TranslationWrapper targetLanguage={language}> */}
             . Chat with
             anyone anywhere without any language barriers. Enter your name and
             then either create a chatroom or join one using the Chatroom ID. Be
             safe, and have fun!
-          </TranslationWrapper>
+          {/* </TranslationWrapper> */}
         </p>
       </div>
       <div>
-        <TranslationWrapper targetLanguage={language}>
-        <label>{content['placeholder-name']}</label>
-        </TranslationWrapper>
+        <label>
+        {/* <TranslationWrapper targetLanguage={language}> */}
+          {content['placeholder-name']}
+        {/* </TranslationWrapper> */}
+          </label>
         <input
           className="name-input"
           type="text"
@@ -92,14 +94,14 @@ const HomePage: React.FC = () => {
           onClick={createChatroom}
         >
           <FontAwesomeIcon icon={faPlus} /> 
-          <TranslationWrapper targetLanguage={language}>
+          {/* <TranslationWrapper targetLanguage={language}> */}
             Create
-          </TranslationWrapper>
+          {/* </TranslationWrapper> */}
         </button>
         <span>
-          <TranslationWrapper targetLanguage={language}>
+          {/* <TranslationWrapper targetLanguage={language}> */}
             - OR -
-          </TranslationWrapper>
+          {/* </TranslationWrapper> */}
         </span>
         <button
           data-tooltip={content['tooltip-join']}
@@ -109,9 +111,9 @@ const HomePage: React.FC = () => {
           onClick={() => setIsJoiningChatroom(true)}
           disabled={name === ""}
         >
-          <TranslationWrapper targetLanguage={language}>
+          {/* <TranslationWrapper targetLanguage={language}> */}
             Join
-          </TranslationWrapper>
+          {/* </TranslationWrapper> */}
           <FontAwesomeIcon icon={faArrowRightToBracket} /> 
         </button>
       </div>
@@ -121,9 +123,9 @@ const HomePage: React.FC = () => {
           <div className="or-container">
             <hr />
             <span>
-              <TranslationWrapper targetLanguage={language}>
+              {/* <TranslationWrapper targetLanguage={language}> */}
                 Enter Chatroom ID
-              </TranslationWrapper>
+              {/* </TranslationWrapper> */}
             </span>
             <hr />
           </div>
@@ -143,9 +145,9 @@ const HomePage: React.FC = () => {
               onClick={joinChatroom}
               disabled={!isChatroomIdValid}
             >
-              <TranslationWrapper targetLanguage={language}>
+              {/* <TranslationWrapper targetLanguage={language}> */}
                 Continue
-              </TranslationWrapper>
+              {/* </TranslationWrapper> */}
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
           </div>

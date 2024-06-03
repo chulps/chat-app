@@ -28,8 +28,9 @@ const defaultContent = {
   'tooltip-theme-dark': 'Switch to dark theme',
   'tooltip-exit-chatroom': 'Exit the current chatroom',
   'tooltip-id-copied': 'Chatroom ID copied to clipboard',
-  // Add more translations as needed
 };
+
+
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<string>(() => navigator.language);
@@ -39,22 +40,31 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const fetchContent = useCallback(async (language: string) => {
     const userLanguage = language.split("-")[0];
     if (!translationsFetched.current[userLanguage]) {
-      // Fetch translated content from your translation API
-      const response = await fetch(`/api/translate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: defaultContent, targetLanguage: userLanguage }),
-      });
-      const translatedContent = await response.json();
-      setContent(translatedContent);
-      translationsFetched.current[userLanguage] = true;
+      try {
+        const response = await fetch(`/api/translate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: defaultContent, targetLanguage: userLanguage }),
+        });
+        // Check if the response is ok before trying to parse it as JSON
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+        
+        const translatedContent = await response.json();
+        setContent(translatedContent);
+        translationsFetched.current[userLanguage] = true;
+      } catch (error) {
+        console.error('Error fetching translations:', error);
+        // You can also display an error message to the user here
+      }
     }
   }, []);
 
   useEffect(() => {
     fetchContent(language);
   }, [language, fetchContent]);
-
+  
   return (
     <LanguageContext.Provider value={{ language, setLanguage, content }}>
       {children}

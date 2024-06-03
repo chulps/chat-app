@@ -30,31 +30,18 @@ const ChatRoom: React.FC = () => {
   const name = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
-
+  const [tooltipText, setTooltipText] = useState(content['tooltip-copy-chatroom-id']);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
-  const [tooltipText, setTooltipText] = useState(content['tooltip-copy-chatroom-id']);
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if ('Notification' in window) {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          console.log('Notification permission granted.');
-        } else {
-          console.log('Notification permission denied.');
-        }
-      });
+    if (!name) {
+      navigate(`/`, { replace: true });
     }
-  }, []);
-
-  const showNotification = (title: string, options: NotificationOptions) => {
-    if (Notification.permission === 'granted') {
-      new Notification(title, options);
-    }
-  };
+  }, [name, navigate]);
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -102,10 +89,6 @@ const ChatRoom: React.FC = () => {
 
     socket.on("message", (message: Message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
-      showNotification('New Message', {
-        body: `${message.sender}: ${message.text}`,
-        icon: '/path/to/icon.png'
-      });
       scrollToBottom();
     });
 
@@ -124,7 +107,7 @@ const ChatRoom: React.FC = () => {
         sender: "",
         text: `${userName} has joined the chat.`,
         language: "",
-        chatroomId: chatroomId || "",
+        chatroomId: chatroomId || "", 
         timestamp: new Date().toLocaleTimeString(navigator.language, {
           hour: "2-digit",
           minute: "2-digit",
@@ -184,24 +167,19 @@ const ChatRoom: React.FC = () => {
     return cleanupSocketListeners;
   }, [chatroomId, name, preferredLanguage]);
 
-  useEffect(() => {
-    setTooltipText(content['tooltip-copy-chatroom-id']);
-  }, [content]);
-
   const sendMessage = () => {
     const message: Message = {
       text: inputMessage,
       sender: name,
       language: preferredLanguage,
-      chatroomId: chatroomId || "",
+      chatroomId: chatroomId || "", 
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
       type: "user",
-    };    
-    console.log("Sending message:", message);
+    };
     socket.emit("sendMessage", message);
     setInputMessage("");
   };
@@ -277,30 +255,28 @@ const ChatRoom: React.FC = () => {
         </div>
       </div>
       <div className="conversation-container" ref={conversationContainerRef}>
-      {messages.map((message, index) => {
-          console.log("Rendering message:", message);
-          return (
-            <div className="message-row" key={index}>
-              <div
-                className={`message-wrapper ${
-                  message.sender === name ? "me" : ""
-                } ${message.type === 'system' ? 'system-message' : ''}`}
-              >
-                {message.type !== 'system' && (
-                  <small className="sender-name">{message.sender}</small>
-                )}
-                <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
-                  {/* <TranslationWrapper targetLanguage={preferredLanguage}> */}
-                    {message.text}
-                  {/* </TranslationWrapper> */}
-                </div>
-                <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
-                  {message.timestamp}
-                </small>
+        {messages.map((message, index) => (
+          <div className="message-row" key={index}>
+            <div
+              className={`message-wrapper ${
+                message.sender === name ? "me" : ""
+              } ${message.type === 'system' ? 'system-message' : ''}`}
+            >
+              {message.type !== 'system' && (
+                <small className="sender-name">{message.sender}</small>
+              )}
+              <div className={`message ${message.type === 'system' ? 'system-message' : ''}`}>
+                <TranslationWrapper targetLanguage={preferredLanguage} sourceLanguage="en">
+                  {message.text}
+                </TranslationWrapper>
               </div>
+              <small className="font-family-data" style={{color: "var(--neutral-500)", margin: "0 var(--space-1) 0 auto", width: 'fit-content'}}>
+                {message.timestamp}
+              </small>
             </div>
-          );
-        })}
+          </div>
+          
+        ))}
         {typingUser && <div className="typing-notification">{typingUser} is typing...</div>}
       </div>
       <div className="message-input-container">

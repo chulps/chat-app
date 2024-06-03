@@ -4,6 +4,7 @@ interface LanguageContextProps {
   language: string;
   setLanguage: (language: string) => void;
   content: { [key: string]: string };
+  setContent: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
 }
 
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
@@ -30,8 +31,6 @@ const defaultContent = {
   'tooltip-id-copied': 'Chatroom ID copied to clipboard',
 };
 
-
-
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<string>(() => navigator.language);
   const [content, setContent] = useState<{ [key: string]: string }>(defaultContent);
@@ -41,7 +40,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const userLanguage = language.split("-")[0];
     if (!translationsFetched.current[userLanguage]) {
       try {
-        const response = await fetch(`/api/translate`, {
+        const response = await fetch(`http://localhost:3001/api/translate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: defaultContent, targetLanguage: userLanguage }),
@@ -66,7 +65,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [language, fetchContent]);
   
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, content }}>
+    <LanguageContext.Provider value={{ language, setLanguage, content, setContent }}>
       {children}
     </LanguageContext.Provider>
   );

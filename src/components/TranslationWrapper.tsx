@@ -1,40 +1,30 @@
-import React, { useEffect, useState, ReactNode } from 'react';
-import { translateText } from '../utils/translate';
+import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translate } from '../utils/translate';
 
 interface TranslationWrapperProps {
-  children: ReactNode;
+  children: string;
   targetLanguage: string;
+  sourceLanguage: string;
 }
 
-const TranslationWrapper: React.FC<TranslationWrapperProps> = ({ children, targetLanguage }) => {
-  const [translatedContent, setTranslatedContent] = useState<ReactNode>(children);
+const TranslationWrapper: React.FC<TranslationWrapperProps> = ({ children, targetLanguage, sourceLanguage }) => {
+  const { language } = useLanguage();
+  const [translatedText, setTranslatedText] = useState<string>(children);
 
   useEffect(() => {
-    const translateContent = async () => {
-      if (typeof children === 'string') {
-        const translation = await translateText(children, targetLanguage);
-        setTranslatedContent(translation);
-      } else if (
-        React.isValidElement(children) &&
-        typeof children.props.children === 'string'
-      ) {
-        const translation = await translateText(
-          children.props.children,
-          targetLanguage
-        );
-        setTranslatedContent(
-          React.cloneElement(children, {
-            ...children.props,
-            children: translation,
-          })
-        );
+    const translateText = async () => {
+      if (sourceLanguage !== targetLanguage) {
+        const translated = await translate(children, targetLanguage, sourceLanguage);
+        setTranslatedText(translated);
+      } else {
+        setTranslatedText(children);
       }
     };
+    translateText();
+  }, [children, targetLanguage, sourceLanguage]);
 
-    translateContent();
-  }, [children, targetLanguage]);
-
-  return <>{translatedContent}</>;
+  return <span>{translatedText}</span>;
 };
 
 export default TranslationWrapper;

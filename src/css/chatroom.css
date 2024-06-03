@@ -89,11 +89,23 @@
 .conversation-container .message-wrapper.system-message {
     color: var(--neutral-500); /* Change this to any color that will stand out */
     gap: 0;
+    margin: 0 auto;
   }
 
-  .message.system-message {
+  .system-message .message {
     gap: unset;
     background-color: transparent;
+    text-align: center;
+    font-size: var(--font-size-small);
+  }
+
+  .typing-notification-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: fit-content;
+    width: fit-content;
+    border: 1px solid red;
   }
 
   .typing-notification {
@@ -101,5 +113,12 @@
     margin:0;
     font-size: var(--font-size-small);
     z-index: 10;
+    position: relative;
+    bottom: 0;
   }
   
+  .message-wrapper.system-message {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}

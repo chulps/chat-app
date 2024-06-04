@@ -1,0 +1,45 @@
+/* nameprompt.css */
+.name-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  
+  .name-prompt-container {
+    background: var(--background-color);
+    padding: var(--space-3);
+    border-radius: 2em;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .name-prompt-container h2 {
+    margin-bottom: var(--space-2);
+  }
+  
+  .name-prompt-container input {
+    width: 100%;
+    margin-bottom: var(--space-2);
+  }
+  
+  .name-prompt-container button {
+    padding: var(--space-2) var(--space-2);
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+
+  
+  .chatroom-container.blur {
+    filter: blur(5px);
+  }
+  

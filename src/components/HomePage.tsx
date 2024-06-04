@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import "../css/homepage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlus,
-  faArrowRightToBracket,
-  faArrowRight,
-} from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faArrowRightToBracket, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import TranslationWrapper from "./TranslationWrapper";
 
 const HomePage: React.FC = () => {
@@ -17,6 +13,16 @@ const HomePage: React.FC = () => {
   const [isJoiningChatroom, setIsJoiningChatroom] = useState(false);
   const { language, content } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const chatroomIdFromUrl = params.get("chatroomId");
+    if (chatroomIdFromUrl) {
+      setChatroomId(chatroomIdFromUrl);
+      setIsJoiningChatroom(true);
+    }
+  }, [location]);
 
   useEffect(() => {
     const isValidChatroomId = /^[a-zA-Z0-9]{5}$/.test(chatroomId);
@@ -51,7 +57,7 @@ const HomePage: React.FC = () => {
           <TranslationWrapper targetLanguage={language}>
             About this app...
           </TranslationWrapper>
-          </label>
+        </label>
         <h1>
           <span>T</span>-Chat
         </h1>

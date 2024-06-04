@@ -113,3 +113,11 @@
     font-size: var(--font-size-small);
     margin: 0 auto;
   }
+
+  .message-row + .message-row:has(.qr-code-message) {
+    display: none;
+}
+
+.message-wrapper.me .sender-name {
+  display: none;
+}

@@ -94,6 +94,7 @@
   .message.system-message {
     gap: unset;
     background-color: transparent;
+    padding:0;
   }
 
   .typing-notification {
@@ -101,5 +102,14 @@
     margin:0;
     font-size: var(--font-size-small);
     z-index: 10;
+    position: relative;
+    bottom: 0;
+    padding: 0;
   }
   
+  .message-wrapper.system-message {
+    flex-direction: row;
+    align-items: center;
+    font-size: var(--font-size-small);
+    margin: 0 auto;
+  }

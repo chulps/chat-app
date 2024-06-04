@@ -208,7 +208,7 @@ const ChatRoom: React.FC = () => {
       }
       typingTimeoutRef.current = setTimeout(() => {
         setTypingUser(null);
-      }, 2000); // Debounce for 2 seconds after user stops typing
+      }, 1000); // Debounce for 2 seconds after user stops typing
     }
   };
 

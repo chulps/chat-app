@@ -34,7 +34,7 @@
 
   .custom-dropdown-options-container {
       position: fixed;
-      top: 50%;
+      top: calc(var(--space-4) + 1em);
       left: 50%;
       background-color: var(--dark);
       width: calc(100vw - var(--space-3));
@@ -43,7 +43,7 @@
       max-height: calc(100dvh - var(--space-5));
       right: 0;
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-      transform: translate(-50%, calc(-50% + 2em));
+      transform: translate(-50%, 0);
       z-index: 2;
       border-radius: 1em;
       overflow-x: hidden;

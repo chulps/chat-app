@@ -93,21 +93,6 @@ const HomePage: React.FC = () => {
       </div>
       <div className="main-buttons-container">
         <button
-          data-tooltip={content['tooltip-create']}
-          className={`tooltip bottom-right ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
-          onClick={createChatroom}
-        >
-          <FontAwesomeIcon icon={faPlus} /> 
-          <TranslationWrapper targetLanguage={language}>
-            Create
-          </TranslationWrapper>
-        </button>
-        <span>
-          <TranslationWrapper targetLanguage={language}>
-            - OR -
-          </TranslationWrapper>
-        </span>
-        <button
           data-tooltip={content['tooltip-join']}
           className={`tooltip join-chatroom-button bottom-left ${
             name === "" ? "disabled" : ""
@@ -119,6 +104,21 @@ const HomePage: React.FC = () => {
             Join
           </TranslationWrapper>
           <FontAwesomeIcon icon={faArrowRightToBracket} /> 
+        </button>
+        <span className="italic">
+          <TranslationWrapper targetLanguage={language}>
+            - or -
+          </TranslationWrapper>
+        </span>
+        <button
+          data-tooltip={content['tooltip-create']}
+          className={`tooltip bottom-right ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
+          onClick={createChatroom}
+        >
+          <FontAwesomeIcon icon={faPlus} /> 
+          <TranslationWrapper targetLanguage={language}>
+            Create
+          </TranslationWrapper>
         </button>
       </div>
 

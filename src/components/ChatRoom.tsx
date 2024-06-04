@@ -14,7 +14,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPaperPlane,
   faArrowLeft,
-  faCopy,
+  faHashtag,
+  faLink
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/chatroom.css";
 import NamePrompt from "./NamePrompt";
@@ -256,7 +257,7 @@ const ChatRoom: React.FC = () => {
     navigator.clipboard.writeText(chatroomUrl).then(() => {
       setTooltipText(content["tooltip-url-copied"]);
       setTimeout(() => {
-        setTooltipText(content["tooltip-copy-chatroom-id"]);
+        setTooltipText(content["tooltip-copy-chatroom-url"]);
       }, 3000);
     });
   };
@@ -318,20 +319,19 @@ const ChatRoom: React.FC = () => {
               Exit
             </TranslationWrapper>
           </button>
+          <span className="copy-id" onClick={() => navigator.clipboard.writeText(`${chatroomId}`)}>
+            <FontAwesomeIcon icon={faHashtag} /> {chatroomId}
+          </span>
+
           <div className="chatroom-id-container">
-            <label>
-              <TranslationWrapper targetLanguage={preferredLanguage}>
-                Invite others
-              </TranslationWrapper>
-            </label>
             <data
               data-tooltip={tooltipText}
               className="copy-chatroom-url tooltip bottom-left"
               onClick={handleCopyChatroomUrl}
             >
-              <FontAwesomeIcon icon={faCopy} />
+              <FontAwesomeIcon icon={faLink} />
               <TranslationWrapper targetLanguage={preferredLanguage}>
-                Copy URL
+                &nbsp;URL
               </TranslationWrapper>
             </data>
           </div>

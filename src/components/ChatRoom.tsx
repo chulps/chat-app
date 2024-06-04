@@ -1,11 +1,21 @@
-import React, { useEffect, useState, useRef, KeyboardEvent, useCallback } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  KeyboardEvent,
+  useCallback,
+} from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import TranslationWrapper from "./TranslationWrapper";
 import { useLanguage } from "../contexts/LanguageContext";
 import { getEnv } from "../utils/getEnv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane, faArrowLeft, faCopy } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPaperPlane,
+  faArrowLeft,
+  faCopy,
+} from "@fortawesome/free-solid-svg-icons";
 import "../css/chatroom.css";
 import NamePrompt from "./NamePrompt";
 import QRCodeMessage from "./QRCodeMessage";
@@ -15,12 +25,12 @@ const { socketUrl } = getEnv();
 const socket = socketIOClient(socketUrl);
 
 interface Message {
-  sender: string;
+  sender?: string;
   text: string;
   language: string;
   chatroomId: string;
-  timestamp: string;
-  type?: 'system' | 'user' | 'qr';
+  timestamp?: string;
+  type?: "system" | "user" | "qr";
 }
 
 const ChatRoom: React.FC = () => {
@@ -39,7 +49,6 @@ const ChatRoom: React.FC = () => {
   const [isNamePromptVisible, setIsNamePromptVisible] = useState(
     initialName === "Anonymous"
   );
-  const [qrCodeSent, setQrCodeSent] = useState(false); // State to track if QR code message has been sent
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -66,25 +75,27 @@ const ChatRoom: React.FC = () => {
   };
 
   const sendQrCodeMessage = useCallback(() => {
-    if (!qrCodeSent) {
-      const chatroomUrl = `${window.location.origin}/#/chatroom/${chatroomId}`;
-      const qrMessage: Message = {
-        sender: "system",
-        text: chatroomUrl,
-        language: preferredLanguage,
-        chatroomId: chatroomId || "",
-        timestamp: new Date().toLocaleTimeString(navigator.language, {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-        type: "qr",
-      };
-      setMessages((prevMessages) => [...prevMessages, qrMessage]);
-      socket.emit("sendMessage", qrMessage);
-      setQrCodeSent(true); // Set the flag to true after sending the QR code message
-    }
-  }, [chatroomId, preferredLanguage, qrCodeSent]);
+    const chatroomUrl = `${window.location.origin}/chat-app/#/chatroom/${chatroomId}`;
+    const qrMessage: Message = {
+      sender: "system",
+      text: chatroomUrl,
+      language: preferredLanguage,
+      chatroomId: chatroomId || "",
+      type: "qr",
+    };
+    setMessages((prevMessages) => {
+      // Ensure QR message is not duplicated
+      if (
+        !prevMessages.some(
+          (msg) => msg.type === "qr" && msg.text === chatroomUrl
+        )
+      ) {
+        return [...prevMessages, qrMessage];
+      }
+      return prevMessages;
+    });
+    socket.emit("sendMessage", qrMessage);
+  }, [chatroomId, preferredLanguage]);
 
   useEffect(() => {
     if (!isNamePromptVisible) {
@@ -109,7 +120,7 @@ const ChatRoom: React.FC = () => {
           }),
         });
 
-        sendQrCodeMessage();
+        sendQrCodeMessage(); // Ensure this is only called once
       });
 
       socket.on("message", (message: Message) => {
@@ -129,7 +140,6 @@ const ChatRoom: React.FC = () => {
 
       socket.on("userJoined", (userName: string) => {
         const systemMessage: Message = {
-          sender: "",
           text: `${userName} has joined the chat.`,
           language: "",
           chatroomId: chatroomId || "",
@@ -145,7 +155,6 @@ const ChatRoom: React.FC = () => {
 
       socket.on("userLeft", (userName: string) => {
         const systemMessage: Message = {
-          sender: "",
           text: `${userName} has left the chat.`,
           language: "",
           chatroomId: chatroomId || "",
@@ -183,13 +192,7 @@ const ChatRoom: React.FC = () => {
       });
 
       socket.on("messageHistory", (history: Message[]) => {
-        // Check if QR code message is in history to avoid duplication
-        const qrMessageExists = history.some(
-          (message) => message.type === "qr"
-        );
-        setQrCodeSent(qrMessageExists);
-
-        setMessages(history.filter((_, index) => index !== 2));
+        setMessages(history);
         scrollToBottom();
       });
 
@@ -249,7 +252,7 @@ const ChatRoom: React.FC = () => {
   };
 
   const handleCopyChatroomUrl = () => {
-    const chatroomUrl = `${window.location.origin}/#/chatroom/${chatroomId}`;
+    const chatroomUrl = `${window.location.origin}/chat-app/#/chatroom/${chatroomId}`;
     navigator.clipboard.writeText(chatroomUrl).then(() => {
       setTooltipText(content["tooltip-url-copied"]);
       setTimeout(() => {
@@ -311,66 +314,69 @@ const ChatRoom: React.FC = () => {
             }}
           >
             <FontAwesomeIcon icon={faArrowLeft} />
-            Exit
+            <TranslationWrapper targetLanguage={preferredLanguage}>
+              Exit
+            </TranslationWrapper>
           </button>
           <div className="chatroom-id-container">
             <label>
               <TranslationWrapper targetLanguage={preferredLanguage}>
-              Invite others
+                Invite others
               </TranslationWrapper>
-              </label>
+            </label>
             <data
               data-tooltip={tooltipText}
               className="copy-chatroom-url tooltip bottom-left"
               onClick={handleCopyChatroomUrl}
             >
-              <FontAwesomeIcon icon={faCopy} /> 
+              <FontAwesomeIcon icon={faCopy} />
               <TranslationWrapper targetLanguage={preferredLanguage}>
-              Copy URL
+                Copy URL
               </TranslationWrapper>
             </data>
           </div>
         </div>
         <div className="conversation-container" ref={conversationContainerRef}>
-          {messages
-            .filter((_, index) => index !== 2)
-            .map(
-              (message, index) =>
-                index !== 2 && (
-                  <div className="message-row" key={index}>
-                    <div
-                      className={`message-wrapper ${
-                        message.sender === name ? "me" : ""
-                      } ${
-                        message.type === "system" || message.type === "qr"
-                          ? "system-message"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`message ${
-                          message.type === "system" || message.type === "qr"
-                            ? "system-message"
-                            : ""
-                        }`}
-                      >
-                        {message.type === "qr" ? (
-                          <QRCodeMessage
-                            url={message.text}
-                            key={message.text}
-                          />
-                        ) : (
-                          <TranslationWrapper
-                            targetLanguage={preferredLanguage}
-                          >
-                            {message.text}
-                          </TranslationWrapper>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-            )}
+          {messages.map((message, index) => (
+            <div className="message-row" key={index}>
+              <div
+                className={`message-wrapper ${
+                  message.sender === name ? "me" : ""
+                } ${
+                  message.type === "system" || message.type === "qr"
+                    ? "system-message"
+                    : ""
+                }`}
+              >
+                {message.type !== "system" && message.type !== "qr" && (
+                  <small className="sender-name">{message.sender}</small>
+                )}
+                <div
+                  className={`message ${
+                    message.type === "system" || message.type === "qr"
+                      ? "system-message"
+                      : ""
+                  }`}
+                >
+                  {message.type === "qr" ? (
+                    <QRCodeMessage url={message.text} />
+                  ) : (
+                    <TranslationWrapper targetLanguage={preferredLanguage}>
+                      {message.text}
+                    </TranslationWrapper>
+                  )}
+                </div>
+                {message.type !== "system" && message.type !== "qr" && (
+                  <small
+                    style={{ color: "var(--neutral-400)" }}
+                    className="timestamp"
+                  >
+                    {message.timestamp}
+                  </small>
+                )}
+              </div>
+            </div>
+          ))}
 
           {typingUser && (
             <div className="typing-notification">{typingUser} is typing...</div>

@@ -69,7 +69,7 @@
     text-align: right;
 }
 
-.copy-chatroom-id {
+.copy-chatroom-url {
   cursor: pointer;
   color: var(--info);
 }

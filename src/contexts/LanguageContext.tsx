@@ -1,4 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useRef } from 'react';
+import axios from 'axios';
+import { getEnv } from '../utils/getEnv';
+
+const { translateUrl } = getEnv();
 
 interface LanguageContextProps {
   language: string;
@@ -17,8 +21,6 @@ export const useLanguage = (): LanguageContextProps => {
 };
 
 const defaultContent = {
-  'create-chatroom': 'Create Chatroom',
-  'join-chatroom': 'Join a Chatroom',
   'tooltip-create': 'Create a chatroom and invite your friends to chat with them.',
   'tooltip-join': 'Join an existing chatroom using a Chatroom ID.',
   'placeholder-name': 'Your name',
@@ -46,16 +48,13 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const userLanguage = language.split("-")[0];
     if (!translationsFetched.current[userLanguage]) {
       // Fetch translated content from your translation API
-      const response = await fetch(`/api/translate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: defaultContent, targetLanguage: userLanguage }),
-      });
-      const translatedContent = await response.json();
-      setContent(translatedContent);
+      const response = await axios.post(`${translateUrl}/api/translate`, { text: JSON.stringify(content), targetLanguage: language});
+
+      const translatedContent = response.data.translatedText;
+      setContent(JSON.parse(translatedContent));
       translationsFetched.current[userLanguage] = true;
     }
-  }, []);
+  }, [content]);
 
   useEffect(() => {
     fetchContent(language);

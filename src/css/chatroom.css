@@ -76,11 +76,14 @@
 }
 
 .message-wrapper .message {
-  padding: 0.5em 1em;
-  border-radius: 10px;
+  /* padding: 0.5em 1em; */
+  border-radius: 1em;
   background-color: var(--neutral-800);
   justify-self: start;
   width: fit-content;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .message-wrapper.me .sender-name {
@@ -94,6 +97,7 @@
 
 .message-wrapper.me .message {
   background-color: var(--primary);
+  padding-bottom: 1em;
 }
 
 .chatroom-id-container {
@@ -163,4 +167,41 @@
 
 html.light .message-wrapper.me {
   color: white;
+}
+
+.url-image img, .url-metadata {
+  width: 100%;
+}
+
+.message-text {
+  padding: 0.5em 1em;
+}
+
+.url-title, .url-description, .url-origin {
+  padding: 0 var(--space-2);
+}
+
+.url-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-small);
+}
+
+.message a {
+  color: var(--white);
+}
+
+.url-title {
+  font-weight: 500;
+}
+
+.url-origin {
+  font-family: var(--font-family-data);
+}
+
+.message:has(.url-metadata) .message-text {
+  display: none;
 }

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
+import { getUrlMetadata } from "../utils/urlUtils";
 
 interface Message {
   sender?: string;
@@ -24,6 +25,30 @@ const MessageList: React.FC<MessageListProps> = ({
   preferredLanguage,
   conversationContainerRef
 }) => {
+  const [urlMetadata, setUrlMetadata] = useState<{ [url: string]: any }>({});
+
+  useEffect(() => {
+    const fetchMetadata = async () => {
+      const newMetadata: { [url: string]: any } = {};
+      for (const message of messages) {
+        if (message.type === "user" && message.text.includes("http")) {
+          const urls = message.text.match(/https?:\/\/[^\s]+/g);
+          if (urls) {
+            for (const url of urls) {
+              if (!urlMetadata[url]) {
+                const metadata = await getUrlMetadata(url);
+                newMetadata[url] = metadata;
+              }
+            }
+          }
+        }
+      }
+      setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
+    };
+
+    fetchMetadata();
+  }, [messages, urlMetadata]);
+
   return (
     <div className="conversation-container" ref={conversationContainerRef}>
       {messages.map((message, index) => (
@@ -50,9 +75,33 @@ const MessageList: React.FC<MessageListProps> = ({
               {message.type === "qr" ? (
                 <QRCodeMessage url={message.text} />
               ) : (
-                <TranslationWrapper targetLanguage={preferredLanguage}>
-                  {message.text}
-                </TranslationWrapper>
+                <>
+                <div className="message-text">
+                  <TranslationWrapper targetLanguage={preferredLanguage}>
+                    {message.text}
+                  </TranslationWrapper>
+                  </div>
+                  {message.text.includes("http") && (
+                    message.text.match(/https?:\/\/[^\s]+/g)?.map((url) => (
+                      <div key={url} className="url-metadata">
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          {urlMetadata[url] ? (
+                            <>
+                              <div className="url-image">
+                                <img src={urlMetadata[url].image} alt={urlMetadata[url].title} />
+                              </div>
+                              <div className="url-title">{urlMetadata[url].title}</div>
+                              <div className="url-description">{urlMetadata[url].description}</div>
+                              <small className="url-origin">{new URL(urlMetadata[url].url).origin}</small>
+                            </>
+                          ) : (
+                            url
+                          )}
+                        </a>
+                      </div>
+                    ))
+                  )}
+                </>
               )}
             </div>
             {message.type !== "system" && message.type !== "qr" && (

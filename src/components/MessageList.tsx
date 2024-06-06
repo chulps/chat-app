@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
@@ -23,31 +23,44 @@ const MessageList: React.FC<MessageListProps> = ({
   messages,
   name,
   preferredLanguage,
-  conversationContainerRef
+  conversationContainerRef,
 }) => {
   const [urlMetadata, setUrlMetadata] = useState<{ [url: string]: any }>({});
+  const [fetchedUrls, setFetchedUrls] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const fetchMetadata = async () => {
-      const newMetadata: { [url: string]: any } = {};
-      for (const message of messages) {
-        if (message.type === "user" && message.text.includes("http")) {
-          const urls = message.text.match(/https?:\/\/[^\s]+/g);
-          if (urls) {
-            for (const url of urls) {
-              if (!urlMetadata[url]) {
+  const fetchMetadata = useCallback(async () => {
+    const newMetadata: { [url: string]: any } = {};
+    const newFetchedUrls = new Set(fetchedUrls);
+
+    for (const message of messages) {
+      if (message.type === "user" && message.text.includes("http")) {
+        const urls = message.text.match(/https?:\/\/[^\s]+/g);
+        if (urls) {
+          for (const url of urls) {
+            if (!newFetchedUrls.has(url)) {
+              try {
                 const metadata = await getUrlMetadata(url);
                 newMetadata[url] = metadata;
+                newFetchedUrls.add(url);
+              } catch (error) {
+                console.error(`Error fetching metadata for ${url}:`, error);
               }
             }
           }
         }
       }
-      setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
-    };
+    }
 
-    fetchMetadata();
-  }, [messages, urlMetadata]);
+    setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
+    setFetchedUrls(newFetchedUrls);
+  }, [messages, fetchedUrls]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      fetchMetadata();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   return (
     <div className="conversation-container" ref={conversationContainerRef}>
@@ -76,31 +89,43 @@ const MessageList: React.FC<MessageListProps> = ({
                 <QRCodeMessage url={message.text} />
               ) : (
                 <>
-                <div className="message-text">
-                  <TranslationWrapper targetLanguage={preferredLanguage}>
-                    {message.text}
-                  </TranslationWrapper>
+                  <div className="message-text">
+                    <TranslationWrapper targetLanguage={preferredLanguage}>
+                      {message.text}
+                    </TranslationWrapper>
                   </div>
-                  {message.text.includes("http") && (
+                  {message.text.includes("http") &&
                     message.text.match(/https?:\/\/[^\s]+/g)?.map((url) => (
                       <div key={url} className="url-metadata">
                         <a href={url} target="_blank" rel="noopener noreferrer">
                           {urlMetadata[url] ? (
                             <>
                               <div className="url-image">
-                                <img src={urlMetadata[url].image} alt={urlMetadata[url].title} />
+                                <img
+                                  src={urlMetadata[url].image}
+                                  alt={urlMetadata[url].title}
+                                />
                               </div>
-                              <div className="url-title">{urlMetadata[url].title}</div>
-                              <div className="url-description">{urlMetadata[url].description}</div>
-                              <small className="url-origin">{new URL(urlMetadata[url].url).origin}</small>
+                              <div className="url-title">
+                                {urlMetadata[url].title}
+                              </div>
+                              <div className="url-description">
+                                {urlMetadata[url].description}
+                              </div>
+                              <small className="url-origin">
+                                {new URL(urlMetadata[url].url).origin}
+                              </small>
                             </>
                           ) : (
-                            url
+                            <div className="url-placeholder">
+                              <TranslationWrapper targetLanguage={preferredLanguage}>
+                                Loading...
+                              </TranslationWrapper>
+                            </div>
                           )}
                         </a>
                       </div>
-                    ))
-                  )}
+                    ))}
                 </>
               )}
             </div>

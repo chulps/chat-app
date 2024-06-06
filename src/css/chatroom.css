@@ -97,7 +97,6 @@
 
 .message-wrapper.me .message {
   background-color: var(--primary);
-  padding-bottom: 1em;
 }
 
 .chatroom-id-container {
@@ -169,6 +168,10 @@ html.light .message-wrapper.me {
   color: white;
 }
 
+/* .url-metadata {
+  padding: 0.5em 1em;
+} */
+
 .url-image img, .url-metadata {
   width: 100%;
 }
@@ -200,8 +203,16 @@ html.light .message-wrapper.me {
 
 .url-origin {
   font-family: var(--font-family-data);
+  padding-bottom: 1em;
+  text-align: right;
+  width: 100%;
 }
 
 .message:has(.url-metadata) .message-text {
+  padding: 0.5em 1em;
   display: none;
+}
+
+.url-placeholder {
+  padding: 0.5em 1em;
 }

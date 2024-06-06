@@ -1,7 +1,7 @@
 // src/utils/chatRoomUtils.ts
 import { Socket } from "socket.io-client";
 import { Message } from "../components/ChatRoom";
-import { useRef, KeyboardEvent } from "react";
+import { KeyboardEvent } from "react";
 
 export const sendMessage = (
   socket: Socket,

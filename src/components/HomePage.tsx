@@ -97,7 +97,7 @@ const HomePage: React.FC = () => {
       <div className="main-buttons-container">
         <button
           data-tooltip={content['tooltip-join']}
-          className={`tooltip join-chatroom-button bottom-left ${
+          className={`tooltip join-chatroom-button bottom-right ${
             name === "" ? "disabled" : ""
           }`}
           onClick={() => setIsJoiningChatroom(true)}
@@ -115,7 +115,7 @@ const HomePage: React.FC = () => {
         </span>
         <button
           data-tooltip={content['tooltip-create']}
-          className={`tooltip bottom-right ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
+          className={`tooltip bottom-left ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
           onClick={createChatroom}
         >
           <FontAwesomeIcon icon={faPlus} /> 

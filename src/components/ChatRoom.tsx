@@ -12,10 +12,12 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { getEnv } from "../utils/getEnv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faPaperPlane,
   faArrowLeft,
+  faArrowUp,
   faHashtag,
-  faLink
+  faLink,
+  faQrcode,
+  faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import "../css/chatroom.css";
 import NamePrompt from "./NamePrompt";
@@ -40,9 +42,13 @@ const ChatRoom: React.FC = () => {
   const initialName = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
-  const [tooltipText, setTooltipText] = useState(
+  const [urlTooltipText, setUrlTooltipText] = useState(
+    content["tooltip-copy-chatroom-url"]
+  );
+  const [idTooltipText, setIdTooltipText] = useState(
     content["tooltip-copy-chatroom-id"]
   );
+  const [qrCodeIsVisible, setQrCodeIsVisible] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
@@ -210,7 +216,7 @@ const ChatRoom: React.FC = () => {
   ]);
 
   useEffect(() => {
-    setTooltipText(content["tooltip-copy-chatroom-id"]);
+    setUrlTooltipText(content["tooltip-copy-chatroom-id"]);
   }, [content]);
 
   const sendMessage = () => {
@@ -255,11 +261,24 @@ const ChatRoom: React.FC = () => {
   const handleCopyChatroomUrl = () => {
     const chatroomUrl = `${window.location.origin}/chat-app/#/chatroom/${chatroomId}`;
     navigator.clipboard.writeText(chatroomUrl).then(() => {
-      setTooltipText(content["tooltip-url-copied"]);
+      setUrlTooltipText(content["tooltip-url-copied"]);
       setTimeout(() => {
-        setTooltipText(content["tooltip-copy-chatroom-url"]);
+        setUrlTooltipText(content["tooltip-copy-chatroom-url"]);
       }, 3000);
     });
+  };
+
+  const handleCopyChatroomId = () => {
+    navigator.clipboard.writeText(`${chatroomId}`).then(() => {
+      setIdTooltipText(content["tooltip-chatroom-id-copied"]);
+      setTimeout(() => {
+        setIdTooltipText(content["tooltip-copy-chatroom-id"]);
+      }, 3000);
+    });
+  };
+
+  const handleShowQrCode = () => {
+    setQrCodeIsVisible((prevState) => !prevState);
   };
 
   const handleNameSubmit = (submittedName: string) => {
@@ -287,7 +306,7 @@ const ChatRoom: React.FC = () => {
   };
 
   return (
-    <div>
+    <main className="chatroom">
       {isNamePromptVisible && <NamePrompt onSubmit={handleNameSubmit} />}
       <div
         className={`chatroom-container ${isNamePromptVisible ? "blur" : ""}`}
@@ -319,13 +338,28 @@ const ChatRoom: React.FC = () => {
               Exit
             </TranslationWrapper>
           </button>
-          <span className="copy-id" onClick={() => navigator.clipboard.writeText(`${chatroomId}`)}>
+          <span
+            data-tooltip={idTooltipText}
+            className="copy-id tooltip bottom"
+            onClick={handleCopyChatroomId}
+          >
             <FontAwesomeIcon icon={faHashtag} /> {chatroomId}
+          </span>
+          <span
+            data-tooltip={content["tooltip-show-qrcode"]}
+            className="show-qr-button small tooltip bottom-right"
+            style={{ fontFamily: "var(--font-family-data)",  }}
+            onClick={handleShowQrCode}
+          >
+            <FontAwesomeIcon icon={qrCodeIsVisible ? faTimes : faQrcode} />&nbsp;
+            <TranslationWrapper targetLanguage={preferredLanguage}>
+              {qrCodeIsVisible ? "Hide" : "Show"}
+            </TranslationWrapper>
           </span>
 
           <div className="chatroom-id-container">
             <data
-              data-tooltip={tooltipText}
+              data-tooltip={urlTooltipText}
               className="copy-chatroom-url tooltip bottom-left"
               onClick={handleCopyChatroomUrl}
             >
@@ -336,6 +370,11 @@ const ChatRoom: React.FC = () => {
             </data>
           </div>
         </div>
+        {qrCodeIsVisible && (
+          <div className="qr-code-modal">
+            <QRCodeMessage url={`${window.location.origin}/chat-app/#/chatroom/${chatroomId}`} />
+          </div>
+        )}
         <div className="conversation-container" ref={conversationContainerRef}>
           {messages.map((message, index) => (
             <div className="message-row" key={index}>
@@ -377,7 +416,8 @@ const ChatRoom: React.FC = () => {
               </div>
             </div>
           ))}
-
+        </div>
+        <div className="typing-indicator-container">
           {typingUser && (
             <div className="typing-notification">{typingUser} is typing...</div>
           )}
@@ -398,11 +438,11 @@ const ChatRoom: React.FC = () => {
             onClick={sendMessage}
             disabled={inputMessage === "" || isNamePromptVisible}
           >
-            <FontAwesomeIcon icon={faPaperPlane} />
+            <FontAwesomeIcon icon={faArrowUp} />
           </button>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

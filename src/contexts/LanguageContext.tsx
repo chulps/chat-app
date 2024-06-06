@@ -26,18 +26,16 @@ const defaultContent = {
   'placeholder-name': 'Your name',
   'enter-name': 'Enter your name to join the chat',
   'submit': 'Submit',
-  'placeholder-chatroom-id': 'Chatroom ID',
+  'tooltip-chatroom-id-copied': 'Chatroom ID copied to clipboard!',
   'tooltip-copy-chatroom-id': 'Copy the chatroom ID to share with your friends.',
   'tooltip-copy-url': 'Copy chatroom URL',
-  'tooltip-url-copied': 'Chatroom URL copied!',
+  'tooltip-url-copied': 'Chatroom URL copied to clipboard!',
   'tooltip-theme-light': 'Switch to light theme',
   'tooltip-theme-dark': 'Switch to dark theme',
   'tooltip-exit-chatroom': 'Exit the current chatroom',
   'tooltip-id-copied': 'Chatroom ID copied to clipboard',
   // Add more translations as needed
 };
-
-
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<string>(() => navigator.language);
@@ -47,12 +45,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const fetchContent = useCallback(async (language: string) => {
     const userLanguage = language.split("-")[0];
     if (!translationsFetched.current[userLanguage]) {
-      // Fetch translated content from your translation API
-      const response = await axios.post(`${translateUrl}/api/translate`, { text: JSON.stringify(content), targetLanguage: language});
-
-      const translatedContent = response.data.translatedText;
-      setContent(JSON.parse(translatedContent));
-      translationsFetched.current[userLanguage] = true;
+      try {
+        const response = await axios.post(`${translateUrl}/api/translate`, { text: JSON.stringify(content), targetLanguage: userLanguage });
+        const translatedContent = response.data.translatedText;
+        setContent(JSON.parse(translatedContent));
+        translationsFetched.current[userLanguage] = true;
+      } catch (error) {
+        console.error('Error fetching translations:', error);
+      }
     }
   }, [content]);
 

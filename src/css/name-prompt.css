@@ -10,14 +10,18 @@
     align-items: center;
     justify-content: center;
     z-index: 2;
+    backdrop-filter: blur(3px);
   }
   
   .name-prompt-container {
-    background: var(--background-color);
-    padding: var(--space-3);
     border-radius: 2em;
-    text-align: center;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin: 0 var(--space-3);
+    max-width: var(--space-7);
+    display: flex;
+    gap: var(--space2);
+    flex-direction: column;
   }
   
   .name-prompt-container h2 {
@@ -35,11 +39,5 @@
     border: none;
     cursor: pointer;
     width: 100%;
-  }
-  
-
-  
-  .chatroom-container.blur {
-    filter: blur(5px);
   }
   

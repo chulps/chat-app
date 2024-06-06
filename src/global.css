@@ -725,11 +725,12 @@ input:hover {
   top: calc(100% + var(--space-0));
   transition: opacity 0.3s ease-in-out;
   font-family: var(--font-family-data);
-  width:fit-content;
-  max-width: var(--space-7);
   text-align: left;
-  white-space: nowrap;
   z-index: 1;
+  white-space: wrap;
+  width: fit-content;
+  min-width: 20ch;
+  max-width: var(--space-6);
 }
 
 .tooltip:hover::after {
@@ -740,8 +741,9 @@ input:hover {
 
 .tooltip.bottom::after {
   top: calc(100% + var(--space-0));
-  right: unset;
-  left: unset;
+  right: 50%;
+  left: 50%;
+  transform: translate(-50%, 0);
   bottom: unset;
 }
 

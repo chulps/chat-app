@@ -5,6 +5,7 @@ import App from './App';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
 root.render(
   <React.StrictMode>
     <HashRouter>

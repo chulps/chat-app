@@ -6,9 +6,9 @@ header {
     padding: 0 0 var(--space-1) 0;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 576px) {
     header {
-        padding: var(--space-2) 0;
+        padding: var(--space-1) 0;
     }
 }
 

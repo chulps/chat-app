@@ -34,6 +34,7 @@ const defaultContent = {
   'tooltip-theme-dark': 'Switch to dark theme',
   'tooltip-exit-chatroom': 'Exit the current chatroom',
   'tooltip-id-copied': 'Chatroom ID copied to clipboard',
+  'tooltip-show-qrcode': 'Show QR code',
   // Add more translations as needed
 };
 

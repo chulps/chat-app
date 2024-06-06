@@ -49,6 +49,7 @@ const ChatRoom: React.FC = () => {
     content["tooltip-copy-chatroom-id"]
   );
   const [qrCodeIsVisible, setQrCodeIsVisible] = useState(false);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
@@ -263,7 +264,7 @@ const ChatRoom: React.FC = () => {
     navigator.clipboard.writeText(chatroomUrl).then(() => {
       setUrlTooltipText(content["tooltip-url-copied"]);
       setTimeout(() => {
-        setUrlTooltipText(content["tooltip-copy-chatroom-url"]);
+        setUrlTooltipText(content["tooltip-copy-url"]);
       }, 3000);
     });
   };
@@ -347,13 +348,13 @@ const ChatRoom: React.FC = () => {
           </span>
           <span
             data-tooltip={content["tooltip-show-qrcode"]}
-            className="show-qr-button small tooltip bottom-right"
+            className="show-qr-button small tooltip bottom"
             style={{ fontFamily: "var(--font-family-data)",  }}
             onClick={handleShowQrCode}
           >
             <FontAwesomeIcon icon={qrCodeIsVisible ? faTimes : faQrcode} />&nbsp;
             <TranslationWrapper targetLanguage={preferredLanguage}>
-              {qrCodeIsVisible ? "Hide" : "Show"}
+              QRCode
             </TranslationWrapper>
           </span>
 

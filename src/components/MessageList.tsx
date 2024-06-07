@@ -33,19 +33,16 @@ const MessageList: React.FC<MessageListProps> = ({
     const newFetchedUrls = new Set(fetchedUrls);
 
     for (const message of messages) {
-      if (message.type === "user") {
-        const urls = message.text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[^\s]+)/g);
-        if (urls) {
-          for (const url of urls) {
-            const formattedUrl = url.startsWith('http') ? url : `http://${url}`;
-            if (!newFetchedUrls.has(formattedUrl)) {
-              try {
-                const metadata = await getUrlMetadata(formattedUrl);
-                newMetadata[formattedUrl] = metadata;
-                newFetchedUrls.add(formattedUrl);
-              } catch (error) {
-                console.error(`Error fetching metadata for ${formattedUrl}:`, error);
-              }
+      const urls = message.text.match(/https?:\/\/[^\s]+/g);
+      if (urls) {
+        for (const url of urls) {
+          if (!newFetchedUrls.has(url)) {
+            try {
+              const metadata = await getUrlMetadata(url);
+              newMetadata[url] = metadata;
+              newFetchedUrls.add(url);
+            } catch (error) {
+              console.error(`Error fetching metadata for ${url}:`, error);
             }
           }
         }
@@ -62,6 +59,52 @@ const MessageList: React.FC<MessageListProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
+
+  const renderMessageContent = (message: Message) => {
+    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
+    const urls = message.text.match(/https?:\/\/[^\s]+/g);
+    const emails = message.text.match(emailRegex);
+    let parts = message.text.split(emailRegex);
+
+    if (!urls && !emails) {
+      return <TranslationWrapper targetLanguage={preferredLanguage}>{message.text}</TranslationWrapper>;
+    }
+
+    return parts.map((part, index) => {
+      if (emails && emails.includes(part)) {
+        return (
+          <a key={index} href={`mailto:${part}`} target="_blank" rel="noopener noreferrer" className="email-link">
+            {part}
+          </a>
+        );
+      } else if (urls && urls.includes(part)) {
+        return (
+          <div key={index} className="url-metadata">
+            <a href={part} target="_blank" rel="noopener noreferrer">
+              {urlMetadata[part] ? (
+                <>
+                  <div className="url-image">
+                    <img src={urlMetadata[part].image} alt={urlMetadata[part].title} />
+                  </div>
+                  <div className="url-title">{urlMetadata[part].title}</div>
+                  <div className="url-description">{urlMetadata[part].description}</div>
+                  <small className="url-origin">{new URL(urlMetadata[part].url).origin}</small>
+                </>
+              ) : (
+                <div className="url-placeholder">
+                  <TranslationWrapper targetLanguage={preferredLanguage}>
+                    Loading...
+                  </TranslationWrapper>
+                </div>
+              )}
+            </a>
+          </div>
+        );
+      } else {
+        return <span key={index}>{part}</span>;
+      }
+    });
+  };
 
   return (
     <div className="conversation-container" ref={conversationContainerRef}>
@@ -91,44 +134,8 @@ const MessageList: React.FC<MessageListProps> = ({
               ) : (
                 <>
                   <div className="message-text">
-                    <TranslationWrapper targetLanguage={preferredLanguage}>
-                      {message.text}
-                    </TranslationWrapper>
+                    {renderMessageContent(message)}
                   </div>
-                  {message.text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[^\s]+)/g)?.map((url) => {
-                    const formattedUrl = url.startsWith('http') ? url : `http://${url}`;
-                    return (
-                      <div key={formattedUrl} className="url-metadata">
-                        <a href={formattedUrl} target="_blank" rel="noopener noreferrer">
-                          {urlMetadata[formattedUrl] ? (
-                            <>
-                              <div className="url-image">
-                                <img
-                                  src={urlMetadata[formattedUrl].image}
-                                  alt={urlMetadata[formattedUrl].title}
-                                />
-                              </div>
-                              <div className="url-title">
-                                {urlMetadata[formattedUrl].title}
-                              </div>
-                              <div className="url-description">
-                                {urlMetadata[formattedUrl].description}
-                              </div>
-                              <small className="url-origin">
-                                {new URL(urlMetadata[formattedUrl].url).origin}
-                              </small>
-                            </>
-                          ) : (
-                            <div className="url-placeholder">
-                              <TranslationWrapper targetLanguage={preferredLanguage}>
-                                Loading...
-                              </TranslationWrapper>
-                            </div>
-                          )}
-                        </a>
-                      </div>
-                    );
-                  })}
                 </>
               )}
             </div>

@@ -217,3 +217,7 @@ html.light .message-wrapper.me {
 .url-placeholder {
   padding: 0.5em 1em;
 }
+
+.email-link {
+  text-decoration: underline;
+}

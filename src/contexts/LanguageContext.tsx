@@ -48,6 +48,14 @@ export const defaultContent = {
   'URL': 'URL',
   'chat-joined': 'has joined the chat',
   'chat-left': 'has left the chat',
+  'language': 'Language',
+  'select-language': 'Select your preferred language from the menu.',
+  'search-language': 'Search language...',
+  'searchbar-tip': 'Hold "Shift" + "Backspaace" to clear',
+  'clear-button-text': 'Clear',
+
+  
+
   // Add more translations as needed
 };
 
@@ -93,3 +101,4 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     </LanguageContext.Provider>
   );
 };
+

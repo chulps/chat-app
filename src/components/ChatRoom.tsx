@@ -189,7 +189,7 @@ const ChatRoom: React.FC = () => {
           handleShowQrCode={handleShowQrCode}
           handleLeaveRoom={() => {
             socket.emit("sendSystemMessage", {
-              text: `${name} has left the chat.`,
+              text: `${name} ${content['chat-left']}.`,
               chatroomId,
               type: "system",
               timestamp: new Date().toLocaleTimeString(navigator.language, {

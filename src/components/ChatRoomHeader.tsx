@@ -1,7 +1,12 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faHashtag, faLink, faQrcode, faTimes } from "@fortawesome/free-solid-svg-icons";
-import TranslationWrapper from "./TranslationWrapper";
+import {
+  faArrowLeft,
+  faHashtag,
+  faLink,
+  faQrcode,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface ChatRoomHeaderProps {
   chatroomId: string;
@@ -28,7 +33,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   handleCopyChatroomUrl,
   handleCopyChatroomId,
   handleShowQrCode,
-  handleLeaveRoom
+  handleLeaveRoom,
 }) => {
   return (
     <div className="chatroom-header">
@@ -39,9 +44,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
         onClick={handleLeaveRoom}
       >
         <FontAwesomeIcon icon={faArrowLeft} />
-        <TranslationWrapper targetLanguage={preferredLanguage}>
-          Exit
-        </TranslationWrapper>
+        &nbsp;{content["exit"]}
       </button>
       <span
         data-tooltip={idTooltipText}
@@ -57,9 +60,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
       >
         <FontAwesomeIcon icon={qrCodeIsVisible ? faTimes : faQrcode} />
         &nbsp;
-        <TranslationWrapper targetLanguage={preferredLanguage}>
-          QR Code
-        </TranslationWrapper>
+        {content["QRCode"]}
       </span>
       <div className="chatroom-id-container">
         <data
@@ -69,9 +70,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
         >
           <FontAwesomeIcon icon={faLink} />
           &nbsp;
-          <TranslationWrapper targetLanguage={preferredLanguage}>
-            URL
-          </TranslationWrapper>
+            {content['URL']}
         </data>
       </div>
     </div>

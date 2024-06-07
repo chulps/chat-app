@@ -3,8 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import "../css/homepage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faArrowRightToBracket, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import TranslationWrapper from "./TranslationWrapper";
+import {
+  faPlus,
+  faArrowRightToBracket,
+  faArrowRight,
+} from "@fortawesome/free-solid-svg-icons";
 
 const HomePage: React.FC = () => {
   const [name, setName] = useState("");
@@ -50,78 +53,48 @@ const HomePage: React.FC = () => {
     }
   };
 
-  console.log(content['placeholder-name'])
-
+  console.log(content["placeholder-name"]);
 
   return (
     <div className="homepage-content">
       <div>
-        <label>
-          <TranslationWrapper targetLanguage={language}>
-            About this app...
-          </TranslationWrapper>
-        </label>
+        <label>{content["about-this-app"]}</label>
         <h1>
           <span>T</span>-Chat
         </h1>
-        <p>
-          <TranslationWrapper targetLanguage={language}>
-            "T" is for 
-            </TranslationWrapper>
-            <span className="italic">
-              <TranslationWrapper targetLanguage={language}>
-                "Translation"
-              </TranslationWrapper>
-            </span>
-            
-            <TranslationWrapper targetLanguage={language}>
-            . Chat with
-            anyone anywhere without any language barriers. Enter your name and
-            then either create a chatroom or join one using the Chatroom ID. Be
-            safe, and have fun!
-          </TranslationWrapper>
-        </p>
+        <p>{content["app-description"]}</p>
       </div>
       <div>
-        <TranslationWrapper targetLanguage={language}>
-        <label>{content['placeholder-name']}</label>
-        </TranslationWrapper>
+        <label>{content["placeholder-name"]}</label>
         <input
           className="name-input"
           type="text"
-          placeholder={content['placeholder-name']}
+          placeholder={content["placeholder-name"]}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="main-buttons-container">
         <button
-          data-tooltip={content['tooltip-join']}
+          data-tooltip={content["tooltip-join"]}
           className={`tooltip join-chatroom-button bottom-right ${
             name === "" ? "disabled" : ""
           }`}
           onClick={() => setIsJoiningChatroom(true)}
           disabled={name === ""}
         >
-          <TranslationWrapper targetLanguage={language}>
-            Join
-          </TranslationWrapper>
+          {content["join"]}&nbsp;
           <FontAwesomeIcon icon={faArrowRightToBracket} /> 
         </button>
-        <span className="italic">
-          <TranslationWrapper targetLanguage={language}>
-            - or -
-          </TranslationWrapper>
-        </span>
+        <span className="italic">- {content["or"]} -</span>
         <button
-          data-tooltip={content['tooltip-create']}
-          className={`tooltip bottom-left ${name === "" || chatroomId !== "" ? "disabled" : ""}`}
+          data-tooltip={content["tooltip-create"]}
+          className={`tooltip bottom-left ${
+            name === "" || chatroomId !== "" ? "disabled" : ""
+          }`}
           onClick={createChatroom}
         >
-          <FontAwesomeIcon icon={faPlus} /> 
-          <TranslationWrapper targetLanguage={language}>
-            Create
-          </TranslationWrapper>
+          <FontAwesomeIcon icon={faPlus} />  &nbsp;{content["create"]}
         </button>
       </div>
 
@@ -129,11 +102,7 @@ const HomePage: React.FC = () => {
         <div className="home-bottom-content">
           <div className="or-container">
             <hr />
-            <span>
-              <TranslationWrapper targetLanguage={language}>
-                Enter Chatroom ID
-              </TranslationWrapper>
-            </span>
+            <span>{content["enter-chatroom-id"]}</span>
             <hr />
           </div>
 
@@ -141,7 +110,7 @@ const HomePage: React.FC = () => {
             <input
               className="chatroom-id-input"
               type="text"
-              placeholder={content['placeholder-chatroom-id']}
+              placeholder={content["placeholder-chatroom-id"]}
               value={chatroomId}
               onChange={(e) => setChatroomId(e.target.value)}
             />
@@ -152,9 +121,7 @@ const HomePage: React.FC = () => {
               onClick={joinChatroom}
               disabled={!isChatroomIdValid}
             >
-              <TranslationWrapper targetLanguage={language}>
-                Continue
-              </TranslationWrapper>
+              {content["continue"]}&nbsp;
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
           </div>

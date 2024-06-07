@@ -2,6 +2,8 @@
 import { Socket } from "socket.io-client";
 import { Message } from "../components/ChatRoom";
 import { KeyboardEvent } from "react";
+import { defaultContent } from '../contexts/LanguageContext';
+
 
 export const sendMessage = (
   socket: Socket,
@@ -82,7 +84,7 @@ export const handleNameSubmit = (
 
   // Emit system message for new user
   socket.emit("sendSystemMessage", {
-    text: `${submittedName} has joined the chat.`,
+    text: `${submittedName} ${defaultContent["chat-joined"]}`,
     chatroomId,
     type: "system",
     timestamp: new Date().toLocaleTimeString(navigator.language, {

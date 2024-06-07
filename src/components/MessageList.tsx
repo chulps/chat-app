@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
@@ -33,16 +33,20 @@ const MessageList: React.FC<MessageListProps> = ({
     const newFetchedUrls = new Set(fetchedUrls);
 
     for (const message of messages) {
-      const urls = message.text.match(/https?:\/\/[^\s]+/g);
-      if (urls) {
-        for (const url of urls) {
-          if (!newFetchedUrls.has(url)) {
-            try {
-              const metadata = await getUrlMetadata(url);
-              newMetadata[url] = metadata;
-              newFetchedUrls.add(url);
-            } catch (error) {
-              console.error(`Error fetching metadata for ${url}:`, error);
+      if (message.type === "user") {
+        const urls = message.text.match(
+          /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
+        );
+        if (urls) {
+          for (const url of urls) {
+            if (!newFetchedUrls.has(url)) {
+              try {
+                const metadata = await getUrlMetadata(url);
+                newMetadata[url] = metadata;
+                newFetchedUrls.add(url);
+              } catch (error) {
+                console.error(`Error fetching metadata for ${url}:`, error);
+              }
             }
           }
         }
@@ -60,51 +64,113 @@ const MessageList: React.FC<MessageListProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
-  const renderMessageContent = (message: Message) => {
-    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
-    const urls = message.text.match(/https?:\/\/[^\s]+/g);
-    const emails = message.text.match(emailRegex);
-    let parts = message.text.split(emailRegex);
+  const renderTextWithLinks = useCallback(
+    (text: string) => {
+      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+      const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;
 
-    if (!urls && !emails) {
-      return <TranslationWrapper targetLanguage={preferredLanguage}>{message.text}</TranslationWrapper>;
-    }
-
+      const parts = text.split(/(${emailRegex.source})|(${urlRegex.source})/g);
     return parts.map((part, index) => {
-      if (emails && emails.includes(part)) {
-        return (
-          <a key={index} href={`mailto:${part}`} target="_blank" rel="noopener noreferrer" className="email-link">
-            {part}
-          </a>
-        );
-      } else if (urls && urls.includes(part)) {
-        return (
-          <div key={index} className="url-metadata">
-            <a href={part} target="_blank" rel="noopener noreferrer">
-              {urlMetadata[part] ? (
-                <>
-                  <div className="url-image">
-                    <img src={urlMetadata[part].image} alt={urlMetadata[part].title} />
-                  </div>
-                  <div className="url-title">{urlMetadata[part].title}</div>
-                  <div className="url-description">{urlMetadata[part].description}</div>
-                  <small className="url-origin">{new URL(urlMetadata[part].url).origin}</small>
-                </>
-              ) : (
-                <div className="url-placeholder">
-                  <TranslationWrapper targetLanguage={preferredLanguage}>
-                    Loading...
-                  </TranslationWrapper>
-                </div>
-              )}
+      if (part) {
+        if (part.match(emailRegex)) {
+          return (
+            <a
+              key={index}
+              target="_blank"
+              rel="noreferrer"
+              href={`mailto:${part}`}
+              className="email-link"
+            >
+              {part}
             </a>
-          </div>
-        );
-      } else {
-        return <span key={index}>{part}</span>;
+          );
+        } else if (part.match(urlRegex)) {
+          return (
+            <a
+              key={index}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="url-link"
+            >
+              {part}
+            </a>
+          );
+        } else {
+          return <span key={index}>{part}</span>;
+        }
       }
+      return null;
     });
-  };
+    },
+    []
+  );
+
+  const renderMessageContent = useCallback(
+    (message: Message) => {
+      const isEmail = message.text.match(
+        /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
+      );
+      const isUrl = message.text.match(
+        /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
+      );
+
+      if (message.type === "qr") {
+        return <QRCodeMessage url={message.text} />;
+      }
+
+      if (isEmail) {
+        return renderTextWithLinks(message.text);
+      }
+
+      if (isUrl) {
+        return (
+          <>
+            <div className="message-text">{renderTextWithLinks(message.text)}</div>
+            {isUrl.map((url) => (
+              <div key={url} className="url-metadata">
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  {urlMetadata[url] ? (
+                    <>
+                      <div className="url-image">
+                        <img
+                          src={urlMetadata[url].image}
+                          alt={urlMetadata[url].title}
+                        />
+                      </div>
+                      <div className="url-title">{urlMetadata[url].title}</div>
+                      <div className="url-description">
+                        {urlMetadata[url].description}
+                      </div>
+                      <small className="url-origin">
+                        {new URL(urlMetadata[url].url).origin}
+                      </small>
+                    </>
+                  ) : (
+                    <div className="url-placeholder">Loading...</div>
+                  )}
+                </a>
+              </div>
+            ))}
+          </>
+        );
+      }
+
+      return (
+        <span className="message-text">
+          <TranslationWrapper targetLanguage={preferredLanguage}>
+            {message.text}
+          </TranslationWrapper>
+        </span>
+      );
+    },
+    [preferredLanguage, renderTextWithLinks, urlMetadata]
+  );
+
+  const memoizedRenderMessageContent = useMemo(
+    () => renderMessageContent,
+    [renderMessageContent]
+  );
 
   return (
     <div className="conversation-container" ref={conversationContainerRef}>
@@ -129,15 +195,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   : ""
               }`}
             >
-              {message.type === "qr" ? (
-                <QRCodeMessage url={message.text} />
-              ) : (
-                <>
-                  <div className="message-text">
-                    {renderMessageContent(message)}
-                  </div>
-                </>
-              )}
+              {memoizedRenderMessageContent(message)}
             </div>
             {message.type !== "system" && message.type !== "qr" && (
               <small

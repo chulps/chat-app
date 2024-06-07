@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { getEnv } from '../utils/getEnv';
 
@@ -20,7 +20,7 @@ export const useLanguage = (): LanguageContextProps => {
   return context;
 };
 
-const defaultContent = {
+export const defaultContent = {
   'tooltip-create': 'Create a chatroom and invite your friends to chat with them.',
   'tooltip-join': 'Join an existing chatroom using a Chatroom ID.',
   'placeholder-name': 'Your name',
@@ -36,34 +36,59 @@ const defaultContent = {
   'tooltip-id-copied': 'Chatroom ID copied to clipboard',
   'tooltip-show-qrcode': 'Show QR code',
   'loading': 'Loading...',
+  'join': 'Join',
+  'create': 'Create',
+  'or': 'or',
+  'app-description': '"T" is for "Translation". Chat with anyone anywhere without any language barriers. Enter your name and then either create a chatroom or join one using the Chatroom ID. Be safe, and have fun!',
+  'about-this-app': 'About this app',
+  'enter-chatroom-id': 'Enter Chatroom ID',
+  'continue': 'Continue',
+  'exit': 'Exit',
+  'QRCode': 'QR Code',
+  'URL': 'URL',
+  'chat-joined': 'has joined the chat',
+  'chat-left': 'has left the chat',
   // Add more translations as needed
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<string>(() => navigator.language);
   const [content, setContent] = useState<{ [key: string]: string }>(defaultContent);
-  const translationsFetched = useRef<{ [key: string]: boolean }>({});
+  const memoizedTranslations = useRef<{ [key: string]: { [key: string]: string } }>({});
 
   const fetchContent = useCallback(async (language: string) => {
     const userLanguage = language.split("-")[0];
-    if (!translationsFetched.current[userLanguage]) {
-      try {
-        const response = await axios.post(`${translateUrl}/api/translate`, { text: JSON.stringify(content), targetLanguage: userLanguage });
-        const translatedContent = response.data.translatedText;
-        setContent(JSON.parse(translatedContent));
-        translationsFetched.current[userLanguage] = true;
-      } catch (error) {
-        console.error('Error fetching translations:', error);
-      }
+    
+    // Skip translation if the language is English
+    if (userLanguage === 'en') {
+      setContent(defaultContent);
+      return;
     }
-  }, [content]);
+
+    // Use memoized translations if available
+    if (memoizedTranslations.current[userLanguage]) {
+      setContent(memoizedTranslations.current[userLanguage]);
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${translateUrl}/api/translate`, { text: JSON.stringify(defaultContent), targetLanguage: userLanguage });
+      const translatedContent = JSON.parse(response.data.translatedText);
+      memoizedTranslations.current[userLanguage] = translatedContent;
+      setContent(translatedContent);
+    } catch (error) {
+      console.error('Error fetching translations:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchContent(language);
   }, [language, fetchContent]);
 
+  const value = useMemo(() => ({ language, setLanguage, content }), [language, content]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, content }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

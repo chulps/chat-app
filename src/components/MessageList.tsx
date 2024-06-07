@@ -33,17 +33,18 @@ const MessageList: React.FC<MessageListProps> = ({
     const newFetchedUrls = new Set(fetchedUrls);
 
     for (const message of messages) {
-      if (message.type === "user" && message.text.includes("http")) {
-        const urls = message.text.match(/https?:\/\/[^\s]+/g);
+      if (message.type === "user") {
+        const urls = message.text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[^\s]+)/g);
         if (urls) {
           for (const url of urls) {
-            if (!newFetchedUrls.has(url)) {
+            const formattedUrl = url.startsWith('http') ? url : `http://${url}`;
+            if (!newFetchedUrls.has(formattedUrl)) {
               try {
-                const metadata = await getUrlMetadata(url);
-                newMetadata[url] = metadata;
-                newFetchedUrls.add(url);
+                const metadata = await getUrlMetadata(formattedUrl);
+                newMetadata[formattedUrl] = metadata;
+                newFetchedUrls.add(formattedUrl);
               } catch (error) {
-                console.error(`Error fetching metadata for ${url}:`, error);
+                console.error(`Error fetching metadata for ${formattedUrl}:`, error);
               }
             }
           }
@@ -94,26 +95,27 @@ const MessageList: React.FC<MessageListProps> = ({
                       {message.text}
                     </TranslationWrapper>
                   </div>
-                  {message.text.includes("http") &&
-                    message.text.match(/https?:\/\/[^\s]+/g)?.map((url) => (
-                      <div key={url} className="url-metadata">
-                        <a href={url} target="_blank" rel="noopener noreferrer">
-                          {urlMetadata[url] ? (
+                  {message.text.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[^\s]+)/g)?.map((url) => {
+                    const formattedUrl = url.startsWith('http') ? url : `http://${url}`;
+                    return (
+                      <div key={formattedUrl} className="url-metadata">
+                        <a href={formattedUrl} target="_blank" rel="noopener noreferrer">
+                          {urlMetadata[formattedUrl] ? (
                             <>
                               <div className="url-image">
                                 <img
-                                  src={urlMetadata[url].image}
-                                  alt={urlMetadata[url].title}
+                                  src={urlMetadata[formattedUrl].image}
+                                  alt={urlMetadata[formattedUrl].title}
                                 />
                               </div>
                               <div className="url-title">
-                                {urlMetadata[url].title}
+                                {urlMetadata[formattedUrl].title}
                               </div>
                               <div className="url-description">
-                                {urlMetadata[url].description}
+                                {urlMetadata[formattedUrl].description}
                               </div>
                               <small className="url-origin">
-                                {new URL(urlMetadata[url].url).origin}
+                                {new URL(urlMetadata[formattedUrl].url).origin}
                               </small>
                             </>
                           ) : (
@@ -125,7 +127,8 @@ const MessageList: React.FC<MessageListProps> = ({
                           )}
                         </a>
                       </div>
-                    ))}
+                    );
+                  })}
                 </>
               )}
             </div>

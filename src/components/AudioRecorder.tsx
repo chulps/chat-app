@@ -1,11 +1,12 @@
 import React, { useRef } from "react";
-// import fontawesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
+import WaveComponent from "./WaveComponent";
+
 interface AudioRecorderProps {
   isRecording: boolean;
   setIsRecording: React.Dispatch<React.SetStateAction<boolean>>;
-  onStopRecording: (blob: Blob) => void; // Add this prop
+  onStopRecording: (blob: Blob) => void;
 }
 
 const AudioRecorder: React.FC<AudioRecorderProps> = ({
@@ -16,6 +17,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const startRecording = () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("getUserMedia is not supported in this browser");
+      alert("Your browser does not support audio recording. Please use a modern browser.");
+      return;
+    }
+
     setIsRecording(true);
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
       const mediaRecorder = new MediaRecorder(stream);
@@ -32,6 +39,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         setIsRecording(false);
         mediaRecorderRef.current = null;
       };
+    }).catch((error) => {
+      console.error("Error accessing microphone:", error);
+      alert("Failed to access microphone. Please check your browser settings.");
+      setIsRecording(false);
     });
   };
 
@@ -46,9 +57,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
       <button
         className="secondary"
         style={{
-          color: isRecording
-          ? "var(--white)"
-          : "var(--danger-400)",
+          color: "var(--danger-400",
           padding: "1em 1.25em",
           backgroundColor: isRecording
             ? "var(--danger-500)"
@@ -56,8 +65,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         }}
         onClick={isRecording ? stopRecording : startRecording}
       >
-
-          <span className={isRecording ? 'blink' : ''}><FontAwesomeIcon icon={faMicrophone} /></span>
+        {isRecording ? (
+          <WaveComponent />
+        ) : (
+          <FontAwesomeIcon icon={faMicrophone} />
+        )}
       </button>
     </div>
   );

@@ -248,6 +248,7 @@ html.light .message-wrapper.me {
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(3px);
+  padding: var(--space-3);
 }
 
 .transcription-modal-content {

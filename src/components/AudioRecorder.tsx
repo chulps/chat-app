@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
-import WaveComponent from "./WaveComponent";
 
 interface AudioRecorderProps {
   isRecording: boolean;
@@ -25,7 +24,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
 
     setIsRecording(true);
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
+      const mimeType = MediaRecorder.isTypeSupported('audio/m4a') ? 'audio/m4a' : 'audio/mp4';
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
 

@@ -55,9 +55,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   return (
     <div className="audio-recorder">
       <button
-        className="secondary"
+        className={`secondary ${isRecording ? "blink" : ""}`}
         style={{
-          color: "var(--danger-400",
+          color: isRecording ? "white" : "var(--danger-400)",
           padding: "1em 1.25em",
           backgroundColor: isRecording
             ? "var(--danger-500)"
@@ -65,11 +65,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         }}
         onClick={isRecording ? stopRecording : startRecording}
       >
-        {isRecording ? (
-          <WaveComponent />
-        ) : (
           <FontAwesomeIcon icon={faMicrophone} />
-        )}
       </button>
     </div>
   );

@@ -294,10 +294,13 @@ html.light .message-wrapper.me {
   padding: 1em 2em;
   background-color: inherit;
   color: var(--secondary);
-  font-size: 1.2em;
+  font-size: var(--font-size-small);
   border-radius: 0.5em;
   z-index: 1000;
   flex-direction: column;
   gap: var(--space-1);
 }
 
+.audio-recorder {
+  margin-right: 1.5px;
+}

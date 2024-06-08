@@ -282,7 +282,7 @@ const ChatRoom: React.FC = () => {
         {isLoading && (
           <div className="loading">
             <WaveComponent />
-            <small className="font-family-data blink">Processing audio...</small>
+            <small className="font-family-data blink">Processing...</small>
           </div>
         )}
         <MessageInput

@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
-import WaveComponent from "./WaveComponent";
 
 interface AudioRecorderProps {
   isRecording: boolean;
@@ -19,31 +18,38 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   const startRecording = () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.error("getUserMedia is not supported in this browser");
-      alert("Your browser does not support audio recording. Please use a modern browser.");
+      alert(
+        "Your browser does not support audio recording. Please use a modern browser."
+      );
       return;
     }
 
     setIsRecording(true);
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start();
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        mediaRecorder.start();
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          onStopRecording(event.data);
-        }
-      };
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            onStopRecording(event.data);
+          }
+        };
 
-      mediaRecorder.onstop = () => {
+        mediaRecorder.onstop = () => {
+          setIsRecording(false);
+          mediaRecorderRef.current = null;
+        };
+      })
+      .catch((error) => {
+        console.error("Error accessing microphone:", error);
+        alert(
+          "Failed to access microphone. Please check your browser settings."
+        );
         setIsRecording(false);
-        mediaRecorderRef.current = null;
-      };
-    }).catch((error) => {
-      console.error("Error accessing microphone:", error);
-      alert("Failed to access microphone. Please check your browser settings.");
-      setIsRecording(false);
-    });
+      });
   };
 
   const stopRecording = () => {
@@ -55,7 +61,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
   return (
     <div className="audio-recorder">
       <button
-        className={`secondary ${isRecording ? "blink" : ""}`}
+        className="secondary"
         style={{
           color: isRecording ? "white" : "var(--danger-400)",
           padding: "1em 1.25em",
@@ -65,7 +71,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         }}
         onClick={isRecording ? stopRecording : startRecording}
       >
+        <span className={`${isRecording ? "blink" : ""}`}>
           <FontAwesomeIcon icon={faMicrophone} />
+        </span>
       </button>
     </div>
   );

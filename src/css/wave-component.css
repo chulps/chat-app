@@ -1,7 +1,6 @@
 #wave {
     stroke-dasharray: 101 190;
     animation: moveTheWaveAndDash 2000ms linear infinite;
-    filter: drop-shadow(0 0 3px var(--blue500));
   }
   
   @keyframes moveTheWaveAndDash {

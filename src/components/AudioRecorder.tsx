@@ -2,7 +2,6 @@ import React, { useRef } from "react";
 // import fontawesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
-import WaveComponent from "./WaveComponent";
 interface AudioRecorderProps {
   isRecording: boolean;
   setIsRecording: React.Dispatch<React.SetStateAction<boolean>>;
@@ -47,7 +46,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
       <button
         className="secondary"
         style={{
-          color: "var(--danger-400",
+          color: isRecording
+          ? "var(--white)"
+          : "var(--danger-400)",
           padding: "1em 1.25em",
           backgroundColor: isRecording
             ? "var(--danger-500)"
@@ -55,11 +56,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         }}
         onClick={isRecording ? stopRecording : startRecording}
       >
-        {isRecording ? (
-          <WaveComponent />
-        ) : (
-          <FontAwesomeIcon icon={faMicrophone} />
-        )}
+
+          <span className={isRecording ? 'blink' : ''}><FontAwesomeIcon icon={faMicrophone} /></span>
       </button>
     </div>
   );

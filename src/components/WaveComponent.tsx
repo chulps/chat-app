@@ -32,9 +32,9 @@ const WaveComponent: React.FC = () => {
   }, []);
 
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="red" overflow="visible" viewBox="0 0 64.039 17" width="64px">
+    <svg xmlns="http://www.w3.org/2000/svg" overflow="visible" viewBox="0 0 64.039 17" width="32px">
       <g transform="translate(0, -18) scale(0.9)" overflow="visible">
-        <path id="wave" fill="none" stroke="var(--white)" strokeWidth="4" strokeLinecap="round"></path>
+        <path id="wave" fill="none" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round"></path>
       </g>
     </svg>
   );

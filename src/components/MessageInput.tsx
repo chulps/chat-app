@@ -7,10 +7,10 @@ import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 interface MessageInputProps {
   inputMessage: string;
   setInputMessage: React.Dispatch<React.SetStateAction<string>>;
-  sendMessage: () => void;
+  sendMessage: (messageText?: string) => void;
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   isNamePromptVisible: boolean;
-  onStopRecording: (blob: Blob) => void; // Add this prop
+  onStopRecording: (blob: Blob) => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -35,7 +35,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
       />
       <div className="message-input-buttons">
         {inputMessage && (
-          <button onClick={sendMessage} disabled={isNamePromptVisible}>
+          <button style={{padding: '1em 1.25em'}} onClick={() => sendMessage()} disabled={isNamePromptVisible}>
             <FontAwesomeIcon icon={faArrowUp} />
           </button>
         )}

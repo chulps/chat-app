@@ -57,6 +57,9 @@ export const defaultContent = {
   'user-away': 'is away',
   'user-connected': 'has connected',
   'user-returned': 'has returned',
+  'cancel': 'Cancel',
+  'send': 'Send',
+
   // Add more translations as needed
 };
 

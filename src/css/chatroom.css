@@ -47,7 +47,6 @@
 .message-input-buttons {
   position: absolute;
   right: 0;
-  padding-inline-end: 2px;
 }
 
 .message-send-button {
@@ -237,3 +236,68 @@ html.light .message-wrapper.me {
   text-decoration: underline;
   padding: 0.5em 1em;
 }
+
+.transcription-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(3px);
+}
+
+.transcription-modal-content {
+  background: transparent;
+  border-radius: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: var(--space-6);
+  max-width: calc(var(--space-5) + var(--space-6));
+  width: 100%;
+}
+
+.transcription-modal textarea {
+  width: 100%;
+  height: var(--space-5);
+  resize: none;
+  background: transparent;
+  color: white;
+  border: none;
+  overflow-y: auto;
+  font-family: var(--font-family-default);
+  font-size: var(--font-size-default);
+}
+
+.transcription-modal textarea:focus {
+  outline: none;
+}
+
+.transcription-modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--dark);
+  padding-top: var(--space-2);
+}
+
+.loading {
+
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em 2em;
+  background-color: inherit;
+  color: var(--secondary);
+  font-size: 1.2em;
+  border-radius: 0.5em;
+  z-index: 1000;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
@@ -32,42 +32,37 @@ const MessageList: React.FC<MessageListProps> = ({
     const newMetadata: { [url: string]: any } = {};
     const newFetchedUrls = new Set(fetchedUrls);
 
-    const fetchUrls = async (urls: string[]) => {
-      for (const url of urls) {
-        if (!newFetchedUrls.has(url)) {
-          try {
-            const metadata = await getUrlMetadata(url);
-            newMetadata[url] = metadata;
-            newFetchedUrls.add(url);
-          } catch (error) {
-            console.error(`Error fetching metadata for ${url}:`, error);
-          }
-        }
-      }
-    };
-
-    const urlsToFetch: string[] = [];
     for (const message of messages) {
       if (message.type === "user") {
-        const urls = message.text.match(
+        const urls = message.text?.match(
           /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
         );
         if (urls) {
-          urlsToFetch.push(...urls);
+          for (const url of urls) {
+            if (!newFetchedUrls.has(url)) {
+              try {
+                const metadata = await getUrlMetadata(url);
+                newMetadata[url] = metadata;
+                newFetchedUrls.add(url);
+              } catch (error) {
+                console.error(`Error fetching metadata for ${url}:`, error);
+              }
+            }
+          }
         }
       }
     }
 
-    if (urlsToFetch.length > 0) {
-      await fetchUrls(urlsToFetch);
-      setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
-      setFetchedUrls(newFetchedUrls);
-    }
+    setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
+    setFetchedUrls(newFetchedUrls);
   }, [messages, fetchedUrls]);
 
   useEffect(() => {
-    fetchMetadata();
-  }, [fetchMetadata]);
+    if (messages.length > 0) {
+      fetchMetadata();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   const renderTextWithLinks = useCallback(
     (text: string) => {
@@ -113,10 +108,10 @@ const MessageList: React.FC<MessageListProps> = ({
 
   const renderMessageContent = useCallback(
     (message: Message) => {
-      const isEmail = message.text.match(
+      const isEmail = message.text?.match(
         /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
       );
-      const isUrl = message.text.match(
+      const isUrl = message.text?.match(
         /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
       );
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import axios from "axios";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import ChatRoomHeader from "./ChatRoomHeader";
@@ -7,6 +8,7 @@ import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
 import QRCodeModal from "./QRCodeModal";
 import NamePrompt from "./NamePrompt";
+import AudioRecorder from "./AudioRecorder"; // Import the AudioRecorder component
 import { useLanguage } from "../contexts/LanguageContext";
 import { getEnv } from "../utils/getEnv";
 import {
@@ -20,9 +22,10 @@ import {
   handleCopy,
   handleNameSubmit,
 } from "../utils/chatRoomUtils";
+import { translateText } from "../utils/translate"; // Import the translateText function
 import "../css/chatroom.css";
 
-const { socketUrl } = getEnv();
+const { socketUrl, transcribeApiUrl } = getEnv();
 
 const socket = socketIOClient(socketUrl);
 
@@ -179,6 +182,44 @@ const ChatRoom: React.FC = () => {
     setQrCodeIsVisible((prevState) => !prevState);
   };
 
+  const handleStopRecording = async (blob: Blob) => {
+    const formData = new FormData();
+    formData.append('file', blob, 'audio.wav');
+
+    try {
+      // const response = await axios.post(`${transcribeApiUrl}/api/transcribe`, formData, {
+        const response = await axios.post('http://localhost:3001/api/transcribe', formData, {
+          headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('Transcription response:', response.data);
+
+      const { transcription } = response.data;
+
+      // Translate the transcription
+      const translatedText = await translateText(transcription, preferredLanguage);
+
+      // Send the transcribed message via socket
+      const message: Message = {
+        sender: name,
+        text: translatedText,
+        language: preferredLanguage,
+        chatroomId: chatroomId || "",
+        timestamp: new Date().toLocaleTimeString(navigator.language, {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+        type: "user",
+      };
+      socket.emit("sendMessage", message);
+    } catch (error) {
+      console.error('Error during transcription or translation:', error);
+    }
+  };
+
   return (
     <main className="chatroom">
       {isNamePromptVisible && (
@@ -259,6 +300,7 @@ const ChatRoom: React.FC = () => {
           }
           isNamePromptVisible={isNamePromptVisible}
         />
+        <AudioRecorder onStopRecording={handleStopRecording} /> {/* Add the AudioRecorder component */}
       </div>
     </main>
   );

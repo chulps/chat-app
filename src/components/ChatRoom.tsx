@@ -24,7 +24,6 @@ import {
   handleNameSubmit,
   handleVisibilityChange,
   handleBeforeUnload,
-  // handleStopRecording
 } from "../utils/chatRoomUtils";
 import { translateText } from "../utils/translate"; // Ensure translateText is imported
 import "../css/chatroom.css";
@@ -66,13 +65,15 @@ const ChatRoom: React.FC = () => {
     null
   );
   const [isLoading, setIsLoading] = useState(false); // Loading state
-  // eslint-disable-next-line
-  const [isRecording, setIsRecording] = useState(false); // Recording state
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isRecording, setIsRecording] = useState(false); // Recording state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
-  console.log(qrCodeMessageSent);
+  
+
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
       setTimeout(() => {
@@ -185,7 +186,7 @@ const ChatRoom: React.FC = () => {
   const handleRecordingStop = async (blob: Blob) => {
     setIsLoading(true); // Start loading state
     const formData = new FormData();
-    formData.append("file", blob, "audio.wav");
+    formData.append("file", blob, "audio.m4a");
 
     try {
       const response = await axios.post(

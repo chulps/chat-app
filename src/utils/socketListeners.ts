@@ -19,18 +19,19 @@ export const setupSocketListeners = (
       name,
       language: preferredLanguage,
     });
-    socket.emit("sendSystemMessage", {
+    const joinMessage: Message = {
       text: `${name} has joined the chat.`,
       chatroomId,
       type: "system",
+      language: preferredLanguage,
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
-    });
-
-    sendQrCodeMessage(); // Ensure this is only called once
+    };
+    socket.emit("sendSystemMessage", joinMessage);
+    sendQrCodeMessage();
   });
 
   socket.on("message", (message: Message) => {
@@ -51,14 +52,14 @@ export const setupSocketListeners = (
   socket.on("userJoined", (userName: string) => {
     const systemMessage: Message = {
       text: `${userName} has joined the chat.`,
+      chatroomId,
+      type: "system",
       language: "",
-      chatroomId: chatroomId || "",
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
-      type: "system",
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
@@ -66,30 +67,46 @@ export const setupSocketListeners = (
   socket.on("userLeft", (userName: string) => {
     const systemMessage: Message = {
       text: `${userName} has left the chat.`,
+      chatroomId,
+      type: "system",
       language: "",
-      chatroomId: chatroomId || "",
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
-      type: "system",
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
 
-  socket.on("disconnect", () => {
-    socket.emit("leaveRoom", { chatroomId, name });
-    socket.emit("sendSystemMessage", {
-      text: `${name} has left the chat.`,
+  socket.on("userAway", (userName: string) => {
+    const systemMessage: Message = {
+      text: `${userName} is away.`,
       chatroomId,
       type: "system",
+      language: "",
       timestamp: new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       }),
-    });
+    };
+    setMessages((prevMessages) => [...prevMessages, systemMessage]);
+  });
+
+  socket.on("userReturned", (userName: string) => {
+    const systemMessage: Message = {
+      text: `${userName} has returned.`,
+      chatroomId,
+      type: "system",
+      language: "",
+      timestamp: new Date().toLocaleTimeString(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+    };
+    setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
 
   socket.on("languageChangeAcknowledged", () => {
@@ -118,4 +135,6 @@ export const cleanupSocketListeners = (socket: Socket) => {
   socket.off("userTyping");
   socket.off("userJoined");
   socket.off("userLeft");
+  socket.off("userAway");
+  socket.off("userReturned");
 };

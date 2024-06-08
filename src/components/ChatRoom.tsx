@@ -57,7 +57,9 @@ const ChatRoom: React.FC = () => {
   );
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  const [isAway, setIsAway] = useState(false);
+  const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
+  console.log(qrCodeMessageSent)
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
       setTimeout(() => {
@@ -78,18 +80,15 @@ const ChatRoom: React.FC = () => {
       chatroomId: chatroomId || "",
       type: "qr",
     };
-    setMessages((prevMessages) => {
-      // Ensure QR message is not duplicated
-      if (
-        !prevMessages.some(
-          (msg) => msg.type === "qr" && msg.text === chatroomUrl
-        )
-      ) {
-        return [...prevMessages, qrMessage];
-      }
-      return prevMessages;
-    });
-    socket.emit("sendMessage", qrMessage);
+
+    const qrCodeMessageSentBefore = localStorage.getItem("qrCodeMessageSent");
+
+    if (!qrCodeMessageSentBefore) {
+      setMessages((prevMessages) => [...prevMessages, qrMessage]);
+      socket.emit("sendMessage", qrMessage);
+      localStorage.setItem("qrCodeMessageSent", "true");
+      setQrCodeMessageSent(true);
+    }
   }, [chatroomId, preferredLanguage]);
 
   useEffect(() => {
@@ -106,7 +105,41 @@ const ChatRoom: React.FC = () => {
         typingTimeoutRef
       );
 
-      return () => cleanupSocketListeners(socket);
+      sendQrCodeMessage(); // Call the sendQrCodeMessage function here
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "hidden") {
+          setIsAway(true);
+          socket.emit("userAway", { chatroomId, name });
+        } else {
+          setIsAway(false);
+          socket.emit("userReturned", { chatroomId, name });
+        }
+      };
+
+      const handleBeforeUnload = () => {
+        socket.emit("leaveRoom", { chatroomId, name });
+        socket.emit("sendSystemMessage", {
+          text: `${name} has left the chat.`,
+          chatroomId,
+          type: "system",
+          timestamp: new Date().toLocaleTimeString(navigator.language, {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }),
+        });
+      };
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("beforeunload", handleBeforeUnload);
+
+      return () => {
+        cleanupSocketListeners(socket);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+        localStorage.removeItem("qrCodeMessageSent"); // Remove the flag from local storage
+      };
     }
   }, [
     chatroomId,
@@ -114,6 +147,7 @@ const ChatRoom: React.FC = () => {
     preferredLanguage,
     isNamePromptVisible,
     sendQrCodeMessage,
+    isAway,
   ]);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
@@ -32,37 +32,42 @@ const MessageList: React.FC<MessageListProps> = ({
     const newMetadata: { [url: string]: any } = {};
     const newFetchedUrls = new Set(fetchedUrls);
 
+    const fetchUrls = async (urls: string[]) => {
+      for (const url of urls) {
+        if (!newFetchedUrls.has(url)) {
+          try {
+            const metadata = await getUrlMetadata(url);
+            newMetadata[url] = metadata;
+            newFetchedUrls.add(url);
+          } catch (error) {
+            console.error(`Error fetching metadata for ${url}:`, error);
+          }
+        }
+      }
+    };
+
+    const urlsToFetch: string[] = [];
     for (const message of messages) {
       if (message.type === "user") {
         const urls = message.text.match(
           /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
         );
         if (urls) {
-          for (const url of urls) {
-            if (!newFetchedUrls.has(url)) {
-              try {
-                const metadata = await getUrlMetadata(url);
-                newMetadata[url] = metadata;
-                newFetchedUrls.add(url);
-              } catch (error) {
-                console.error(`Error fetching metadata for ${url}:`, error);
-              }
-            }
-          }
+          urlsToFetch.push(...urls);
         }
       }
     }
 
-    setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
-    setFetchedUrls(newFetchedUrls);
+    if (urlsToFetch.length > 0) {
+      await fetchUrls(urlsToFetch);
+      setUrlMetadata((prev) => ({ ...prev, ...newMetadata }));
+      setFetchedUrls(newFetchedUrls);
+    }
   }, [messages, fetchedUrls]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      fetchMetadata();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]);
+    fetchMetadata();
+  }, [fetchMetadata]);
 
   const renderTextWithLinks = useCallback(
     (text: string) => {
@@ -70,38 +75,38 @@ const MessageList: React.FC<MessageListProps> = ({
       const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;
 
       const parts = text.split(/(${emailRegex.source})|(${urlRegex.source})/g);
-    return parts.map((part, index) => {
-      if (part) {
-        if (part.match(emailRegex)) {
-          return (
-            <a
-              key={index}
-              target="_blank"
-              rel="noreferrer"
-              href={`mailto:${part}`}
-              className="email-link"
-            >
-              {part}
-            </a>
-          );
-        } else if (part.match(urlRegex)) {
-          return (
-            <a
-              key={index}
-              href={part}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="url-link"
-            >
-              {part}
-            </a>
-          );
-        } else {
-          return <span key={index}>{part}</span>;
+      return parts.map((part, index) => {
+        if (part) {
+          if (part.match(emailRegex)) {
+            return (
+              <a
+                key={index}
+                target="_blank"
+                rel="noreferrer"
+                href={`mailto:${part}`}
+                className="email-link"
+              >
+                {part}
+              </a>
+            );
+          } else if (part.match(urlRegex)) {
+            return (
+              <a
+                key={index}
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="url-link"
+              >
+                {part}
+              </a>
+            );
+          } else {
+            return <span key={index}>{part}</span>;
+          }
         }
-      }
-      return null;
-    });
+        return null;
+      });
     },
     []
   );
@@ -158,7 +163,7 @@ const MessageList: React.FC<MessageListProps> = ({
 
       return (
         <span className="message-text">
-          <TranslationWrapper targetLanguage={preferredLanguage}>
+          <TranslationWrapper targetLanguage={preferredLanguage} originalLanguage={message.language}>
             {message.text}
           </TranslationWrapper>
         </span>

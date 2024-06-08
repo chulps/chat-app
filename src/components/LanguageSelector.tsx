@@ -9,7 +9,7 @@ const LanguageSelector: React.FC = () => {
   const handleLanguageChange = (language: string) => {
     setLanguage(language);
   };
-  console.log(language);
+
   return (
     <CustomDropdown
       options={languages}

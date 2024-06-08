@@ -31,7 +31,6 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
         mediaRecorder.start();
-
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             // Convert Blob to m4a format

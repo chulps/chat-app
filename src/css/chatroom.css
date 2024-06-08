@@ -301,7 +301,3 @@ html.light .message-wrapper.me {
   flex-direction: column;
   gap: var(--space-1);
 }
-
-.audio-recorder {
-  margin-right: 1.5px;
-}

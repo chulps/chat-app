@@ -66,6 +66,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({
         style={{
           color: isRecording ? "white" : "var(--danger-400)",
           padding: "1em 1.25em",
+          borderRadius: "var(--space-2)",
           backgroundColor: isRecording
             ? "var(--danger-500)"
             : "var(--secondary)",

@@ -35,6 +35,7 @@ export const defaultContent = {
   'language': 'Language',
   'loading': 'Loading...',
   'or': 'or',
+  'placeholder-message': 'Type a message...',
   'placeholder-name': 'Your name',
   'QRCode': 'QR Code',
   'search-language': 'Search language...',

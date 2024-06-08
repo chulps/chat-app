@@ -1,25 +1,39 @@
-import React, { useRef } from 'react';
-
+import React, { useRef } from "react";
+// import fontawesome
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
+import WaveComponent from "./WaveComponent";
 interface AudioRecorderProps {
-  onStopRecording: (blob: Blob) => void;
+  isRecording: boolean;
+  setIsRecording: React.Dispatch<React.SetStateAction<boolean>>;
+  onStopRecording: (blob: Blob) => void; // Add this prop
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ onStopRecording }) => {
+const AudioRecorder: React.FC<AudioRecorderProps> = ({
+  isRecording,
+  setIsRecording,
+  onStopRecording,
+}) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorderRef.current = new MediaRecorder(stream);
-    mediaRecorderRef.current.ondataavailable = (event) => {
-      audioChunksRef.current.push(event.data);
-    };
-    mediaRecorderRef.current.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      onStopRecording(audioBlob);
-      audioChunksRef.current = [];
-    };
-    mediaRecorderRef.current.start();
+  const startRecording = () => {
+    setIsRecording(true);
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          onStopRecording(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+        mediaRecorderRef.current = null;
+      };
+    });
   };
 
   const stopRecording = () => {
@@ -29,9 +43,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onStopRecording }) => {
   };
 
   return (
-    <div>
-      <button onClick={startRecording}>Start Recording</button>
-      <button onClick={stopRecording}>Stop Recording</button>
+    <div className="audio-recorder">
+      <button
+        className="secondary"
+        style={{
+          color: "var(--danger-400",
+          padding: "1em 1.25em",
+          backgroundColor: isRecording
+            ? "var(--danger-500)"
+            : "var(--secondary)",
+        }}
+        onClick={isRecording ? stopRecording : startRecording}
+      >
+        {isRecording ? (
+          <WaveComponent />
+        ) : (
+          <FontAwesomeIcon icon={faMicrophone} />
+        )}
+      </button>
     </div>
   );
 };

@@ -1,0 +1,17 @@
+#wave {
+    stroke-dasharray: 101 190;
+    animation: moveTheWaveAndDash 2000ms linear infinite;
+    filter: drop-shadow(0 0 3px var(--blue500));
+  }
+  
+  @keyframes moveTheWaveAndDash {
+    0% { 
+      stroke-dashoffset: 0; 
+      transform: translate3d(0, 0, 0); 
+    }
+    100% {
+      stroke-dashoffset: -133; 
+      transform: translate3d(-90px, 0, 0); 
+    }
+  }
+  

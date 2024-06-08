@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import axios from "axios";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import ChatRoomHeader from "./ChatRoomHeader";
@@ -8,7 +7,6 @@ import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
 import QRCodeModal from "./QRCodeModal";
 import NamePrompt from "./NamePrompt";
-import AudioRecorder from "./AudioRecorder"; // Import the AudioRecorder component
 import { useLanguage } from "../contexts/LanguageContext";
 import { getEnv } from "../utils/getEnv";
 import {
@@ -21,8 +19,11 @@ import {
   handleKeyPress,
   handleCopy,
   handleNameSubmit,
+  handleVisibilityChange,
+  handleBeforeUnload,
+  handleStopRecording
 } from "../utils/chatRoomUtils";
-import { translateText } from "../utils/translate"; // Import the translateText function
+// import { translateText } from "../utils/translate"; // Import the translateText function
 import "../css/chatroom.css";
 
 const { socketUrl, transcribeApiUrl } = getEnv();
@@ -110,37 +111,16 @@ const ChatRoom: React.FC = () => {
 
       sendQrCodeMessage(); // Call the sendQrCodeMessage function here
 
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === "hidden") {
-          setIsAway(true);
-          socket.emit("userAway", { chatroomId, name });
-        } else {
-          setIsAway(false);
-          socket.emit("userReturned", { chatroomId, name });
-        }
-      };
+      const visibilityChangeHandler = () => handleVisibilityChange(socket, chatroomId || "", name, setIsAway);
+      const beforeUnloadHandler = () => handleBeforeUnload(socket, chatroomId || "", name, preferredLanguage);
 
-      const handleBeforeUnload = () => {
-        socket.emit("leaveRoom", { chatroomId, name });
-        socket.emit("sendSystemMessage", {
-          text: `${name} has left the chat.`,
-          chatroomId,
-          type: "system",
-          timestamp: new Date().toLocaleTimeString(navigator.language, {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }),
-        });
-      };
-
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-      window.addEventListener("beforeunload", handleBeforeUnload);
+      document.addEventListener("visibilitychange", visibilityChangeHandler);
+      window.addEventListener("beforeunload", beforeUnloadHandler);
 
       return () => {
         cleanupSocketListeners(socket);
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-        window.removeEventListener("beforeunload", handleBeforeUnload);
+        document.removeEventListener("visibilitychange", visibilityChangeHandler);
+        window.removeEventListener("beforeunload", beforeUnloadHandler);
         localStorage.removeItem("qrCodeMessageSent"); // Remove the flag from local storage
       };
     }
@@ -182,42 +162,8 @@ const ChatRoom: React.FC = () => {
     setQrCodeIsVisible((prevState) => !prevState);
   };
 
-  const handleStopRecording = async (blob: Blob) => {
-    const formData = new FormData();
-    formData.append('file', blob, 'audio.wav');
-
-    try {
-      // const response = await axios.post(`${transcribeApiUrl}/api/transcribe`, formData, {
-        const response = await axios.post('http://localhost:3001/api/transcribe', formData, {
-          headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      console.log('Transcription response:', response.data);
-
-      const { transcription } = response.data;
-
-      // Translate the transcription
-      const translatedText = await translateText(transcription, preferredLanguage);
-
-      // Send the transcribed message via socket
-      const message: Message = {
-        sender: name,
-        text: translatedText,
-        language: preferredLanguage,
-        chatroomId: chatroomId || "",
-        timestamp: new Date().toLocaleTimeString(navigator.language, {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-        type: "user",
-      };
-      socket.emit("sendMessage", message);
-    } catch (error) {
-      console.error('Error during transcription or translation:', error);
-    }
+  const handleRecordingStop = (blob: Blob) => {
+    handleStopRecording(blob, transcribeApiUrl, socket, name, chatroomId || "", preferredLanguage, setMessages);
   };
 
   return (
@@ -299,8 +245,8 @@ const ChatRoom: React.FC = () => {
             handleKeyPress(e, handleSendMessage, handleEmitUserTyping)
           }
           isNamePromptVisible={isNamePromptVisible}
+          onStopRecording={handleRecordingStop} // Pass the recording stop handler
         />
-        <AudioRecorder onStopRecording={handleStopRecording} /> {/* Add the AudioRecorder component */}
       </div>
     </main>
   );

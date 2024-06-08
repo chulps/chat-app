@@ -27,14 +27,27 @@
   }
 }
 
-.message-input-container {
+.message-input {
   display: flex;
   position: relative;
   align-items: center;
 }
 
-.message-input-container input {
+.message-input input {
   padding-right: 6ch;
+  border-radius: var(--space-2);
+  border: none;
+  outline: 1px solid var(--secondary);
+}
+
+.message-input input:focus {
+  transform: unset;
+}
+
+.message-input-buttons {
+  position: absolute;
+  right: 0;
+  padding-inline-end: 2px;
 }
 
 .message-send-button {

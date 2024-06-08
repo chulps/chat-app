@@ -1,8 +1,9 @@
-// src/utils/chatRoomUtils.ts
 import { Socket } from "socket.io-client";
 import { Message } from "../components/ChatRoom";
 import { KeyboardEvent } from "react";
 import { defaultContent } from '../contexts/LanguageContext';
+import axios from "axios";
+import { translateText } from "./translate";
 
 export const sendMessage = (
   socket: Socket,
@@ -110,4 +111,83 @@ export const handleNameSubmit = (
     name: submittedName,
     language: preferredLanguage,
   });
+};
+
+export const handleVisibilityChange = (
+  socket: Socket,
+  chatroomId: string,
+  name: string,
+  setIsAway: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  if (document.visibilityState === "hidden") {
+    setIsAway(true);
+    socket.emit("userAway", { chatroomId, name });
+  } else {
+    setIsAway(false);
+    socket.emit("userReturned", { chatroomId, name });
+  }
+};
+
+export const handleBeforeUnload = (
+  socket: Socket,
+  chatroomId: string,
+  name: string,
+  preferredLanguage: string
+) => {
+  socket.emit("leaveRoom", { chatroomId, name });
+  socket.emit("sendSystemMessage", {
+    text: `${name} has left the chat.`,
+    chatroomId,
+    type: "system",
+    language: preferredLanguage,
+    timestamp: new Date().toLocaleTimeString(navigator.language, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  });
+};
+
+export const handleStopRecording = async (
+  blob: Blob,
+  transcribeApiUrl: string,
+  socket: Socket,
+  name: string,
+  chatroomId: string,
+  preferredLanguage: string,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+) => {
+  const formData = new FormData();
+  formData.append('file', blob, 'audio.wav');
+
+  try {
+    const response = await axios.post(`${transcribeApiUrl}/api/transcribe`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    const { transcription } = response.data;
+
+    // Translate the transcription
+    const translatedText = await translateText(transcription, preferredLanguage);
+
+    // Send the transcribed message via socket
+    const message: Message = {
+      sender: name,
+      text: translatedText,
+      language: preferredLanguage,
+      chatroomId: chatroomId || "",
+      timestamp: new Date().toLocaleTimeString(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
+      type: "user",
+    };
+    socket.emit("sendMessage", message);
+    setMessages((prevMessages) => [...prevMessages, message]);
+  } catch (error) {
+    console.error('Error during transcription or translation:', error);
+  }
 };

@@ -35,6 +35,7 @@ export const defaultContent = {
   'language': 'Language',
   'loading': 'Loading...',
   'or': 'or',
+  'placeholder-message': 'Type a message...',
   'placeholder-name': 'Your name',
   'QRCode': 'QR Code',
   'search-language': 'Search language...',
@@ -56,6 +57,9 @@ export const defaultContent = {
   'user-away': 'is away',
   'user-connected': 'has connected',
   'user-returned': 'has returned',
+  'cancel': 'Cancel',
+  'send': 'Send',
+
   // Add more translations as needed
 };
 

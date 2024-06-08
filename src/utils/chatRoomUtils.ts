@@ -4,7 +4,6 @@ import { Message } from "../components/ChatRoom";
 import { KeyboardEvent } from "react";
 import { defaultContent } from '../contexts/LanguageContext';
 
-
 export const sendMessage = (
   socket: Socket,
   inputMessage: string,
@@ -71,6 +70,13 @@ export const handleCopy = (
   });
 };
 
+export const saveMessageToLocalStorage = (chatroomId: string, message: Message) => {
+  const storedMessages = localStorage.getItem(chatroomId);
+  const messages = storedMessages ? JSON.parse(storedMessages) : [];
+  messages.push(message);
+  localStorage.setItem(chatroomId, JSON.stringify(messages));
+};
+
 export const handleNameSubmit = (
   socket: Socket,
   submittedName: string,
@@ -83,16 +89,20 @@ export const handleNameSubmit = (
   setIsNamePromptVisible(false);
 
   // Emit system message for new user
-  socket.emit("sendSystemMessage", {
+  const systemMessage: Message = {
     text: `${submittedName} ${defaultContent["chat-joined"]}`,
     chatroomId,
     type: "system",
+    language: preferredLanguage,
     timestamp: new Date().toLocaleTimeString(navigator.language, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     }),
-  });
+  };
+
+  socket.emit("sendSystemMessage", systemMessage);
+  saveMessageToLocalStorage(chatroomId, systemMessage); // Save to localStorage
 
   // Establish socket connection and join room
   socket.emit("joinRoom", {

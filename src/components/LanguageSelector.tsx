@@ -5,20 +5,24 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const LanguageSelector: React.FC = () => {
   const { setLanguage } = useLanguage();
-
+  const { language, content } = useLanguage();
   const handleLanguageChange = (language: string) => {
     setLanguage(language);
   };
 
   return (
-    <CustomDropdown 
-      options={languages} 
-      onChange={handleLanguageChange} 
-      defaultOption={navigator.language} 
-      description="Select your preferred language"
-      label="Language"
-      targetLanguage="en"
-      content={{ searchPlaceholder: "Search language...", searchBarTip: "Type to filter languages" }}
+    <CustomDropdown
+      options={languages}
+      onChange={handleLanguageChange}
+      defaultOption={navigator.language}
+      description={content["select-language"]}
+      label={content["language"]}
+      targetLanguage={language}
+      content={{
+        searchPlaceholder: content["search-language"],
+        searchBarTip: content["searchbar-tip"],
+        clearButtonText: content["clear-button-text"],
+      }}
     />
   );
 };

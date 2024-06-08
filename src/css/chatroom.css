@@ -148,7 +148,8 @@
     margin: 0 auto;
   }
 
-  .message-row + .message-row:has(.qr-code-message) {
+  /* hack to hide first message */
+  .message-row:first-of-type {
     display: none;
 }
 
@@ -164,13 +165,14 @@
   padding: 2em;
 }
 
+.message-row:has(.qr-code-message):not(:nth-of-type(2)),
+.message-row:nth-of-type(3) {
+  display: none;
+}
+
 html.light .message-wrapper.me {
   color: white;
 }
-
-/* .url-metadata {
-  padding: 0.5em 1em;
-} */
 
 .url-image img, .url-metadata {
   width: 100%;

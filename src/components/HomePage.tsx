@@ -53,8 +53,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  console.log(content["placeholder-name"]);
-
   return (
     <div className="homepage-content">
       <div>

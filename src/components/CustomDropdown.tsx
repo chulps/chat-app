@@ -1,9 +1,8 @@
 // src/components/CustomDropdown.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import '../css/custom-dropdown.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
-import TranslationWrapper from './TranslationWrapper';
+import React, { useState, useEffect, useRef } from "react";
+import "../css/custom-dropdown.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 interface Option {
   value: string;
@@ -21,6 +20,7 @@ interface CustomDropdownProps {
   content: {
     searchPlaceholder: string;
     searchBarTip: string;
+    clearButtonText: string;
   };
 }
 
@@ -30,12 +30,11 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   defaultOption,
   description,
   label,
-  targetLanguage,
-  content
+  content,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(defaultOption);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredOptions, setFilteredOptions] = useState(options);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -62,15 +61,18 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   };
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
       setIsOpen(false);
     }
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -94,13 +96,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         <div className="custom-dropdown-options-container">
           <div className="custom-dropdown-search">
             <div className="menu-header">
-              {label && (
-                <label htmlFor="search-input">
-                  <TranslationWrapper targetLanguage={targetLanguage}>
-                    {label}
-                  </TranslationWrapper>
-                </label>
-              )}
+              {label && <label htmlFor="search-input">{label}</label>}
 
               {searchTerm ? (
                 <small className="system-message info">
@@ -108,7 +104,6 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                 </small>
               ) : null}
             </div>
-
             <div className="language-search-input-container">
               <input
                 id="search-input"
@@ -117,26 +112,21 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                 value={searchTerm}
                 onChange={handleSearchChange}
                 onKeyDown={(e) => {
-                  if (e.shiftKey && e.key === 'Backspace') {
-                    setSearchTerm('');
+                  if (e.shiftKey && e.key === "Backspace") {
+                    setSearchTerm("");
                   }
                 }}
               />
-              {searchTerm !== '' && (
+              {searchTerm !== "" && (
                 <button
                   className="small secondary language-search-clear-button"
-                  onClick={() => setSearchTerm('')}
+                  onClick={() => setSearchTerm("")}
                 >
-                  <TranslationWrapper targetLanguage={targetLanguage}>
-                    Clear
-                  </TranslationWrapper>
+                    {content.clearButtonText}
                 </button>
               )}
-            </div>
-
-            <TranslationWrapper targetLanguage={targetLanguage}>
-              {description && <p>{description}</p>}
-            </TranslationWrapper>
+            </div>{" "}
+            {description && <p>{description}</p>}
             <hr />
           </div>
           <div className="custom-dropdown-options">
@@ -146,7 +136,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
                 className="custom-dropdown-option"
                 onClick={() => handleOptionClick(option)}
               >
-                  {option.label}
+                {option.label}
               </div>
             ))}
           </div>

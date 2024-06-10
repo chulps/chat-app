@@ -40,6 +40,16 @@
   outline: 1px solid var(--secondary);
 }
 
+
+
+.message-input input.recording::placeholder {
+  color: var(--danger);
+}
+
+.message-input input.recording {
+  outline: var(--danger) solid 1px;
+}
+
 .message-input input:focus {
   transform: unset;
 }
@@ -161,7 +171,8 @@
   }
 
   /* hack to hide first message */
-  .message-row:first-of-type {
+  .message-row:first-of-type,
+  .message-row:nth-of-type(2) {
     display: none;
 }
 

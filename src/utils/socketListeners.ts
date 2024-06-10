@@ -24,17 +24,17 @@ export const setupSocketListeners = (
       chatroomId,
       type: "system",
       language: preferredLanguage,
-      timestamp: new Date().toLocaleTimeString(navigator.language, {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
     };
     socket.emit("sendSystemMessage", joinMessage);
     sendQrCodeMessage();
   });
 
   socket.on("message", (message: Message) => {
+    message.timestamp = new Date().toLocaleTimeString(navigator.language, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
     setMessages((prevMessages) => [...prevMessages, message]);
     scrollToBottom();
   });
@@ -119,6 +119,13 @@ export const setupSocketListeners = (
   });
 
   socket.on("messageHistory", (history: Message[]) => {
+    history.forEach((message) => {
+      message.timestamp = new Date().toLocaleTimeString(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    });
     setMessages(history);
     scrollToBottom();
   });

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import AudioRecorder from "./AudioRecorder";
-import { defaultContent } from "../contexts/LanguageContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { useLanguage } from "../contexts/LanguageContext";
+
 
 interface MessageInputProps {
   inputMessage: string;
@@ -22,16 +23,18 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onStopRecording,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
+  const { content } = useLanguage();
 
   return (
     <div className="message-input">
       <input
         type="text"
         value={inputMessage}
-        placeholder={defaultContent["placeholder-message"]}
+        placeholder={isRecording ? content['stop-recording']: content["placeholder-message"]}
         onChange={(e) => setInputMessage(e.target.value)}
         onKeyPress={handleKeyPress}
         disabled={isNamePromptVisible}
+        className={isRecording? "recording" : ""}
       />
       <div className="message-input-buttons">
         {inputMessage && (

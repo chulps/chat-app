@@ -95,11 +95,6 @@ export const handleNameSubmit = (
     chatroomId,
     type: "system",
     language: preferredLanguage,
-    timestamp: new Date().toLocaleTimeString(navigator.language, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
   };
 
   socket.emit("sendSystemMessage", systemMessage);
@@ -140,11 +135,6 @@ export const handleBeforeUnload = (
     chatroomId,
     type: "system",
     language: preferredLanguage,
-    timestamp: new Date().toLocaleTimeString(navigator.language, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
   });
 };
 
@@ -178,11 +168,6 @@ export const handleStopRecording = async (
       text: translatedText,
       language: preferredLanguage,
       chatroomId: chatroomId || "",
-      timestamp: new Date().toLocaleTimeString(navigator.language, {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }),
       type: "user",
     };
     socket.emit("sendMessage", message);

@@ -59,6 +59,8 @@ export const defaultContent = {
   'user-returned': 'has returned',
   'cancel': 'Cancel',
   'send': 'Send',
+  'tap-to-edit': 'Tap to edit',
+  'stop-recording': 'Press the button to stop recording',
 
   // Add more translations as needed
 };

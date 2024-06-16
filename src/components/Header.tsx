@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import LanguageSelector from './LanguageSelector';
 import '../images/logo.gif';
 import '../css/header.css';
 import logo from '../images/logo.gif';
 import RotatingText from "./RotatingText";
-import "../css/header.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
-import { useLanguage } from '../contexts/LanguageContext'; // Import the useLanguage hook
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
-  const { content } = useLanguage(); // Get the translated content
+  const { content } = useLanguage();
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     document.documentElement.className = theme;
@@ -47,8 +49,8 @@ const Header: React.FC = () => {
           className="theme-toggle tooltip bottom-left"
           data-tooltip={
             theme === "dark"
-              ? content['tooltip-theme-light'] // Use translated content
-              : content['tooltip-theme-dark']  // Use translated content
+              ? content['tooltip-theme-light']
+              : content['tooltip-theme-dark']
           }
           style={{
             background: theme === "dark" ? "" : "var(--white)",
@@ -61,6 +63,11 @@ const Header: React.FC = () => {
             <FontAwesomeIcon icon={faMoon} />
           )}
         </button>
+        {isAuthenticated ? (
+          <button onClick={logout}>Logout</button>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
       </div>
     </header>
   );

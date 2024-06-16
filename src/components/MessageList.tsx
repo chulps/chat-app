@@ -1,4 +1,3 @@
-// src/components/MessageList.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";

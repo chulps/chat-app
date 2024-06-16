@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 import { getEnv } from '../utils/getEnv';
-
-const { apiUrl } = getEnv();
+import { jwtDecode } from 'jwt-decode';
 
 interface AuthContextProps {
   isAuthenticated: boolean;
@@ -14,12 +13,9 @@ interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,27 +31,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post(`${apiUrl}/auth/login`, { username, password });
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post(`${getEnv().apiUrl}/api/auth/login`, { username, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token);
       setIsAuthenticated(true);
+      navigate('/dashboard');
     } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
+      console.error('Login failed', error);
     }
   };
 
   const register = async (username: string, password: string) => {
     try {
-      await axios.post(`${apiUrl}/auth/register`, { username, password });
+      await axios.post(`${getEnv().apiUrl}/api/auth/register`, { username, password });
+      navigate('/login');
     } catch (error) {
-      console.error('Registration failed:', error);
-      throw error;
+      console.error('Registration failed', error);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
+    navigate('/login');
   };
 
   return (
@@ -67,7 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

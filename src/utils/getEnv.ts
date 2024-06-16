@@ -3,13 +3,13 @@ const environments: { [key: string]: { socketUrl: string; transcribeApiUrl: stri
     socketUrl: 'http://localhost:3001',
     translateUrl: 'http://localhost:3001',
     transcribeApiUrl: 'http://localhost:3001',
-    apiUrl: 'http://localhost:3001/api', // Add this line
+    apiUrl: 'http://localhost:3001', // Add this line
   },
   production: {
     socketUrl: 'https://limitless-lake-38337.herokuapp.com',
     translateUrl: 'https://limitless-lake-38337.herokuapp.com',
     transcribeApiUrl: 'https://limitless-lake-38337.herokuapp.com',
-    apiUrl: 'https://limitless-lake-38337.herokuapp.com/api', // Add this line
+    apiUrl: 'https://limitless-lake-38337.herokuapp.com', // Add this line
   },
 };
 

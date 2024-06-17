@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';  // Correctly import jwtDecode
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
@@ -13,6 +13,15 @@ interface ChatRoom {
   isPublic: boolean;
 }
 
+interface FriendRequest {
+  sender: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  status: string;
+}
+
 interface DecodedToken {
   id: string;
 }
@@ -20,7 +29,8 @@ interface DecodedToken {
 const Dashboard: React.FC = () => {
   const [chatrooms, setChatrooms] = useState<ChatRoom[]>([]);
   const [newChatroomName, setNewChatroomName] = useState('');
-  const [friends, setFriends] = useState<string[]>([]);
+  const [friends, setFriends] = useState<any[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const { apiUrl } = getEnv();
   const { getToken, token } = useAuth();
 
@@ -29,7 +39,6 @@ const Dashboard: React.FC = () => {
       const response = await axios.get(`${apiUrl}/api/chatrooms`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      console.log("Fetched chatrooms:", response.data); // Log fetched chatrooms
       setChatrooms(response.data);
     } catch (error) {
       console.error('Error fetching chatrooms:', error);
@@ -41,7 +50,8 @@ const Dashboard: React.FC = () => {
       const response = await axios.get(`${apiUrl}/api/friends`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      setFriends(response.data);
+      setFriends(response.data.friends);
+      setFriendRequests(response.data.friendRequests);
     } catch (error) {
       console.error('Error fetching friends:', error);
     }
@@ -57,7 +67,6 @@ const Dashboard: React.FC = () => {
       const response = await axios.post(`${apiUrl}/api/chatrooms`, { name: newChatroomName }, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      console.log("Created chatroom:", response.data); // Log created chatroom
       setChatrooms([...chatrooms, response.data]);
       setNewChatroomName('');
     } catch (error) {
@@ -78,12 +87,34 @@ const Dashboard: React.FC = () => {
 
   const handleAddFriend = async (email: string) => {
     try {
-      const response = await axios.post(`${apiUrl}/api/friends`, { email }, {
+      await axios.post(`${apiUrl}/api/friends/send-request`, { email }, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      setFriends([...friends, response.data.friendEmail]);
+      fetchFriends();
     } catch (error) {
-      console.error('Error adding friend:', error);
+      console.error('Error sending friend request:', error);
+    }
+  };
+
+  const handleAcceptFriendRequest = async (senderId: string) => {
+    try {
+      await axios.post(`${apiUrl}/api/friends/accept-request`, { senderId }, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      fetchFriends();
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+    }
+  };
+
+  const handleRejectFriendRequest = async (senderId: string) => {
+    try {
+      await axios.post(`${apiUrl}/api/friends/reject-request`, { senderId }, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      fetchFriends();
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
     }
   };
 
@@ -121,7 +152,9 @@ const Dashboard: React.FC = () => {
         {chatrooms.map((chatroom) => (
           <li key={chatroom._id}>
             <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
+            {decodedToken && chatroom.originator === decodedToken.id && (
               <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
+            )}
           </li>
         ))}
       </ul>
@@ -142,11 +175,28 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* List of friends */}
-      <ul>
-        {friends.map((friend, index) => (
-          <li key={index}>{friend}</li>
-        ))}
-      </ul>
+      <div>
+        <h2>Friends</h2>
+        <ul>
+          {friends.map((friend) => (
+            <li key={friend._id}>{friend.username} ({friend.email})</li>
+          ))}
+        </ul>
+      </div>
+
+      {/* List of friend requests */}
+      <div>
+        <h2>Friend Requests</h2>
+        <ul>
+          {friendRequests.map((request) => (
+            <li key={request.sender._id}>
+              {request.sender.username} ({request.sender.email})
+              <button onClick={() => handleAcceptFriendRequest(request.sender._id)}>Accept</button>
+              <button onClick={() => handleRejectFriendRequest(request.sender._id)}>Reject</button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

@@ -1,51 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
 
-interface Chatroom {
+interface ChatRoom {
   _id: string;
   name: string;
+  originator: string;
+  members: string[];
+  isPublic: boolean;
+}
+
+interface DecodedToken {
+  id: string;
 }
 
 const Dashboard: React.FC = () => {
-  const [chatrooms, setChatrooms] = useState<Chatroom[]>([]);
+  const [chatrooms, setChatrooms] = useState<ChatRoom[]>([]);
   const [newChatroomName, setNewChatroomName] = useState('');
-  const [profile, setProfile] = useState({ name: '', bio: '' });
   const [friends, setFriends] = useState<string[]>([]);
   const { apiUrl } = getEnv();
-  const { getToken } = useAuth();
+  const { getToken, token } = useAuth();
 
-  useEffect(() => {
-    fetchChatrooms();
-    fetchProfile();
-    fetchFriends();
-  }, []);
-
-  const fetchChatrooms = async () => {
+  const fetchChatrooms = useCallback(async () => {
     try {
       const response = await axios.get(`${apiUrl}/api/chatrooms`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
+      console.log("Fetched chatrooms:", response.data); // Log fetched chatrooms
       setChatrooms(response.data);
     } catch (error) {
       console.error('Error fetching chatrooms:', error);
     }
-  };
+  }, [apiUrl, getToken]);
 
-  const fetchProfile = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/profile`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      setProfile(response.data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const fetchFriends = async () => {
+  const fetchFriends = useCallback(async () => {
     try {
       const response = await axios.get(`${apiUrl}/api/friends`, {
         headers: { Authorization: `Bearer ${getToken()}` },
@@ -54,33 +45,34 @@ const Dashboard: React.FC = () => {
     } catch (error) {
       console.error('Error fetching friends:', error);
     }
-  };
+  }, [apiUrl, getToken]);
+
+  useEffect(() => {
+    fetchChatrooms();
+    fetchFriends();
+  }, [fetchChatrooms, fetchFriends]);
 
   const createChatroom = async () => {
     try {
-      const response = await axios.post(
-        `${apiUrl}/api/chatrooms`, 
-        { name: newChatroomName },
-        {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
+      const response = await axios.post(`${apiUrl}/api/chatrooms`, { name: newChatroomName }, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      console.log("Created chatroom:", response.data); // Log created chatroom
       setChatrooms([...chatrooms, response.data]);
       setNewChatroomName('');
     } catch (error) {
       console.error('Error creating chatroom:', error);
     }
   };
-  
 
-  const handleCreateProfile = async () => {
+  const leaveChatroom = async (chatroomId: string) => {
     try {
-      const response = await axios.post(`${apiUrl}/api/profile`, profile, {
+      await axios.post(`${apiUrl}/api/chatrooms/leave`, { chatroomId }, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      setProfile(response.data);
+      setChatrooms(chatrooms.filter(chatroom => chatroom._id !== chatroomId));
     } catch (error) {
-      console.error('Error creating profile:', error);
+      console.error('Error leaving chatroom:', error);
     }
   };
 
@@ -94,6 +86,16 @@ const Dashboard: React.FC = () => {
       console.error('Error adding friend:', error);
     }
   };
+
+  let decodedToken: DecodedToken | null = null;
+  try {
+    if (token) {
+      decodedToken = jwtDecode<DecodedToken>(token);
+      console.log("Decoded Token:", decodedToken);
+    }
+  } catch (error) {
+    console.error('Error decoding token:', error);
+  }
 
   return (
     <div>
@@ -119,27 +121,10 @@ const Dashboard: React.FC = () => {
         {chatrooms.map((chatroom) => (
           <li key={chatroom._id}>
             <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
+              <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
           </li>
         ))}
       </ul>
-
-      {/* Create profile */}
-      <div>
-        <h2>Create Profile</h2>
-        <input
-          type="text"
-          value={profile.name}
-          onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-          placeholder="Name"
-        />
-        <input
-          type="text"
-          value={profile.bio}
-          onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-          placeholder="Bio"
-        />
-        <button onClick={handleCreateProfile}>Save Profile</button>
-      </div>
 
       {/* Add friend */}
       <div>

@@ -5,13 +5,14 @@ import '../css/header.css';
 import logo from '../images/logo.gif';
 import RotatingText from "./RotatingText";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSun, faMoon } from "@fortawesome/free-solid-svg-icons";
+import { faSun, faMoon, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
+  const [menuVisible, setMenuVisible] = useState(false);
   const { content } = useLanguage();
   const { isAuthenticated, logout } = useAuth();
 
@@ -31,17 +32,16 @@ const Header: React.FC = () => {
     }
   }, []);
 
+  const toggleMenu = () => {
+    setMenuVisible((prevMenuVisible) => !prevMenuVisible);
+  };
+
   return (
     <header>
-      <a
-        href="https://chulps.github.io/react-gh-pages/"
-        className="logo-container"
-      >
-        <RotatingText
-          fill="var(--secondary)"
-        />
+      <Link to="/" className="logo-container">
+        <RotatingText fill="var(--secondary)" />
         <img className="logo" src={logo} alt="Chuck Howard" />
-      </a>
+      </Link>
       <div className="header-right">
         <LanguageSelector />
         <button
@@ -63,10 +63,30 @@ const Header: React.FC = () => {
             <FontAwesomeIcon icon={faMoon} />
           )}
         </button>
-        {isAuthenticated ? (
-          <button onClick={logout}>Logout</button>
-        ) : (
-          <Link to="/login">Login</Link>
+        <button className="menu-toggle" onClick={toggleMenu}>
+          {menuVisible ? (
+            <FontAwesomeIcon icon={faTimes} />
+          ) : (
+            <FontAwesomeIcon icon={faBars} />
+          )}
+        </button>
+        {menuVisible && (
+          <div className="dropdown-menu">
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" onClick={toggleMenu}>Dashboard</Link>
+                <Link to="/profile" onClick={toggleMenu}>Profile</Link>
+                <Link to="/settings" onClick={toggleMenu}>Settings</Link>
+                <button onClick={logout}>Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/" onClick={toggleMenu}>Home</Link>
+                <Link to="/login" onClick={toggleMenu}>Login</Link>
+                <Link to="/register" onClick={toggleMenu}>Register</Link>
+              </>
+            )}
+          </div>
         )}
       </div>
     </header>

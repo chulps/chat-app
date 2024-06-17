@@ -30,9 +30,17 @@ header .logo-container:hover {
     transform-origin: center;
 }
 
-.theme-toggle {
+.theme-toggle,
+.menu-toggle {
     padding: 1em;
     min-width: calc(var(--space-3) + var(--space-2));
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  color: var(--secondary);
+  cursor: pointer;
 }
 
 .header-right {
@@ -40,3 +48,39 @@ header .logo-container:hover {
     gap: var(--space-1);
     align-items: center;
 }
+
+.header-right {
+    position: relative;
+  }
+  
+  
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--dark);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+  }
+  
+  .dropdown-menu a {
+    padding: 10px;
+    text-align: left;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .dropdown-menu a:hover {
+    background: var(--secondary);
+  }
+  
+  .dropdown-menu button {
+    background: var(--secondary);
+    color: var(--danger-300);
+  }
+  

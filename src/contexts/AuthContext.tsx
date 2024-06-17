@@ -1,72 +1,45 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { getEnv } from '../utils/getEnv';
-import { jwtDecode } from 'jwt-decode';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface AuthContextProps {
+interface AuthContextType {
+  token: string | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  login: (token: string) => void;
   logout: () => void;
   getToken: () => string | null;
+  register: (username: string, password: string) => Promise<void>;
 }
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
+  const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      if (decoded.exp * 1000 > Date.now()) {
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('token');
-      }
-    }
-  }, []);
-
-  const login = async (username: string, password: string) => {
-    try {
-      const response = await axios.post(`${getEnv().apiUrl}/api/auth/login`, { username, password });
-      const { token } = response.data;
-      localStorage.setItem('token', token);
-      setIsAuthenticated(true);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login failed', error);
-    }
-  };
-
-  const register = async (username: string, password: string) => {
-    try {
-      await axios.post(`${getEnv().apiUrl}/api/auth/register`, { username, password });
-      navigate('/login');
-    } catch (error) {
-      console.error('Registration failed', error);
-    }
+  const login = (token: string) => {
+    setToken(token);
+    localStorage.setItem('token', token);
   };
 
   const logout = () => {
+    setToken(null);
     localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    navigate('/login');
   };
 
   const getToken = () => {
-    return localStorage.getItem('token');
-  };  
+    return token;
+  };
+
+  const isAuthenticated = !!token;
+
+  const register = async (username: string, password: string) => {
+    // Implement registration logic here
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, register, logout, getToken }}>
+    <AuthContext.Provider value={{ token, isAuthenticated, login, logout, getToken, register }}>
       {children}
     </AuthContext.Provider>
   );
@@ -74,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

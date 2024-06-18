@@ -25,6 +25,7 @@ const App: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
         <Route path="/chatroom/:chatroomId" element={<ProtectedRoute element={<ChatRoom />} />} />
+        <Route path="/profile/:userId" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />

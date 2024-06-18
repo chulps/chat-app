@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';  // Correctly import jwtDecode
+import { jwtDecode }from 'jwt-decode';  // Correctly import jwtDecode
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
@@ -179,7 +179,9 @@ const Dashboard: React.FC = () => {
         <h2>Friends</h2>
         <ul>
           {friends.map((friend) => (
-            <li key={friend._id}>{friend.username} ({friend.email})</li>
+            <li key={friend._id}>
+              <Link to={`/profile/${friend._id}`}>{friend.username}</Link> ({friend.email})
+            </li>
           ))}
         </ul>
       </div>

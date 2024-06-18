@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
 import '../css/profile.css';
 
 const Profile: React.FC = () => {
+  const { userId } = useParams<{ userId?: string }>();
   const [profile, setProfile] = useState({
     name: "",
     bio: "",
@@ -18,7 +20,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/api/profile`, {
+        const response = await axios.get(`${apiUrl}/api/profile/${userId || 'me'}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         setProfile(response.data || { name: "", bio: "", profileImage: "" });
@@ -27,7 +29,7 @@ const Profile: React.FC = () => {
       }
     };
     fetchProfile();
-  }, [getToken, apiUrl]);
+  }, [userId, getToken, apiUrl]);
 
   const handleCreateProfile = async () => {
     try {
@@ -68,6 +70,18 @@ const Profile: React.FC = () => {
     }
   };
 
+  const createChatroom = async () => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/chatrooms`, { name: `Chat with ${profile.name}`, members: [userId] }, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      // Redirect to the newly created chatroom
+      window.location.href = `/chatroom/${response.data._id}`;
+    } catch (error) {
+      console.error('Error creating chatroom:', error);
+    }
+  };
+
   return (
     <div className="profile">
       <h1>Profile</h1>
@@ -77,38 +91,46 @@ const Profile: React.FC = () => {
             {profile.profileImage && (
               <img className="profile-img" width="100%" src={`${apiUrl}/${profile.profileImage}`} alt="Profile" />
             )}
-            {isEditing ? (
-              <>
-                <input
-                  type="text"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  placeholder="Name"
-                />
-                <input
-                  type="text"
-                  value={profile.bio}
-                  onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                  placeholder="Bio"
-                />
-                <div>
-                  <h2>Update Profile Image</h2>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setImageFile(e.target.files ? e.target.files[0] : null)
-                    }
-                  />
-                </div>
-                <button onClick={handleSave}>Done</button>
-              </>
-            ) : (
+            {userId ? (
               <>
                 <h2>{profile.name}</h2>
                 <p>{profile.bio}</p>
-                <button onClick={() => setIsEditing(true)}>Edit</button>
+                <button onClick={createChatroom}>Start Chat</button>
               </>
+            ) : (
+              isEditing ? (
+                <>
+                  <input
+                    type="text"
+                    value={profile.name}
+                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    placeholder="Name"
+                  />
+                  <input
+                    type="text"
+                    value={profile.bio}
+                    onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                    placeholder="Bio"
+                  />
+                  <div>
+                    <h2>Update Profile Image</h2>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setImageFile(e.target.files ? e.target.files[0] : null)
+                      }
+                    />
+                  </div>
+                  <button onClick={handleSave}>Done</button>
+                </>
+              ) : (
+                <>
+                  <h2>{profile.name}</h2>
+                  <p>{profile.bio}</p>
+                  <button onClick={() => setIsEditing(true)}>Edit</button>
+                </>
+              )
             )}
           </div>
         </div>

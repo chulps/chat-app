@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode }from 'jwt-decode';  // Correctly import jwtDecode
-import { Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode'; // Correctly import jwtDecode
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
 
@@ -13,12 +13,15 @@ interface ChatRoom {
   isPublic: boolean;
 }
 
+interface Friend {
+  _id: string;
+  username: string;
+  email: string;
+  profileImage: string; // Add profileImage field here
+}
+
 interface FriendRequest {
-  sender: {
-    _id: string;
-    username: string;
-    email: string;
-  };
+  sender: Friend;
   status: string;
 }
 
@@ -29,10 +32,11 @@ interface DecodedToken {
 const Dashboard: React.FC = () => {
   const [chatrooms, setChatrooms] = useState<ChatRoom[]>([]);
   const [newChatroomName, setNewChatroomName] = useState('');
-  const [friends, setFriends] = useState<any[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const { apiUrl } = getEnv();
   const { getToken, token } = useAuth();
+  const navigate = useNavigate();
 
   const fetchChatrooms = useCallback(async () => {
     try {
@@ -118,6 +122,23 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const viewProfile = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
+
+  const startChatWithFriend = async (friendId: string) => {
+    try {
+      const response = await axios.post(
+        `${apiUrl}/api/chatrooms`,
+        { name: 'Private Chat', members: [friendId] },
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      navigate(`/chatroom/${response.data._id}`);
+    } catch (error) {
+      console.error('Error starting chatroom:', error);
+    }
+  };
+
   let decodedToken: DecodedToken | null = null;
   try {
     if (token) {
@@ -152,9 +173,7 @@ const Dashboard: React.FC = () => {
         {chatrooms.map((chatroom) => (
           <li key={chatroom._id}>
             <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
-            {decodedToken && chatroom.originator === decodedToken.id && (
               <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
-            )}
           </li>
         ))}
       </ul>
@@ -180,7 +199,18 @@ const Dashboard: React.FC = () => {
         <ul>
           {friends.map((friend) => (
             <li key={friend._id}>
-              <Link to={`/profile/${friend._id}`}>{friend.username}</Link> ({friend.email})
+              {friend.profileImage && (
+                <img
+                  src={`${apiUrl}/${friend.profileImage}`}
+                  alt={`${friend.username}'s profile`}
+                  width="50"
+                  height="50"
+                />
+              )}
+              <span onClick={() => viewProfile(friend._id)}>
+                {friend.username} ({friend.email})
+              </span>
+              <button onClick={() => startChatWithFriend(friend._id)}>Start Chat</button>
             </li>
           ))}
         </ul>
@@ -192,6 +222,14 @@ const Dashboard: React.FC = () => {
         <ul>
           {friendRequests.map((request) => (
             <li key={request.sender._id}>
+              {request.sender.profileImage && (
+                <img
+                  src={`${apiUrl}/${request.sender.profileImage}`}
+                  alt={`${request.sender.username}'s profile`}
+                  width="50"
+                  height="50"
+                />
+              )}
               {request.sender.username} ({request.sender.email})
               <button onClick={() => handleAcceptFriendRequest(request.sender._id)}>Accept</button>
               <button onClick={() => handleRejectFriendRequest(request.sender._id)}>Reject</button>

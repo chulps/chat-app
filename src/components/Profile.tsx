@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
 import '../css/profile.css';
@@ -13,17 +13,19 @@ const Profile: React.FC = () => {
     profileImage: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // Default to editing mode for profile creation
   const { getToken } = useAuth();
   const { apiUrl } = getEnv();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/api/profile/${userId || 'me'}`, {
+        const response = await axios.get(`${apiUrl}/api/profile/${userId || ''}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         setProfile(response.data || { name: "", bio: "", profileImage: "" });
+        setIsEditing(!response.data || !response.data.name || !response.data.bio || !response.data.profileImage);
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
@@ -75,8 +77,7 @@ const Profile: React.FC = () => {
       const response = await axios.post(`${apiUrl}/api/chatrooms`, { name: `Chat with ${profile.name}`, members: [userId] }, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      // Redirect to the newly created chatroom
-      window.location.href = `/chatroom/${response.data._id}`;
+      navigate(`/chatroom/${response.data._id}`);
     } catch (error) {
       console.error('Error creating chatroom:', error);
     }

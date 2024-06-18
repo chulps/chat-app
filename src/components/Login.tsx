@@ -23,7 +23,11 @@ const Login: React.FC = () => {
       });
       console.log('Login successful:', response.data);
       login(response.data.token);
-      navigate('/dashboard');
+      if (response.data.isProfileComplete) {
+        navigate('/dashboard');
+      } else {
+        navigate('/profile');
+      }
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Error during login:', err.response ? err.response.data : err.message);

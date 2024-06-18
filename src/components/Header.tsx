@@ -1,20 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import LanguageSelector from './LanguageSelector';
-import '../images/logo.gif';
-import '../css/header.css';
-import logo from '../images/logo.gif';
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, Link } from "react-router-dom";
+import LanguageSelector from "./LanguageSelector";
+import "../images/logo.gif";
+import "../css/header.css";
+import logo from "../images/logo.gif";
 import RotatingText from "./RotatingText";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSun, faMoon, faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import {
+  faSun,
+  faMoon,
+  faBars,
+  faTimes,
+  faHome,
+  faRightToBracket,
+  faUserPlus,
+  faUser,
+  faGear,
+  faGauge,
+} from "@fortawesome/free-solid-svg-icons";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useAuth } from "../contexts/AuthContext";
+import ToggleSwitch from "./ToggleSwitch";
 
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
   const [menuVisible, setMenuVisible] = useState(false);
   const { content } = useLanguage();
   const { isAuthenticated, logout } = useAuth();
+  const location = useLocation();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.className = theme;
@@ -36,34 +50,35 @@ const Header: React.FC = () => {
     setMenuVisible((prevMenuVisible) => !prevMenuVisible);
   };
 
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node)
+    ) {
+      setMenuVisible(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const renderLink = (path: string, icon: any, label: string) => {
+    return location.pathname !== path ? (
+      <Link to={path} onClick={toggleMenu}>
+        <FontAwesomeIcon icon={icon} />
+          {label}
+      </Link>
+    ) : null;
+  };
+
   return (
     <header>
-      <Link to="/" className="logo-container">
-        <RotatingText fill="var(--secondary)" />
-        <img className="logo" src={logo} alt="Chuck Howard" />
-      </Link>
-      <div className="header-right">
-        <LanguageSelector />
-        <button
-          onClick={toggleTheme}
-          className="theme-toggle tooltip bottom-left"
-          data-tooltip={
-            theme === "dark"
-              ? content['tooltip-theme-light']
-              : content['tooltip-theme-dark']
-          }
-          style={{
-            background: theme === "dark" ? "" : "var(--white)",
-            color: theme === "dark" ? "" : "var(--royal-200)",
-          }}
-        >
-          {theme === "dark" ? (
-            <FontAwesomeIcon icon={faSun} />
-          ) : (
-            <FontAwesomeIcon icon={faMoon} />
-          )}
-        </button>
-        <button className="menu-toggle" onClick={toggleMenu}>
+      <div className="header-left">
+        <button className="hollow secondary menu-toggle" onClick={toggleMenu}>
           {menuVisible ? (
             <FontAwesomeIcon icon={faTimes} />
           ) : (
@@ -71,23 +86,41 @@ const Header: React.FC = () => {
           )}
         </button>
         {menuVisible && (
-          <div className="dropdown-menu">
+          <div className="dropdown-menu" ref={dropdownRef}>
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" onClick={toggleMenu}>Dashboard</Link>
-                <Link to="/profile" onClick={toggleMenu}>Profile</Link>
-                <Link to="/settings" onClick={toggleMenu}>Settings</Link>
+                {renderLink("/dashboard", faGauge, "Dashboard")}
+                {renderLink("/profile", faUser, "Profile")}
+                {renderLink("/settings", faGear, "Settings")}
                 <button onClick={logout}>Logout</button>
               </>
             ) : (
               <>
-                <Link to="/" onClick={toggleMenu}>Home</Link>
-                <Link to="/login" onClick={toggleMenu}>Login</Link>
-                <Link to="/register" onClick={toggleMenu}>Register</Link>
+                {renderLink("/", faHome, "Home")}
+                {renderLink("/login", faRightToBracket, "Login")}
+                {renderLink("/register", faUserPlus, "Register")}
               </>
             )}
+            <hr />
+            <div className="menu-theme-toggle">
+              Theme ({theme === "dark" ? "Dark" : "Light"})
+              <ToggleSwitch
+                isOn={theme === "dark"}
+                handleToggle={toggleTheme}
+                onIcon={<FontAwesomeIcon icon={faSun} />}
+                offIcon={<FontAwesomeIcon icon={faMoon} />}
+                targetLanguage={content.language}
+              />
+            </div>
           </div>
         )}
+        <Link to="/" className="logo-container">
+          <RotatingText fill="var(--secondary)" />
+          <img className="logo" src={logo} alt="Chuck Howard" />
+        </Link>
+      </div>
+      <div className="header-right">
+        <LanguageSelector />
       </div>
     </header>
   );

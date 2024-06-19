@@ -39,8 +39,9 @@ header .logo-container:hover {
 .menu-toggle {
   background: none;
   border: none;
-  color: var(--secondary);
+  color: var(--white);
   cursor: pointer;
+  border: 1px solid var(--secondary);
 }
 
 .header-right, .header-left {
@@ -78,7 +79,7 @@ header .logo-container:hover {
   }
   
   .dropdown-menu a:hover {
-    background: var(--secondary);
+    background: var(--dark);
   }
   
   .dropdown-menu button {

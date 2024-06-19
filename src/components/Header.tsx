@@ -68,7 +68,7 @@ const Header: React.FC = () => {
 
   const renderLink = (path: string, icon: any, label: string) => {
     return location.pathname !== path ? (
-      <Link to={path} onClick={toggleMenu}>
+      <Link to={path} onClick={() => setMenuVisible(false)}>
         <FontAwesomeIcon icon={icon} />
           {label}
       </Link>
@@ -78,7 +78,7 @@ const Header: React.FC = () => {
   return (
     <header>
       <div className="header-left">
-        <button className="hollow secondary menu-toggle" onClick={toggleMenu}>
+        <button className="menu-toggle" onClick={toggleMenu}>
           {menuVisible ? (
             <FontAwesomeIcon icon={faTimes} />
           ) : (
@@ -92,7 +92,14 @@ const Header: React.FC = () => {
                 {renderLink("/dashboard", faGauge, "Dashboard")}
                 {renderLink("/profile", faUser, "Profile")}
                 {renderLink("/settings", faGear, "Settings")}
-                <button onClick={logout}>Logout</button>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMenuVisible(false);
+                  }}
+                >
+                  Logout
+                </button>
               </>
             ) : (
               <>
@@ -114,7 +121,7 @@ const Header: React.FC = () => {
             </div>
           </div>
         )}
-        <Link to="/" className="logo-container">
+        <Link to="/" className="logo-container" onClick={() => setMenuVisible(false)}>
           <RotatingText fill="var(--secondary)" />
           <img className="logo" src={logo} alt="Chuck Howard" />
         </Link>

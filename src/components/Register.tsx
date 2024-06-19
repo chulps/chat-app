@@ -83,6 +83,17 @@ const Register: React.FC = () => {
     return password.length >= 8;
   };
 
+  const isFormValid = () => {
+    return (
+      username &&
+      email &&
+      password &&
+      validateEmail(email) &&
+      validatePassword(password) &&
+      agreeTerms
+    );
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!agreeTerms) {
@@ -168,7 +179,9 @@ const Register: React.FC = () => {
           />
           I agree to the <Link to="/terms-and-conditions">terms and conditions</Link>
         </TermsAndConditions>
-        <button type="submit">Register</button>
+        <button type="submit"  disabled={!isFormValid()}>
+          Register
+        </button>
       </ButtonContainer>
       <hr style={{ marginBlock: "var(--space-2)" }} />
       <GoToLogin>

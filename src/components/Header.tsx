@@ -62,10 +62,6 @@ const Header: React.FC = () => {
     setMenuVisible((prevMenuVisible) => !prevMenuVisible);
   };
 
-  const handleLinkClick = () => {
-    setMenuVisible(false);
-  };
-
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
@@ -84,7 +80,7 @@ const Header: React.FC = () => {
 
   const renderLink = (path: string, icon: any, label: string) => {
     return location.pathname !== path ? (
-      <Link to={path} onClick={handleLinkClick}>
+      <Link to={path} onClick={toggleMenu}>
         <FontAwesomeIcon icon={icon} />
           {label}
       </Link>

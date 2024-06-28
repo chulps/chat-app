@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { getEnv } from "../utils/getEnv";
@@ -47,17 +47,51 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { apiUrl } = getEnv();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadReCAPTCHAScript = () => {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=6LfwFfwpAAAAAD6hRv66k4ODK_iPIWrnM-aDMqoZ`;
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    };
+
+    loadReCAPTCHAScript();
+  }, []);
+
+  const handleCaptcha = async () => {
+    if ((window as any).grecaptcha) {
+      const token = await (window as any).grecaptcha.execute(
+        "6LfwFfwpAAAAAD6hRv66k4ODK_iPIWrnM-aDMqoZ",
+        { action: "register" }
+      );
+      setCaptchaToken(token);
+    }
+  };
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const validatePassword = (password: string) => {
-    return password.length >= 8; // Add more criteria for strong password if needed
+    return password.length >= 8;
+  };
+
+  const isFormValid = () => {
+    return (
+      username &&
+      email &&
+      password &&
+      validateEmail(email) &&
+      validatePassword(password) &&
+      agreeTerms
+    );
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -75,11 +109,18 @@ const Register: React.FC = () => {
       return;
     }
 
+    await handleCaptcha();
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA");
+      return;
+    }
+
     try {
       const response = await axios.post(`${apiUrl}/api/auth/register`, {
         username,
         email,
         password,
+        captcha: captchaToken
       });
       localStorage.setItem("token", response.data.token);
       navigate("/profile"); // Redirect to profile creation after registration
@@ -128,7 +169,6 @@ const Register: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-
       <ButtonContainer>
         <TermsAndConditions>
           <input
@@ -137,9 +177,11 @@ const Register: React.FC = () => {
             checked={agreeTerms}
             onChange={(e) => setAgreeTerms(e.target.checked)}
           />
-          I agree to the <Link to="terms-and-conditions">terms and conditions</Link>
+          I agree to the <Link to="/terms-and-conditions">terms and conditions</Link>
         </TermsAndConditions>
-        <button type="submit">Register</button>
+        <button type="submit"  disabled={!isFormValid()}>
+          Register
+        </button>
       </ButtonContainer>
       <hr style={{ marginBlock: "var(--space-2)" }} />
       <GoToLogin>

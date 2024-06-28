@@ -512,6 +512,12 @@ hr {
   width: 100%;
 }
 
+button:disabled,
+button[disabled] {
+  opacity: 50%;
+  pointer-events: none;
+}
+
 /* auto grid */
 .auto-grid-5,
 .auto-grid-small,

@@ -2,21 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  line-height: 1.6;
-  font-size: 16px;
-  color: #333;
+  max-width: var(--space-7);
 `;
 
 const Title = styled.h1`
-  text-align: center;
-  margin-bottom: 20px;
+  text-align: left;
 `;
 
 const Section = styled.section`
-  margin-bottom: 20px;
+  margin-bottom: var(--space-4);
 `;
 
 const TermsAndConditions: React.FC = () => {

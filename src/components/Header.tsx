@@ -21,6 +21,17 @@ import {
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import ToggleSwitch from "./ToggleSwitch";
+import styled from "styled-components";
+
+const LogoutButton = styled.button`
+  width: 100%;
+  background: transparent !important;
+  border-radius: 0;
+  border-top: 1px solid var(--secondary);
+  text-align: left;
+  justify-content: flex-start;
+  padding-left: var(--space-2);
+`;
 
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
@@ -46,8 +57,13 @@ const Header: React.FC = () => {
     }
   }, []);
 
-  const toggleMenu = () => {
+  const toggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     setMenuVisible((prevMenuVisible) => !prevMenuVisible);
+  };
+
+  const handleLinkClick = () => {
+    setMenuVisible(false);
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -68,7 +84,7 @@ const Header: React.FC = () => {
 
   const renderLink = (path: string, icon: any, label: string) => {
     return location.pathname !== path ? (
-      <Link to={path} onClick={toggleMenu}>
+      <Link to={path} onClick={handleLinkClick}>
         <FontAwesomeIcon icon={icon} />
           {label}
       </Link>
@@ -92,7 +108,6 @@ const Header: React.FC = () => {
                 {renderLink("/dashboard", faGauge, "Dashboard")}
                 {renderLink("/profile", faUser, "Profile")}
                 {renderLink("/settings", faGear, "Settings")}
-                <button onClick={logout}>Logout</button>
               </>
             ) : (
               <>
@@ -112,6 +127,11 @@ const Header: React.FC = () => {
                 targetLanguage={content.language}
               />
             </div>
+            {isAuthenticated && (
+              <div className="menu-logout">
+                <LogoutButton onClick={logout}>Logout</LogoutButton>
+              </div>
+            )}
           </div>
         )}
         <Link to="/" className="logo-container">

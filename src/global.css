@@ -458,6 +458,10 @@ input[type="submit"].hollow {
   outline-offset: -1px;
 }
 
+button.hollow.secondary {
+  outline: 1px solid var(--secondary);
+}
+
 button.success {
   background: var(--success);
 }

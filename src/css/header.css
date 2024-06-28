@@ -14,7 +14,9 @@ header {
 
 header .logo {
     aspect-ratio: 1/1;
-    height: var(--space-4);
+    height: calc(var(--space-3) + var(--space-2));
+    margin-left: -2px;
+    margin-top: -1px;
 }
 
 header .logo-container {
@@ -38,9 +40,9 @@ header .logo-container:hover {
 
 .menu-toggle {
   background: none;
-  border: none;
-  color: var(--secondary);
+  color: var(--white);
   cursor: pointer;
+  outline: 1px solid var(--secondary);
 }
 
 .header-right, .header-left {

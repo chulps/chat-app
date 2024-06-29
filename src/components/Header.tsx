@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import LanguageSelector from "./LanguageSelector";
-import "../images/logo.gif";
-import "../css/header.css";
 import logo from "../images/logo.gif";
 import RotatingText from "./RotatingText";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +11,7 @@ import {
   faTimes,
   faHome,
   faRightToBracket,
+  faRightFromBracket,
   faUserPlus,
   faUser,
   faGear,
@@ -23,14 +22,106 @@ import { useAuth } from "../contexts/AuthContext";
 import ToggleSwitch from "./ToggleSwitch";
 import styled from "styled-components";
 
-const LogoutButton = styled.button`
+const HeaderContainer = styled.header`
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 var(--space-1) 0;
+
+  @media screen and (min-width: 576px) {
+    padding: var(--space-1) 0;
+  }
+`;
+
+const Logo = styled.img`
+  aspect-ratio: 1/1;
+  height: calc(var(--space-3) + var(--space-2));
+  margin-left: -2px;
+  margin-top: -1px;
+`;
+
+const LogoContainer = styled(Link)`
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: fit-content;
+
+  &:hover {
+    transform: scale(1.05);
+    transform-origin: center;
+  }
+`;
+
+const MenuButton = styled.button`
+  padding: 1em;
+  min-width: calc(var(--space-3) + var(--space-2));
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+  outline: 1px solid var(--secondary);
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--dark);
+  border: 1px solid var(--secondary);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  width: var(--space-6);
+  border-radius: 1em;
+  overflow: hidden;
+
+  a {
+    padding: 1em;
+    text-align: left;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+
+    &:hover {
+      background: var(--dark);
+    }
+  }
+
+  button {
+    background: var(--secondary);
+    color: var(--danger-300) !important;
+  }
+`;
+
+const MenuThemeToggle = styled.div`
+  display: flex;
+  padding: 1em;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const LogoutButton = styled.div`
   width: 100%;
-  background: transparent !important;
   border-radius: 0;
   border-top: 1px solid var(--secondary);
   text-align: left;
   justify-content: flex-start;
-  padding-left: var(--space-2);
+  padding-inline: var(--space-2);
+  color: var(--danger-300);
+  padding-block: var(--space-2);
+
+  &:hover {
+    background: var(--dark);
+    cursor: pointer;
+  }
 `;
 
 const Header: React.FC = () => {
@@ -62,25 +153,25 @@ const Header: React.FC = () => {
     setMenuVisible((prevMenuVisible) => !prevMenuVisible);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
+  const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
       dropdownRef.current &&
       !dropdownRef.current.contains(event.target as Node)
     ) {
       setMenuVisible(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [handleClickOutside]);
 
   const renderLink = (path: string, icon: any, label: string) => {
     return location.pathname !== path ? (
-      <Link to={path} onClick={toggleMenu}>
+      <Link to={path} onClick={() => setMenuVisible(false)}>
         <FontAwesomeIcon icon={icon} />
           {label}
       </Link>
@@ -88,17 +179,17 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header>
-      <div className="header-left">
-        <button className="hollow secondary menu-toggle" onClick={toggleMenu}>
+    <HeaderContainer>
+      <HeaderSection>
+        <MenuButton className="hollow secondary menu-toggle" onClick={toggleMenu}>
           {menuVisible ? (
             <FontAwesomeIcon icon={faTimes} />
           ) : (
             <FontAwesomeIcon icon={faBars} />
           )}
-        </button>
+        </MenuButton>
         {menuVisible && (
-          <div className="dropdown-menu" ref={dropdownRef}>
+          <DropdownMenu ref={dropdownRef}>
             {isAuthenticated ? (
               <>
                 {renderLink("/dashboard", faGauge, "Dashboard")}
@@ -113,32 +204,36 @@ const Header: React.FC = () => {
               </>
             )}
             <hr />
-            <div className="menu-theme-toggle">
+            <MenuThemeToggle>
               Theme ({theme === "dark" ? "Dark" : "Light"})
               <ToggleSwitch
-                isOn={theme === "dark"}
+                isOn={theme === "light"}
                 handleToggle={toggleTheme}
                 onIcon={<FontAwesomeIcon icon={faSun} />}
                 offIcon={<FontAwesomeIcon icon={faMoon} />}
                 targetLanguage={content.language}
+                onIconColor="var(--warning-500)"
+                offIconColor="var(--royal-400)"
+                onBackgroundColor="var(--royal-300)"
+                offBackgroundColor="var(--dark)"
               />
-            </div>
+            </MenuThemeToggle>
             {isAuthenticated && (
-              <div className="menu-logout">
-                <LogoutButton onClick={logout}>Logout</LogoutButton>
-              </div>
+                <LogoutButton onClick={logout}>
+                  <FontAwesomeIcon icon={faRightFromBracket} /> Logout
+                </LogoutButton>
             )}
-          </div>
+          </DropdownMenu>
         )}
-        <Link to="/" className="logo-container">
+        <LogoContainer to="/">
           <RotatingText fill="var(--secondary)" />
-          <img className="logo" src={logo} alt="Chuck Howard" />
-        </Link>
-      </div>
-      <div className="header-right">
+          <Logo src={logo} alt="Chuck Howard" />
+        </LogoContainer>
+      </HeaderSection>
+      <HeaderSection>
         <LanguageSelector />
-      </div>
-    </header>
+      </HeaderSection>
+    </HeaderContainer>
   );
 };
 

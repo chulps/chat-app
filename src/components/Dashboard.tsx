@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; // Correctly import jwtDecode
+import { jwtDecode } from 'jwt-decode';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
+import Tabs, { Tab } from './Tabs'; // Import the Tabs and Tab components
+import {
+  faAddressBook,
+  faComments,
+  faBell
+} from "@fortawesome/free-solid-svg-icons";
+import styled from "styled-components";
 
 interface ChatRoom {
   _id: string;
@@ -17,7 +24,7 @@ interface Friend {
   _id: string;
   username: string;
   email: string;
-  profileImage: string; // Add profileImage field here
+  profileImage: string;
 }
 
 interface FriendRequest {
@@ -28,6 +35,10 @@ interface FriendRequest {
 interface DecodedToken {
   id: string;
 }
+
+const DashboardContainer = styled.div`
+  padding-top: var(--space-3);
+`;
 
 const Dashboard: React.FC = () => {
   const [chatrooms, setChatrooms] = useState<ChatRoom[]>([]);
@@ -150,94 +161,98 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
+    <DashboardContainer>
+      <Tabs>
+        <Tab label="Chatrooms" icon={faComments}>
+          {/* Empty state with no chatrooms */}
+          {chatrooms.length === 0 && <p>Join or create a chatroom</p>}
 
-      {/* Empty state with no chatrooms */}
-      {chatrooms.length === 0 && <p>No chatrooms available. Create one!</p>}
+          {/* Create chatroom */}
+          <div>
+            <h2>Create Chatroom</h2>
+            <input
+              type="text"
+              value={newChatroomName}
+              onChange={(e) => setNewChatroomName(e.target.value)}
+              placeholder="Chatroom Name"
+            />
+            <button onClick={createChatroom}>Create</button>
+          </div>
 
-      {/* Create chatroom */}
-      <div>
-        <h2>Create Chatroom</h2>
-        <input
-          type="text"
-          value={newChatroomName}
-          onChange={(e) => setNewChatroomName(e.target.value)}
-          placeholder="Chatroom Name"
-        />
-        <button onClick={createChatroom}>Create</button>
-      </div>
+          {/* List of chatrooms */}
+          <ul>
+            {chatrooms.map((chatroom) => (
+              <li key={chatroom._id}>
+                <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
+                <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
+              </li>
+            ))}
+          </ul>
+        </Tab>
+        <Tab label="Contacts" icon={faAddressBook}>
+          {/* Add friend */}
+          <div>
+            <h2>Add Friend</h2>
+            <input
+              type="text"
+              placeholder="Friend's Email"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleAddFriend(e.currentTarget.value);
+                  e.currentTarget.value = '';
+                }
+              }}
+            />
+          </div>
 
-      {/* List of chatrooms */}
-      <ul>
-        {chatrooms.map((chatroom) => (
-          <li key={chatroom._id}>
-            <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
-              <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Add friend */}
-      <div>
-        <h2>Add Friend</h2>
-        <input
-          type="text"
-          placeholder="Friend's Email"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleAddFriend(e.currentTarget.value);
-              e.currentTarget.value = '';
-            }
-          }}
-        />
-      </div>
-
-      {/* List of friends */}
-      <div>
-        <h2>Friends</h2>
-        <ul>
-          {friends.map((friend) => (
-            <li key={friend._id}>
-              {friend.profileImage && (
-                <img
-                  src={`${apiUrl}/${friend.profileImage}`}
-                  alt={`${friend.username}'s profile`}
-                  width="50"
-                  height="50"
-                />
-              )}
-              <span onClick={() => viewProfile(friend._id)}>
-                {friend.username} ({friend.email})
-              </span>
-              <button onClick={() => startChatWithFriend(friend._id)}>Start Chat</button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* List of friend requests */}
-      <div>
-        <h2>Friend Requests</h2>
-        <ul>
-          {friendRequests.map((request) => (
-            <li key={request.sender._id}>
-              {request.sender.profileImage && (
-                <img
-                  src={`${apiUrl}/${request.sender.profileImage}`}
-                  alt={`${request.sender.username}'s profile`}
-                  width="50"
-                  height="50"
-                />
-              )}
-              {request.sender.username} ({request.sender.email})
-              <button onClick={() => handleAcceptFriendRequest(request.sender._id)}>Accept</button>
-              <button onClick={() => handleRejectFriendRequest(request.sender._id)}>Reject</button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+          {/* List of friends */}
+          <div>
+            <h2>Friends</h2>
+            <ul>
+              {friends.map((friend) => (
+                <li key={friend._id}>
+                  {friend.profileImage && (
+                    <img
+                      src={`${apiUrl}/${friend.profileImage}`}
+                      alt={`${friend.username}'s profile`}
+                      width="50"
+                      height="50"
+                    />
+                  )}
+                  <span onClick={() => viewProfile(friend._id)}>
+                    {friend.username} ({friend.email})
+                  </span>
+                  <button onClick={() => startChatWithFriend(friend._id)}>Start Chat</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Tab>
+        <Tab label="Notifications" icon={faBell}>
+          {/* List of friend requests */}
+          <div>
+            <h2>Friend Requests</h2>
+            <ul>
+              {friendRequests.map((request) => (
+                <li key={request.sender._id}>
+                  {request.sender.profileImage && (
+                    <img
+                      src={`${apiUrl}/${request.sender.profileImage}`}
+                      alt={`${request.sender.username}'s profile`}
+                      width="50"
+                      height="50"
+                    />
+                  )}
+                  {request.sender.username} ({request.sender.email})
+                  <button onClick={() => handleAcceptFriendRequest(request.sender._id)}>Accept</button>
+                  <button onClick={() => handleRejectFriendRequest(request.sender._id)}>Reject</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Tab>
+      </Tabs>
+    </DashboardContainer>
   );
 };
 

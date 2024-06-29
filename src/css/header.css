@@ -40,16 +40,9 @@ header .logo-container:hover {
 
 .menu-toggle {
   background: none;
-<<<<<<< HEAD
   color: var(--white);
   cursor: pointer;
   outline: 1px solid var(--secondary);
-=======
-  border: none;
-  color: var(--white);
-  cursor: pointer;
-  border: 1px solid var(--secondary);
->>>>>>> origin/video-chat-frontend
 }
 
 .header-right, .header-left {

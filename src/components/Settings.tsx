@@ -1,7 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
-import { getEnv } from '../utils/getEnv';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import { getEnv } from "../utils/getEnv";
+import styled from "styled-components";
+import SimpleDropdown from "./SimpleDropdown";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
+
+const SettingsContainer = styled.div`
+  padding-top: var(--space-3);
+`;
+
+const SettingsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SettingsEdit = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+`;
+
+const SettingsEditButtons = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    width: 100%;
+  }
+
+  @media screen and (min-width: 576px) {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+
+    button {
+      width: fit-content;
+    }
+  }
+`;
+
+const SettingsInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+`;
+
+const EditButton = styled.span`
+  cursor: pointer;
+`;
 
 const Settings: React.FC = () => {
   const [settings, setSettings] = useState({
@@ -9,11 +61,18 @@ const Settings: React.FC = () => {
     username: "",
     currentPassword: "",
     newPassword: "",
-    fontSize: "default",
+    fontSize: "var(--font-size-h5)",
   });
   const [isEditing, setIsEditing] = useState(false);
   const { getToken } = useAuth();
   const { apiUrl } = getEnv();
+
+  const fontSizeOptions = [
+    { value: "var(--font-size-h5)", label: "Default" },
+    { value: "var(--font-size-h6)", label: "Small" },
+    { value: "var(--font-size-h4)", label: "Large" },
+    { value: "var(--font-size-h3)", label: "Extra Large" },
+  ];
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -21,13 +80,22 @@ const Settings: React.FC = () => {
         const response = await axios.get(`${apiUrl}/api/settings`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
-        setSettings(response.data);
+        setSettings((prevSettings) => ({
+          ...prevSettings,
+          ...response.data,
+          fontSize: response.data.fontSize || "var(--font-size-h5)", // Ensure default font size is set
+        }));
       } catch (error) {
         console.error("Error fetching settings:", error);
       }
     };
     fetchSettings();
   }, [getToken, apiUrl]);
+
+  useEffect(() => {
+    // Set initial font size
+    document.documentElement.style.setProperty('--font-size-default', settings.fontSize);
+  }, [settings.fontSize]);
 
   const handleSave = async () => {
     try {
@@ -52,7 +120,10 @@ const Settings: React.FC = () => {
       if (settings.currentPassword && settings.newPassword) {
         await axios.put(
           `${apiUrl}/api/settings/password`,
-          { currentPassword: settings.currentPassword, newPassword: settings.newPassword },
+          {
+            currentPassword: settings.currentPassword,
+            newPassword: settings.newPassword,
+          },
           {
             headers: { Authorization: `Bearer ${getToken()}` },
           }
@@ -66,6 +137,8 @@ const Settings: React.FC = () => {
             headers: { Authorization: `Bearer ${getToken()}` },
           }
         );
+        // Update CSS variable for font size
+        document.documentElement.style.setProperty('--font-size-default', settings.fontSize);
       }
       setIsEditing(false);
     } catch (error) {
@@ -73,13 +146,37 @@ const Settings: React.FC = () => {
     }
   };
 
+  const getFontSizeLabel = (value: string) => {
+    const option = fontSizeOptions.find((option) => option.value === value);
+    return option ? option.label : "Default";
+  };
+
   return (
-    <div className="settings">
-      <h1>Settings</h1>
+    <SettingsContainer>
+      <SettingsHeader>
+        <h2>Settings</h2>
+        {isEditing ? null : (
+          <EditButton onClick={() => setIsEditing(true)}>
+            <FontAwesomeIcon icon={faPen} />
+          </EditButton>
+        )}
+      </SettingsHeader>
+
       {isEditing ? (
-        <div>
+        <SettingsEdit>
           <div>
-            <h2>Update Email</h2>
+            <label>Font Size</label>
+            <SimpleDropdown
+              options={fontSizeOptions}
+              onChange={(value) =>
+                setSettings({ ...settings, fontSize: value })
+              }
+              defaultOption={settings.fontSize}
+            />
+          </div>
+
+          <div>
+            <label>Update Email</label>
             <input
               type="email"
               value={settings.email}
@@ -89,19 +186,21 @@ const Settings: React.FC = () => {
               placeholder="Email"
             />
           </div>
+
           <div>
-            <h2>Update Username</h2>
+            <label>Update Username</label>
             <input
               type="text"
               value={settings.username}
               onChange={(e) =>
                 setSettings({ ...settings, username: e.target.value })
               }
-              placeholder="Username"
+              placeholder="@cleverUserName"
             />
           </div>
+
           <div>
-            <h2>Change Password</h2>
+            <label>Change Password</label>
             <input
               type="password"
               value={settings.currentPassword}
@@ -110,6 +209,7 @@ const Settings: React.FC = () => {
               }
               placeholder="Current Password"
             />
+
             <input
               type="password"
               value={settings.newPassword}
@@ -119,33 +219,37 @@ const Settings: React.FC = () => {
               placeholder="New Password"
             />
           </div>
-          <div>
-            <h2>Change Font Size</h2>
-            <select
-              value={settings.fontSize}
-              onChange={(e) =>
-                setSettings({ ...settings, fontSize: e.target.value })
-              }
-            >
-              <option value="var(--font-size-h6)">Small</option>
-              <option value="var(--font-size-h5)">Default</option>
-              <option value="var(--font-size-h4)">Large</option>
-              <option value="var(--font-size-h3)">Extra Large</option>
-            </select>
-          </div>
-          <button onClick={handleSave}>Save Settings</button>
-          <button onClick={() => setIsEditing(false)}>Cancel</button>
-        </div>
+
+          <SettingsEditButtons>
+            <button onClick={handleSave}>Save Settings</button>
+            <span className="link" onClick={() => setIsEditing(false)}>
+              Cancel
+            </span>
+          </SettingsEditButtons>
+        </SettingsEdit>
       ) : (
-        <div className="settings-info">
-          <h2>Email: {settings.email}</h2>
-          <h2>Username: {settings.username}</h2>
-          <h2>Password: ******</h2>
-          <h2>Font Size: {settings.fontSize}</h2>
-          <button onClick={() => setIsEditing(true)}>Edit</button>
-        </div>
+        <SettingsInfo>
+          <div>
+            <label>Email:</label>
+            {settings.email}
+          </div>
+
+          <div>
+            <label>Username:</label>@{settings.username}
+          </div>
+
+          <div>
+            <label>Password:</label>
+            ...
+          </div>
+
+          <div>
+            <label>Font Size:</label>
+            {getFontSizeLabel(settings.fontSize)}
+          </div>
+        </SettingsInfo>
       )}
-    </div>
+    </SettingsContainer>
   );
 };
 

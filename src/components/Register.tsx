@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, FormEvent } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { getEnv } from "../utils/getEnv";
@@ -47,33 +47,10 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { apiUrl } = getEnv();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const loadReCAPTCHAScript = () => {
-      const script = document.createElement('script');
-      script.src = `https://www.google.com/recaptcha/api.js?render=6LfwFfwpAAAAAD6hRv66k4ODK_iPIWrnM-aDMqoZ`;
-      script.async = true;
-      script.defer = true;
-      document.body.appendChild(script);
-    };
-
-    loadReCAPTCHAScript();
-  }, []);
-
-  const handleCaptcha = async () => {
-    if ((window as any).grecaptcha) {
-      const token = await (window as any).grecaptcha.execute(
-        "6LfwFfwpAAAAAD6hRv66k4ODK_iPIWrnM-aDMqoZ",
-        { action: "register" }
-      );
-      setCaptchaToken(token);
-    }
-  };
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -109,18 +86,13 @@ const Register: React.FC = () => {
       return;
     }
 
-    await handleCaptcha();
-    if (!captchaToken) {
-      setError("Please complete the CAPTCHA");
-      return;
-    }
+
 
     try {
       const response = await axios.post(`${apiUrl}/api/auth/register`, {
         username,
         email,
         password,
-        captcha: captchaToken
       });
       localStorage.setItem("token", response.data.token);
       navigate("/profile"); // Redirect to profile creation after registration

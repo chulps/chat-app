@@ -21,7 +21,7 @@ const TabButton = styled.button<{ isActive: boolean }>`
   align-items: center;
   padding: var(--space-2) 0;
   flex-direction: column;
-  flex-grow: ${(props) => (props.isActive ? 2 : 1)};
+  flex-grow: ${(props) => (props.isActive ? 1.5 : 1)};
   gap: 0;
 
   &:hover {
@@ -31,7 +31,7 @@ const TabButton = styled.button<{ isActive: boolean }>`
 
   @media (min-width: 576px) {
     flex-grow: unset;
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2);
     flex-direction: row;
     gap: var(--space-1);
   }

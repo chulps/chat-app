@@ -8,8 +8,13 @@ import Tabs, { Tab } from './Tabs'; // Import the Tabs and Tab components
 import {
   faAddressBook,
   faComments,
-  faBell
-} from "@fortawesome/free-solid-svg-icons";
+  faBell,
+  faMagnifyingGlass,
+  faUserPlus,
+  faUsers,
+  faComments as faCommentsAlt,
+  faList
+} from "@fortawesome/free-solid-svg-icons"; // Import additional icons
 import styled from "styled-components";
 
 interface ChatRoom {
@@ -25,6 +30,7 @@ interface Friend {
   username: string;
   email: string;
   profileImage: string;
+  name?: string; // Added name field
 }
 
 interface FriendRequest {
@@ -40,11 +46,50 @@ const DashboardContainer = styled.div`
   padding-top: var(--space-3);
 `;
 
+const SearchResults = styled.div`
+  background-color: inherit;
+  padding-top: var(--space-2);
+  position: absolute;
+  width: 100%;
+  z-index: 1000;
+  height: calc(100vh - 354px);
+  overflow-y: auto;
+
+  @media (min-width: 420px) {
+    height: calc(100vh - 376px);
+  }
+
+  @media (min-width: 576px) {
+    height: calc(100vh - 398px);
+  }
+`;
+
+const SearchResultItem = styled.div`
+  padding: var(--space-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  &:hover {
+    background-color: var(--dark);
+  }
+`;
+
+const ProfileImage = styled.img`
+  width: calc(var(--space-3) + var(--space-2));
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
 const Dashboard: React.FC = () => {
   const [chatrooms, setChatrooms] = useState<ChatRoom[]>([]);
   const [newChatroomName, setNewChatroomName] = useState('');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<{ users: Friend[], chatrooms: ChatRoom[] }>({ users: [], chatrooms: [] });
   const { apiUrl } = getEnv();
   const { getToken, token } = useAuth();
   const navigate = useNavigate();
@@ -71,6 +116,36 @@ const Dashboard: React.FC = () => {
       console.error('Error fetching friends:', error);
     }
   }, [apiUrl, getToken]);
+
+  const fetchSearchResults = useCallback(async (query: string) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/search`, {
+        params: { query },
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setSearchResults(response.data);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+    }
+  }, [apiUrl, getToken]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query) {
+      fetchSearchResults(query);
+    } else {
+      setSearchResults({ users: [], chatrooms: [] });
+    }
+  };
+
+  const handleUserClick = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
+
+  const handleChatroomClick = (chatroomId: string) => {
+    navigate(`/chatroom/${chatroomId}`);
+  };
 
   useEffect(() => {
     fetchChatrooms();
@@ -190,33 +265,17 @@ const Dashboard: React.FC = () => {
           </ul>
         </Tab>
         <Tab label="Contacts" icon={faAddressBook}>
-          {/* Add friend */}
-          <div>
-            <h2>Add Friend</h2>
-            <input
-              type="text"
-              placeholder="Friend's Email"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddFriend(e.currentTarget.value);
-                  e.currentTarget.value = '';
-                }
-              }}
-            />
-          </div>
 
           {/* List of friends */}
           <div>
-            <h2>Friends</h2>
+            <h2>Contacts</h2>
             <ul>
               {friends.map((friend) => (
                 <li key={friend._id}>
                   {friend.profileImage && (
-                    <img
+                    <ProfileImage
                       src={`${apiUrl}/${friend.profileImage}`}
                       alt={`${friend.username}'s profile`}
-                      width="50"
-                      height="50"
                     />
                   )}
                   <span onClick={() => viewProfile(friend._id)}>
@@ -236,11 +295,9 @@ const Dashboard: React.FC = () => {
               {friendRequests.map((request) => (
                 <li key={request.sender._id}>
                   {request.sender.profileImage && (
-                    <img
+                    <ProfileImage
                       src={`${apiUrl}/${request.sender.profileImage}`}
                       alt={`${request.sender.username}'s profile`}
-                      width="50"
-                      height="50"
                     />
                   )}
                   {request.sender.username} ({request.sender.email})
@@ -249,6 +306,91 @@ const Dashboard: React.FC = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        </Tab>
+        <Tab label="Search" icon={faMagnifyingGlass}>
+          <div>
+            <h2>Search Users and Chatrooms</h2>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search by email, username, name, or chatroom"
+            />
+            {searchQuery && (
+              <SearchResults>
+                <Tabs>
+                  <Tab label="All" icon={faList}>
+                    <div>
+                      <label>Users</label>
+                      {searchResults.users.map((user) => (
+                        <SearchResultItem
+                          key={user._id}
+                          onClick={() => handleUserClick(user._id)}
+                        >
+                          {user.profileImage && (
+                            <ProfileImage
+                              src={`${apiUrl}/${user.profileImage}`}
+                              alt={user.username}
+                            />
+                          )}
+                          <div>
+                            @{user.username}<br/>
+                            <small>({user.email}) {user.name && `- ${user.name}`}</small>
+                          </div>
+                        </SearchResultItem>
+                      ))}
+                    </div>
+                    <div>
+                      <label>Chatrooms</label>
+                      {searchResults.chatrooms.map((chatroom) => (
+                        <SearchResultItem
+                          key={chatroom._id}
+                          onClick={() => handleChatroomClick(chatroom._id)}
+                        >
+                          {chatroom.name}
+                        </SearchResultItem>
+                      ))}
+                    </div>
+                  </Tab>
+                  <Tab label="Users" icon={faUsers}>
+                    <div>
+                      <label>Users</label>
+                      {searchResults.users.map((user) => (
+                        <SearchResultItem
+                          key={user._id}
+                          onClick={() => handleUserClick(user._id)}
+                        >
+                          {user.profileImage && (
+                            <ProfileImage
+                              src={`${apiUrl}/${user.profileImage}`}
+                              alt={user.username}
+                            />
+                          )}
+                          <div>
+                            @{user.username}
+                            <small>({user.email}) {user.name && `- ${user.name}`}</small>
+                          </div>
+                        </SearchResultItem>
+                      ))}
+                    </div>
+                  </Tab>
+                  <Tab label="Chatrooms" icon={faCommentsAlt}>
+                    <div>
+                      <label>Chatrooms</label>
+                      {searchResults.chatrooms.map((chatroom) => (
+                        <SearchResultItem
+                          key={chatroom._id}
+                          onClick={() => handleChatroomClick(chatroom._id)}
+                        >
+                          {chatroom.name}
+                        </SearchResultItem>
+                      ))}
+                    </div>
+                  </Tab>
+                </Tabs>
+              </SearchResults>
+            )}
           </div>
         </Tab>
       </Tabs>

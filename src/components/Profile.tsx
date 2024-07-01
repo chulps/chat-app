@@ -14,7 +14,7 @@ interface ProfileData {
   profileImage: string | null;
 }
 
-const Container = styled.div`
+const ProfileContainer = styled.div`
   max-width: var(--space-7);
   margin: 0 auto;
 `;
@@ -26,9 +26,11 @@ const Form = styled.form`
 `;
 
 const ProfileImage = styled.img`
-  width: var(--space-4);
+  width: calc(var(--space-2) + var(--space-3));
+  height: calc(var(--space-2) + var(--space-3));
   border-radius: 50%;
   object-fit: cover;
+  aspect-ratio: 1/1;
 `;
 
 const ErrorMessage = styled.div`
@@ -49,8 +51,31 @@ const FileInputContainer = styled.div`
   align-items: center;
 `;
 
-const FileInputLabel = styled.label`
-  
+const FileInputLabel = styled.label<{ backgroundImage?: string }>`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--font-family-default);
+  letter-spacing: unset;
+  color: white;
+  border: 1px solid var(--primary);
+  text-transform: unset;
+  line-height: var(--line-height-default);
+  width: var(--space-5);
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  ${({ backgroundImage }) =>
+    backgroundImage
+      ? `background-image: url(${backgroundImage});`
+      : ''};
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--dark);
+  }
 `;
 
 const HiddenFileInput = styled.input`
@@ -59,8 +84,48 @@ const HiddenFileInput = styled.input`
 
 const ProfileInfo = styled.div`
   display: flex;
-  
-`
+`;
+
+const ProfileHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: space-between;
+  margin-top: var(--space-3);
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+`;
+
+const ProfileBio = styled.div`
+  padding-top: var(--space-3);
+`;
+
+const EditProfileImageIcon = styled.svg`
+  width: 50%;
+  color: rgba(255, 255, 255, 0.33);
+`;
+
+const ProfileImageSetup = styled.div<{ backgroundImage?: string }>`
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  ${({ backgroundImage }) =>
+    backgroundImage
+      ? `background-image: url(${backgroundImage});`
+      : ''};
+
+  svg {
+    font-size: var(--font-size-h3);
+  }
+`;
 
 const Profile: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -95,9 +160,9 @@ const Profile: React.FC = () => {
           });
           setIsInitialSetup(
             !response.data.username ||
-              !response.data.name ||
-              !response.data.bio ||
-              !response.data.profileImage
+            !response.data.name ||
+            !response.data.bio ||
+            !response.data.profileImage
           );
         } else {
           setIsInitialSetup(true);
@@ -162,17 +227,26 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <Container>
+    <ProfileContainer>
       {error && <ErrorMessage>{error}</ErrorMessage>}
       {isInitialSetup ? (
         <Form onSubmit={handleSave}>
           <div>
             <FileInputContainer>
-              <FileInputLabel htmlFor="profileImage">
-                <h1>
-                  <FontAwesomeIcon icon={faCamera} />
-                </h1>
-                Choose photo
+              <FileInputLabel
+                htmlFor="profileImage"
+                backgroundImage={
+                  profile.profileImage
+                    ? `${apiUrl}/${profile.profileImage}`
+                    : undefined
+                }
+              >
+                {!profile.profileImage && (
+                  <ProfileImageSetup backgroundImage={undefined}>
+                    <FontAwesomeIcon icon={faCamera} />
+                    Choose photo
+                  </ProfileImageSetup>
+                )}
               </FileInputLabel>
               <HiddenFileInput
                 id="profileImage"
@@ -216,22 +290,45 @@ const Profile: React.FC = () => {
               placeholder="Bio"
             />
           </div>
-          <ButtonContainer>
+          <ButtonContainer className="button-container">
             <Link to="/dashboard">Skip</Link>
             <button type="submit">Save Profile</button>
           </ButtonContainer>
         </Form>
       ) : (
-        <ProfileInfo>
-          <div>
-            {profile.profileImage && (
-              <ProfileImage
-                src={`${apiUrl}/${profile.profileImage}`}
-                alt="Profile"
-              />
-            )}
+        <ProfileInfo className="profile-info">
+          <div style={{ width: "100%" }}>
             {isEditing ? (
               <Form onSubmit={handleSave}>
+                <div>
+                  <FileInputContainer>
+                    <FileInputLabel
+                      htmlFor="profileImage"
+                      backgroundImage={
+                        profile.profileImage
+                          ? `${apiUrl}/${profile.profileImage}`
+                          : undefined
+                      }
+                    >
+                      {!profile.profileImage && (
+                        <>
+                          <FontAwesomeIcon icon={faCamera} />
+                        </>
+                      )}
+                      <EditProfileImageIcon>
+                        <FontAwesomeIcon icon={faCamera} />
+                      </EditProfileImageIcon>
+                    </FileInputLabel>
+                    <HiddenFileInput
+                      id="profileImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setImageFile(e.target.files ? e.target.files[0] : null)
+                      }
+                    />
+                  </FileInputContainer>
+                </div>
                 <div>
                   <label htmlFor="username">Username:</label>
                   <input
@@ -268,36 +365,37 @@ const Profile: React.FC = () => {
                     placeholder="Bio"
                   />
                 </div>
-                <div>
-                  <FileInputContainer>
-                    <FileInputLabel htmlFor="profileImage">
-                      Update Profile Image
-                    </FileInputLabel>
-                    <HiddenFileInput
-                      id="profileImage"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setImageFile(e.target.files ? e.target.files[0] : null)
-                      }
-                    />
-                  </FileInputContainer>
-                </div>
                 <button type="submit">Done</button>
               </Form>
             ) : (
               <>
-                <h4>@{profile.username}</h4>
-                <small>{profile.name}</small>
-                <p>{profile.bio}</p>
+                <ProfileHeader className="profile-header">
+                  <HeaderLeft>
+                    {profile.profileImage && (
+                      <ProfileImage
+                        className="profile-image"
+                        src={`${apiUrl}/${profile.profileImage}`}
+                        alt="Profile"
+                      />
+                    )}
+                    <div>
+                      <h4>@{profile.username}</h4>
+                      <small>{profile.name}</small>
+                    </div>
+                  </HeaderLeft>
 
-                <button onClick={() => setIsEditing(true)}>Edit</button>
+                  <button onClick={() => setIsEditing(true)}>Edit</button>
+                </ProfileHeader>
+                <ProfileBio>
+                  <label>Your Bio</label>
+                  {profile.bio}
+                </ProfileBio>
               </>
             )}
           </div>
         </ProfileInfo>
       )}
-    </Container>
+    </ProfileContainer>
   );
 };
 

@@ -8,6 +8,8 @@ import {
   faArrowRightToBracket,
   faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { getEnv } from "../utils/getEnv"; // Ensure correct import
 
 const HomePage: React.FC = () => {
   const [name, setName] = useState("");
@@ -17,6 +19,7 @@ const HomePage: React.FC = () => {
   const { language, content } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const { apiUrl } = getEnv();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -32,13 +35,24 @@ const HomePage: React.FC = () => {
     setIsChatroomIdValid(isValidChatroomId);
   }, [chatroomId]);
 
-  const createChatroom = () => {
-    const newChatroomId = Math.random().toString(36).substring(2, 7);
-    const chatroomUrl = `/chatroom/${newChatroomId}?name=${encodeURIComponent(
-      name
-    )}&language=${encodeURIComponent(language)}`;
-    navigate(chatroomUrl);
-    window.location.reload(); // Force reload to establish socket connection
+  const createChatroom = async () => {
+    try {
+      console.log("Creating chatroom with name:", name); // Log the name being used
+      const response = await axios.post(`${apiUrl}/api/temporary-chatrooms`, {
+        name,
+      });
+      console.log("API response:", response.data); // Log the API response
+      const newChatroomId = response.data.chatroomId;
+      console.log("Chatroom created with ID:", newChatroomId); // Log the new chatroom ID
+      const chatroomUrl = `/chatroom/${newChatroomId}?name=${encodeURIComponent(
+        name
+      )}&language=${encodeURIComponent(language)}`;
+      navigate(chatroomUrl);
+      window.location.reload(); // Force reload to establish socket connection
+    } catch (error) {
+      console.error("Error creating chatroom:", error); // Log any errors
+      alert("Error creating chatroom. Please try again.");
+    }
   };
 
   const joinChatroom = () => {

@@ -10,7 +10,7 @@ import ChatRoom from './components/ChatRoom';
 import Profile from './components/Profile';
 import Settings from './components/Settings';
 import ResetPassword from './components/ResetPassword';
-import ForgotPassword from './components/ForgotPassword'; 
+import ForgotPassword from './components/ForgotPassword';
 import Chatrooms from './components/ChatRooms';
 import CreateChatroom from './components/CreateChatRoom';
 import TermsAndConditions from './components/TermsAndConditions';
@@ -27,13 +27,13 @@ const App: React.FC = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/chatroom/:chatroomId" element={<ChatRoom />} />
         <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
-        <Route path="/chatroom/:chatroomId" element={<ProtectedRoute element={<ChatRoom />} />} />
         <Route path="/profile/:userId" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
         <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} /> 
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/chatrooms" element={<ProtectedRoute element={<Chatrooms />} />} />
         <Route path="/create-chatroom" element={<ProtectedRoute element={<CreateChatroom />} />} />
       </Routes>

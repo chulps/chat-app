@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import ChatRoomHeader from "./ChatRoomHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -11,7 +11,7 @@ import NamePrompt from "./NamePrompt";
 import WaveComponent from "./WaveComponent";
 import TranscriptionModal from "./TranscriptionModal";
 import { useLanguage } from "../contexts/LanguageContext";
-import { getEnv } from "../utils/getEnv";
+import { getEnv } from "../utils/getEnv"; // Ensure correct import
 import {
   setupSocketListeners,
   cleanupSocketListeners,
@@ -25,7 +25,7 @@ import {
   handleVisibilityChange,
   handleBeforeUnload,
 } from "../utils/chatRoomUtils";
-import { translateText } from "../utils/translate"; // Ensure translateText is imported
+import { translateText } from "../utils/translate";
 import "../css/chatroom.css";
 
 const { socketUrl, transcribeApiUrl } = getEnv();
@@ -64,15 +64,12 @@ const ChatRoom: React.FC = () => {
   const [transcriptionText, setTranscriptionText] = useState<string | null>(
     null
   );
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isRecording, setIsRecording] = useState(false); // Recording state
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isRecording, setIsRecording] = useState(false);
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
-  
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -119,7 +116,7 @@ const ChatRoom: React.FC = () => {
         typingTimeoutRef
       );
 
-      sendQrCodeMessage(); // Call the sendQrCodeMessage function here
+      sendQrCodeMessage();
 
       const visibilityChangeHandler = () =>
         handleVisibilityChange(socket, chatroomId || "", name, setIsAway);
@@ -136,7 +133,7 @@ const ChatRoom: React.FC = () => {
           visibilityChangeHandler
         );
         window.removeEventListener("beforeunload", beforeUnloadHandler);
-        localStorage.removeItem("qrCodeMessageSent"); // Remove the flag from local storage
+        localStorage.removeItem("qrCodeMessageSent");
       };
     }
   }, [
@@ -153,20 +150,24 @@ const ChatRoom: React.FC = () => {
   }, [content]);
 
   const handleSendMessage = async (messageText?: string) => {
-    setIsLoading(true); // Start loading state
-    const translatedText = await translateText(
-      messageText || inputMessage,
-      preferredLanguage
-    );
-    sendMessage(
-      socket,
-      translatedText,
-      name,
-      preferredLanguage,
-      chatroomId || "",
-      setInputMessage
-    );
-    setIsLoading(false); // End loading state
+    setIsLoading(true);
+    try {
+      const translatedText = await translateText(
+        messageText || inputMessage,
+        preferredLanguage
+      );
+      sendMessage(
+        socket,
+        translatedText,
+        name,
+        preferredLanguage,
+        chatroomId || "",
+        setInputMessage
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+    setIsLoading(false);
   };
 
   const handleEmitUserTyping = () => {
@@ -184,7 +185,7 @@ const ChatRoom: React.FC = () => {
   };
 
   const handleRecordingStop = async (blob: Blob) => {
-    setIsLoading(true); // Start loading state
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("file", blob, "audio.m4a");
 
@@ -200,11 +201,11 @@ const ChatRoom: React.FC = () => {
       );
 
       const { transcription } = response.data;
-      setTranscriptionText(transcription); // Set the transcription text
+      setTranscriptionText(transcription);
     } catch (error) {
       console.error("Error during transcription:", error);
     }
-    setIsLoading(false); // End loading state
+    setIsLoading(false);
   };
 
   return (
@@ -265,7 +266,7 @@ const ChatRoom: React.FC = () => {
             socket.emit("leaveRoom", { chatroomId, name });
             setTimeout(() => {
               navigate("/");
-            }, 100); // Small delay to ensure the message is sent
+            }, 100);
           }}
         />
         {qrCodeIsVisible && (
@@ -294,7 +295,7 @@ const ChatRoom: React.FC = () => {
             handleKeyPress(e, handleSendMessage, handleEmitUserTyping)
           }
           isNamePromptVisible={isNamePromptVisible}
-          onStopRecording={handleRecordingStop} // Pass the recording stop handler
+          onStopRecording={handleRecordingStop}
         />
         {transcriptionText && (
           <TranscriptionModal
@@ -306,9 +307,9 @@ const ChatRoom: React.FC = () => {
             }}
             onCancel={() => {
               setTranscriptionText(null);
-              setIsRecording(false); // Reset the recording state
+              setIsRecording(false);
             }}
-            setIsRecording={setIsRecording} // Pass the setIsRecording function
+            setIsRecording={setIsRecording}
           />
         )}
       </div>

@@ -1,45 +1,59 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+// src/contexts/AuthContext.tsx
+
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
 interface AuthContextType {
   token: string | null;
-  isAuthenticated: boolean;
+  user: { id: string; username: string; name?: string; profileImage?: string } | null;
   login: (token: string) => void;
   logout: () => void;
   getToken: () => string | null;
-  register: (username: string, password: string) => Promise<void>;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [user, setUser] = useState<{ id: string; username: string; name?: string; profileImage?: string } | null>(null);
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setUser(decoded.user); // Assuming the token contains the user object
+        console.log("decoded.user", decoded.user);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, [token]);
 
   const login = (token: string) => {
-    setToken(token);
     localStorage.setItem('token', token);
+    setToken(token);
+    try {
+      const decoded: any = jwtDecode(token);
+      console.log('Decoded token on login:', decoded);
+      setUser(decoded.user); // Assuming the token contains the user object
+    } catch (error) {
+      console.error('Error decoding token on login:', error);
+    }
   };
 
   const logout = () => {
-    setToken(null);
     localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
   };
 
-  const getToken = () => {
-    return token;
-  };
+  const getToken = () => token;
 
   const isAuthenticated = !!token;
 
-  const register = async (username: string, password: string) => {
-    // Implement registration logic here
-  };
-
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated, login, logout, getToken, register }}>
+    <AuthContext.Provider value={{ token, user, login, logout, getToken, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
@@ -47,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

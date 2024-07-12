@@ -9,9 +9,6 @@ const ResetPassword: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const { apiUrl } = getEnv();
 
-  // Log token to verify it's being received
-  console.log("Received token:", token);
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {

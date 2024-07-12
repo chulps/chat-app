@@ -73,12 +73,6 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(
-      "Sending login request with email:",
-      email,
-      "and password:",
-      password
-    );
 
     try {
       const response = await axios.post(`${apiUrl}/api/auth/login`, {

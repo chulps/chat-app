@@ -37,13 +37,11 @@ const HomePage: React.FC = () => {
 
   const createChatroom = async () => {
     try {
-      console.log("Creating chatroom with name:", name); // Log the name being used
       const response = await axios.post(`${apiUrl}/api/temporary-chatrooms`, {
         name,
       });
       console.log("API response:", response.data); // Log the API response
       const newChatroomId = response.data.chatroomId;
-      console.log("Chatroom created with ID:", newChatroomId); // Log the new chatroom ID
       const chatroomUrl = `/chatroom/${newChatroomId}?name=${encodeURIComponent(
         name
       )}&language=${encodeURIComponent(language)}`;

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getEnv } from '../utils/getEnv';
-import Tabs, { Tab } from './Tabs'; // Import the Tabs and Tab components
+import Tabs, { Tab } from './Tabs';
 import {
   faAddressBook,
   faComments,
@@ -14,7 +13,7 @@ import {
   faUsers,
   faComments as faCommentsAlt,
   faList
-} from "@fortawesome/free-solid-svg-icons"; // Import additional icons
+} from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 
 interface ChatRoom {
@@ -30,7 +29,7 @@ interface Friend {
   username: string;
   email: string;
   profileImage: string;
-  name?: string; // Added name field
+  name?: string;
 }
 
 interface FriendRequest {
@@ -38,12 +37,40 @@ interface FriendRequest {
   status: string;
 }
 
-interface DecodedToken {
-  id: string;
-}
-
 const DashboardContainer = styled.div`
   padding-top: var(--space-3);
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  padding: var(--space-2);
+  background-color: var(--dark);
+  border-radius: var(--space-1);
+  margin-bottom: var(--space-3);
+`;
+
+const UserProfileImage = styled.img`
+  width: calc(var(--space-4) + var(--space-1));
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: var(--space-2);
+`;
+
+const UserDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const UserName = styled.span`
+  font-size: var(--font-size-4);
+  font-weight: bold;
+`;
+
+const UserUsername = styled.span`
+  font-size: var(--font-size-2);
+  color: var(--gray-500);
 `;
 
 const SearchResults = styled.div`
@@ -91,7 +118,7 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ users: Friend[], chatrooms: ChatRoom[] }>({ users: [], chatrooms: [] });
   const { apiUrl } = getEnv();
-  const { getToken, token } = useAuth();
+  const { getToken, user } = useAuth();
   const navigate = useNavigate();
 
   const fetchChatrooms = useCallback(async () => {
@@ -224,19 +251,18 @@ const Dashboard: React.FC = () => {
       console.error('Error starting chatroom:', error);
     }
   };
-
-  let decodedToken: DecodedToken | null = null;
-  try {
-    if (token) {
-      decodedToken = jwtDecode<DecodedToken>(token);
-      console.log("Decoded Token:", decodedToken);
-    }
-  } catch (error) {
-    console.error('Error decoding token:', error);
-  }
-
+  
   return (
     <DashboardContainer>
+    {user && (
+      <UserInfo>
+        {user.profileImage && <UserProfileImage src={`${apiUrl}/${user.profileImage}`} alt={user.username} />}
+        <UserDetails>
+          <UserName>{user.name}</UserName>
+          <UserUsername>@{user.username}</UserUsername>
+        </UserDetails>
+      </UserInfo>
+    )}
       <Tabs>
         <Tab label="Chatrooms" icon={faComments}>
           {/* Empty state with no chatrooms */}
@@ -265,7 +291,6 @@ const Dashboard: React.FC = () => {
           </ul>
         </Tab>
         <Tab label="Contacts" icon={faAddressBook}>
-
           {/* List of friends */}
           <div>
             <h2>Contacts</h2>

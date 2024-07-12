@@ -11,7 +11,7 @@ import NamePrompt from "./NamePrompt";
 import WaveComponent from "./WaveComponent";
 import TranscriptionModal from "./TranscriptionModal";
 import { useLanguage } from "../contexts/LanguageContext";
-import { getEnv } from "../utils/getEnv"; // Ensure correct import
+import { getEnv } from "../utils/getEnv";
 import {
   setupSocketListeners,
   cleanupSocketListeners,
@@ -27,6 +27,7 @@ import {
 } from "../utils/chatRoomUtils";
 import { translateText } from "../utils/translate";
 import "../css/chatroom.css";
+import { useAuth } from "../contexts/AuthContext";
 
 const { socketUrl, transcribeApiUrl } = getEnv();
 
@@ -47,6 +48,10 @@ const ChatRoom: React.FC = () => {
   const initialName = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  console.log("User from AuthContext:", user);
+
   const [urlTooltipText, setUrlTooltipText] = useState(
     content["tooltip-copy-chatroom-url"]
   );
@@ -57,9 +62,12 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
-  const [name, setName] = useState(initialName);
+  const [name, setName] = useState(user?.username || initialName);
+
+  console.log("Initial name set to:", name);
+
   const [isNamePromptVisible, setIsNamePromptVisible] = useState(
-    initialName === "Anonymous"
+    initialName === "Anonymous" && !user
   );
   const [transcriptionText, setTranscriptionText] = useState<string | null>(
     null
@@ -149,24 +157,33 @@ const ChatRoom: React.FC = () => {
     setUrlTooltipText(content["tooltip-copy-chatroom-id"]);
   }, [content]);
 
+  useEffect(() => {
+    if (user?.username) {
+      setName(user.username);
+      setIsNamePromptVisible(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (name && !isNamePromptVisible) {
+      socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
+    }
+  }, [chatroomId, name, preferredLanguage, isNamePromptVisible]);
+
   const handleSendMessage = async (messageText?: string) => {
     setIsLoading(true);
-    try {
-      const translatedText = await translateText(
-        messageText || inputMessage,
-        preferredLanguage
-      );
-      sendMessage(
-        socket,
-        translatedText,
-        name,
-        preferredLanguage,
-        chatroomId || "",
-        setInputMessage
-      );
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
+    const translatedText = await translateText(
+      messageText || inputMessage,
+      preferredLanguage
+    );
+    sendMessage(
+      socket,
+      translatedText,
+      name,
+      preferredLanguage,
+      chatroomId || "",
+      setInputMessage
+    );
     setIsLoading(false);
   };
 

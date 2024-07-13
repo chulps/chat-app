@@ -262,7 +262,26 @@ const ChatRoom: React.FC = () => {
   };
 
   // Handlers for the toggle switches
-  const handleToggleIsPublic = () => setIsPublic((prev) => !prev);
+  const handleToggleIsPublic = async () => {
+    const newIsPublic = !isPublic;
+    setIsPublic(newIsPublic);
+    
+    try {
+      await axios.put(
+        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/public`,
+        { isPublic: newIsPublic },
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      console.log(`Chatroom ${chatroomId} is now ${newIsPublic ? 'public' : 'private'}`);
+    } catch (error) {
+      console.error("Error updating chatroom public status:", error);
+      // Revert the change if there's an error
+      setIsPublic(isPublic);
+    }
+  };
+  
   const handleToggleShowOriginal = () => setShowOriginal((prev) => !prev);
 
   return (

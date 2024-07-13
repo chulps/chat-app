@@ -67,7 +67,7 @@ const ToggleLabelBefore = styled.span`
   `;
   
   const ToggleIcon = styled.span<{ iconColor: string }>`
-  font-size: var(--font-size-h5);
+  font-size: var(--font-size-h6);
   position: absolute;
   color: ${(props) => props.iconColor};
 `;

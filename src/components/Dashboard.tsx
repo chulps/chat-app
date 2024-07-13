@@ -9,7 +9,6 @@ import {
   faComments,
   faBell,
   faMagnifyingGlass,
-  faUserPlus,
   faUsers,
   faComments as faCommentsAlt,
   faList
@@ -199,17 +198,6 @@ const Dashboard: React.FC = () => {
       setChatrooms(chatrooms.filter(chatroom => chatroom._id !== chatroomId));
     } catch (error) {
       console.error('Error leaving chatroom:', error);
-    }
-  };
-
-  const handleAddFriend = async (email: string) => {
-    try {
-      await axios.post(`${apiUrl}/api/friends/send-request`, { email }, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      fetchFriends();
-    } catch (error) {
-      console.error('Error sending friend request:', error);
     }
   };
 

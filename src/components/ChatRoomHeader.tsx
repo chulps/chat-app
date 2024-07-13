@@ -6,7 +6,41 @@ import {
   faLink,
   faQrcode,
   faTimes,
+  faLanguage,
+  faEye,
+  faEyeSlash
 } from "@fortawesome/free-solid-svg-icons";
+import ChatroomSettingsMenu from "./ChatroomSettingsMenu"; // Renamed DropdownMenu component
+import ToggleSwitch from "./ToggleSwitch";
+// import styled components
+import styled from "styled-components";
+
+const SettingsMenuItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1em;
+  gap: var(--space-4);
+`;
+
+const MenuItemLeftContent = styled.div`
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+`;
+
+const MenuItemIcon = styled.div`
+  display: flex;
+  flex-shrink: 1;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1/1;
+`;
+
+const MenuItemText = styled.div`
+  display: flex;
+  width: fit-content;
+`;
 
 interface ChatRoomHeaderProps {
   chatroomId: string;
@@ -20,6 +54,12 @@ interface ChatRoomHeaderProps {
   handleCopyChatroomId: () => void;
   handleShowQrCode: () => void;
   handleLeaveRoom: () => void;
+  isAuthenticated: boolean;
+  isOriginator: boolean;
+  handleToggleIsPublic: () => void;
+  isPublic: boolean;
+  handleToggleShowOriginal: () => void;
+  showOriginal: boolean;
 }
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
@@ -34,6 +74,12 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   handleCopyChatroomId,
   handleShowQrCode,
   handleLeaveRoom,
+  isAuthenticated,
+  isOriginator,
+  handleToggleIsPublic,
+  isPublic,
+  handleToggleShowOriginal,
+  showOriginal,
 }) => {
   return (
     <div className="chatroom-header">
@@ -70,9 +116,49 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
         >
           <FontAwesomeIcon icon={faLink} />
           &nbsp;
-            {content['URL']}
+          {content["URL"]}
         </data>
       </div>
+      {isAuthenticated && (
+        <ChatroomSettingsMenu alignRight>
+          {isOriginator && (
+            <SettingsMenuItem>
+              <MenuItemLeftContent>
+                <MenuItemIcon>
+                  <FontAwesomeIcon icon={faLanguage} />
+                </MenuItemIcon>
+                <MenuItemText>Public?</MenuItemText>
+              </MenuItemLeftContent>
+              <ToggleSwitch
+                isOn={isPublic}
+                handleToggle={handleToggleIsPublic}
+                label={content["toggle-public"]}
+                targetLanguage={preferredLanguage}
+              />
+            </SettingsMenuItem>
+          )}
+          <SettingsMenuItem>
+            <MenuItemLeftContent>
+              <MenuItemIcon>
+                <FontAwesomeIcon icon={faEye} />
+              </MenuItemIcon>
+              <MenuItemText>Show&nbsp;original?</MenuItemText>
+            </MenuItemLeftContent>
+            <ToggleSwitch
+              isOn={showOriginal}
+              handleToggle={handleToggleShowOriginal}
+              label={content["toggle-original"]}
+              targetLanguage={preferredLanguage}
+              onIcon={<FontAwesomeIcon icon={faEye} />}
+              offIcon={<FontAwesomeIcon icon={faEyeSlash} />}
+              onIconColor="var(--secondary)"
+              offIconColor="var(--secondary)"
+              onBackgroundColor="var(--dark)"
+              offBackgroundColor="var(--dark)"
+            />
+          </SettingsMenuItem>
+        </ChatroomSettingsMenu>
+      )}
     </div>
   );
 };

@@ -76,8 +76,14 @@ const ChatRoom: React.FC = () => {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
+  // eslint-disable-next-line
   const [isRecording, setIsRecording] = useState(false);
+  // eslint-disable-next-line
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
+
+  // New state for the toggle switches
+  const [isPublic, setIsPublic] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -225,6 +231,10 @@ const ChatRoom: React.FC = () => {
     setIsLoading(false);
   };
 
+  // Handlers for the toggle switches
+  const handleToggleIsPublic = () => setIsPublic((prev) => !prev);
+  const handleToggleShowOriginal = () => setShowOriginal((prev) => !prev);
+
   return (
     <main className="chatroom">
       {isNamePromptVisible && (
@@ -285,6 +295,12 @@ const ChatRoom: React.FC = () => {
               navigate("/");
             }, 100);
           }}
+          isAuthenticated={!!user}
+          isOriginator={user?.id === chatroomId}
+          handleToggleIsPublic={handleToggleIsPublic}
+          isPublic={isPublic}
+          handleToggleShowOriginal={handleToggleShowOriginal}
+          showOriginal={showOriginal}
         />
         {qrCodeIsVisible && (
           <QRCodeModal
@@ -296,6 +312,7 @@ const ChatRoom: React.FC = () => {
           name={name}
           preferredLanguage={preferredLanguage}
           conversationContainerRef={conversationContainerRef}
+          showOriginal={showOriginal} // Pass the showOriginal state to MessageList
         />
         <TypingIndicator typingUser={typingUser} />
         {isLoading && (

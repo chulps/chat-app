@@ -2,6 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
+import styled from 'styled-components'
+
+const OriginalText = styled.small`
+  opacity: 0.25;
+  border-top: 1px solid var(--white);
+`
 
 interface Message {
   sender?: string;
@@ -17,6 +23,7 @@ interface MessageListProps {
   name: string;
   preferredLanguage: string;
   conversationContainerRef: React.RefObject<HTMLDivElement>;
+  showOriginal: boolean; // New prop to control the visibility of the original text
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -24,6 +31,7 @@ const MessageList: React.FC<MessageListProps> = ({
   name,
   preferredLanguage,
   conversationContainerRef,
+  showOriginal,
 }) => {
   const [urlMetadata, setUrlMetadata] = useState<{ [url: string]: any }>({});
   const [fetchedUrls, setFetchedUrls] = useState<Set<string>>(new Set());
@@ -107,7 +115,7 @@ const MessageList: React.FC<MessageListProps> = ({
   );
 
   const renderMessageContent = useCallback(
-    (message: Message) => {
+    (message: Message, isCurrentUser: boolean) => {
       const isEmail = message.text?.match(
         /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
       );
@@ -161,10 +169,13 @@ const MessageList: React.FC<MessageListProps> = ({
           <TranslationWrapper targetLanguage={preferredLanguage} originalLanguage={message.language}>
             {message.text}
           </TranslationWrapper>
+          {showOriginal && !isCurrentUser && message.type !== "system" && (
+            <OriginalText className="original-text">{message.text}</OriginalText>
+          )}
         </span>
       );
     },
-    [preferredLanguage, renderTextWithLinks, urlMetadata]
+    [preferredLanguage, renderTextWithLinks, urlMetadata, showOriginal]
   );
 
   const memoizedRenderMessageContent = useMemo(
@@ -174,40 +185,41 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div className="conversation-container" ref={conversationContainerRef}>
-      {messages.map((message, index) => (
-        <div className="message-row" key={index}>
-          <div
-            className={`message-wrapper ${
-              message.sender === name ? "me" : ""
-            } ${
-              message.type === "system" || message.type === "qr"
-                ? "system-message"
-                : ""
-            }`}
-          >
-            {message.type !== "system" && message.type !== "qr" && (
-              <small className="sender-name">{message.sender}</small>
-            )}
+      {messages.map((message, index) => {
+        const isCurrentUser = message.sender === name;
+        return (
+          <div className="message-row" key={index}>
             <div
-              className={`message ${
+              className={`message-wrapper ${isCurrentUser ? "me" : ""} ${
                 message.type === "system" || message.type === "qr"
                   ? "system-message"
                   : ""
               }`}
             >
-              {memoizedRenderMessageContent(message)}
-            </div>
-            {message.type !== "system" && message.type !== "qr" && (
-              <small
-                style={{ color: "var(--neutral-400)" }}
-                className="timestamp"
+              {message.type !== "system" && message.type !== "qr" && (
+                <small className="sender-name">{message.sender}</small>
+              )}
+              <div
+                className={`message ${
+                  message.type === "system" || message.type === "qr"
+                    ? "system-message"
+                    : ""
+                }`}
               >
-                {message.timestamp}
-              </small>
-            )}
+                {memoizedRenderMessageContent(message, isCurrentUser)}
+              </div>
+              {message.type !== "system" && message.type !== "qr" && (
+                <small
+                  style={{ color: "var(--neutral-400)" }}
+                  className="timestamp"
+                >
+                  {message.timestamp}
+                </small>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

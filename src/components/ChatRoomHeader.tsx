@@ -8,7 +8,10 @@ import {
   faTimes,
   faLanguage,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faGlobe,
+  faLock,
+  faUnlock
 } from "@fortawesome/free-solid-svg-icons";
 import ChatroomSettingsMenu from "./ChatroomSettingsMenu"; // Renamed DropdownMenu component
 import ToggleSwitch from "./ToggleSwitch";
@@ -125,26 +128,34 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
             <SettingsMenuItem>
               <MenuItemLeftContent>
                 <MenuItemIcon>
-                  <FontAwesomeIcon icon={faLanguage} />
+                  <FontAwesomeIcon icon={faGlobe} />
                 </MenuItemIcon>
                 <MenuItemText>Public?</MenuItemText>
               </MenuItemLeftContent>
               <ToggleSwitch
+                id="public-toggle"
                 isOn={isPublic}
                 handleToggle={handleToggleIsPublic}
                 label={content["toggle-public"]}
                 targetLanguage={preferredLanguage}
+                onIcon={<FontAwesomeIcon icon={faUnlock} />}
+                offIcon={<FontAwesomeIcon icon={faLock} />}
+                onIconColor="var(--secondary)"
+                offIconColor="var(--secondary)"
+                onBackgroundColor="var(--dark)"
+                offBackgroundColor="var(--dark)"
               />
             </SettingsMenuItem>
           )}
           <SettingsMenuItem>
             <MenuItemLeftContent>
               <MenuItemIcon>
-                <FontAwesomeIcon icon={faEye} />
+                <FontAwesomeIcon icon={faLanguage} />
               </MenuItemIcon>
               <MenuItemText>Show&nbsp;original?</MenuItemText>
             </MenuItemLeftContent>
             <ToggleSwitch
+              id="show-original-toggle"
               isOn={showOriginal}
               handleToggle={handleToggleShowOriginal}
               label={content["toggle-original"]}

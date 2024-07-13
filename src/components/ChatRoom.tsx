@@ -48,7 +48,7 @@ const ChatRoom: React.FC = () => {
   const initialName = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
 
   console.log("User from AuthContext:", user);
 
@@ -84,6 +84,30 @@ const ChatRoom: React.FC = () => {
   // New state for the toggle switches
   const [isPublic, setIsPublic] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+
+  // New state for checking if user is the originator
+  const [isOriginator, setIsOriginator] = useState(false);
+
+  const fetchChatroomDetails = useCallback(async () => {
+    console.log('Fetching details for chatroom ID:', chatroomId); // Log chatroom ID
+    try {
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const chatroom = response.data;
+
+      console.log('Fetched chatroom:', chatroom); // Log chatroom details
+      console.log('Current user:', user); // Log user details
+
+      const originator = chatroom.originator._id === user?.id;
+      console.log('Comparing:', chatroom.originator._id, 'with', user?.id); // Log comparison
+      setIsOriginator(originator);
+      console.log(`isOriginator (fetched): ${originator}`); // Log the fetched value of isOriginator
+      setIsPublic(chatroom.isPublic);
+    } catch (error) {
+      console.error("Error fetching chatroom details:", error);
+    }
+  }, [chatroomId, getToken, user]);
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -175,6 +199,12 @@ const ChatRoom: React.FC = () => {
       socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
     }
   }, [chatroomId, name, preferredLanguage, isNamePromptVisible]);
+
+  useEffect(() => {
+    if (user) {
+      fetchChatroomDetails();
+    }
+  }, [fetchChatroomDetails, user]);
 
   const handleSendMessage = async (messageText?: string) => {
     setIsLoading(true);
@@ -296,7 +326,7 @@ const ChatRoom: React.FC = () => {
             }, 100);
           }}
           isAuthenticated={!!user}
-          isOriginator={user?.id === chatroomId}
+          isOriginator={isOriginator}
           handleToggleIsPublic={handleToggleIsPublic}
           isPublic={isPublic}
           handleToggleShowOriginal={handleToggleShowOriginal}

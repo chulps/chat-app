@@ -3,6 +3,7 @@ import styled from "styled-components";
 import TranslationWrapper from "./TranslationWrapper";
 
 interface ToggleSwitchProps {
+  id: string; // Add id prop
   isOn: boolean;
   handleToggle: () => void;
   label?: string;
@@ -66,7 +67,7 @@ const ToggleLabelBefore = styled.span`
   transition: transform 0.2s;
   `;
   
-  const ToggleIcon = styled.span<{ iconColor: string }>`
+const ToggleIcon = styled.span<{ iconColor: string }>`
   font-size: var(--font-size-h6);
   position: absolute;
   color: ${(props) => props.iconColor};
@@ -81,6 +82,7 @@ const OffIcon = styled(ToggleIcon)`
 `;
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
+  id, // Add id prop
   isOn,
   handleToggle,
   label,
@@ -89,10 +91,10 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   className,
   tooltip,
   targetLanguage,
-  onIconColor = '#fff',
-  offIconColor = '#fff',
-  onBackgroundColor = '#4CAF50',
-  offBackgroundColor = '#ccc'
+  onIconColor = 'var(--secondary)',
+  offIconColor = 'var(--secondary)',
+  onBackgroundColor = 'var(--success)',
+  offBackgroundColor = 'inherit'
 }) => {
   return (
     <ToggleSwitchContainer className={className} data-tooltip={tooltip}>
@@ -112,12 +114,12 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         offBackgroundColor={offBackgroundColor}
       >
         <ToggleInput
+          id={id} // Add id attribute
           checked={isOn}
           onChange={handleToggle}
           type="checkbox"
-          id="toggle-switch"
         />
-        <ToggleLabel htmlFor="toggle-switch">
+        <ToggleLabel htmlFor={id}> {/* Update htmlFor attribute */}
           <OnIcon iconColor={onIconColor}>{isOn ? onIcon : null}</OnIcon>
           <ToggleLabelBefore style={{ transform: isOn ? 'translateX(calc(var(--space-2) + var(--space-1)))' : 'none' }} />
           <OffIcon iconColor={offIconColor}>{!isOn ? offIcon : null}</OffIcon>

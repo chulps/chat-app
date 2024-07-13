@@ -207,6 +207,7 @@ const Header: React.FC = () => {
             <MenuThemeToggle>
               Theme ({theme === "dark" ? "Dark" : "Light"})
               <ToggleSwitch
+                id="theme-toggle"
                 isOn={theme === "light"}
                 handleToggle={toggleTheme}
                 onIcon={<FontAwesomeIcon icon={faSun} />}

@@ -15,7 +15,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ChatroomSettingsMenu from "./ChatroomSettingsMenu"; // Renamed DropdownMenu component
 import ToggleSwitch from "./ToggleSwitch";
-// import styled components
 import styled from "styled-components";
 
 const SettingsMenuItem = styled.div`

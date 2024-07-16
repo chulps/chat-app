@@ -18,13 +18,14 @@ const DashboardList = styled.ul`
   list-style: none;
 
   li {
-    padding: 1em 0;
+    padding: 0.5em 1em;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-top: 1px solid var(--secondary);
-    &:first-of-type {
-      border-top: none;
+
+    &:hover {
+      background-color: var(--dark);
     }
   }
 `;
@@ -139,25 +140,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     }
   };
 
-  const leaveChatroom = async (chatroomId: string) => {
-    try {
-      await axios.post(
-        `${apiUrl}/api/chatrooms/leave`,
-        { chatroomId },
-        {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      const updatedChatrooms = chatrooms.filter(
-        (chatroom) => chatroom._id !== chatroomId
-      );
-      setChatrooms(updatedChatrooms);
-      setFilteredChatrooms(updatedChatrooms);
-    } catch (error) {
-      console.error("Error leaving chatroom:", error);
-    }
-  };
-
   return (
     <>
       <TabHeader>
@@ -207,7 +189,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
         {filteredChatrooms.map((chatroom) => (
           <li key={chatroom._id}>
             <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
-            <button onClick={() => leaveChatroom(chatroom._id)}>Leave</button>
           </li>
         ))}
       </DashboardList>

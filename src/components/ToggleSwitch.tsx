@@ -53,6 +53,10 @@ const ToggleLabel = styled.label`
   outline: 1px solid var(--secondary);
   display: flex;
   align-items: center;
+  background: var(--dark);
+  &:hover {
+    filter: brightness(1.3);
+  }
 `;
 
 const ToggleLabelBefore = styled.span`

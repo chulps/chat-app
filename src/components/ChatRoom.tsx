@@ -62,6 +62,8 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [chatroomName, setChatroomName] = useState("");
+  const [membersCount, setMembersCount] = useState(0);
   const [name, setName] = useState(user?.username || initialName);
 
   console.log("Initial name set to:", name);
@@ -98,6 +100,9 @@ const ChatRoom: React.FC = () => {
 
       console.log('Fetched chatroom:', chatroom); // Log chatroom details
       console.log('Current user:', user); // Log user details
+
+      setChatroomName(chatroom.name); // Set chatroom name
+      setMembersCount(chatroom.members.length); // Set members count
 
       const originator = chatroom.originator._id === user?.id;
       console.log('Comparing:', chatroom.originator._id, 'with', user?.id); // Log comparison
@@ -206,6 +211,16 @@ const ChatRoom: React.FC = () => {
     }
   }, [fetchChatroomDetails, user]);
 
+  useEffect(() => {
+    socket.on('updateMembersCount', (count) => {
+      setMembersCount(count);
+    });
+
+    return () => {
+      socket.off('updateMembersCount');
+    };
+  }, []);
+
   const handleSendMessage = async (messageText?: string) => {
     setIsLoading(true);
     const translatedText = await translateText(
@@ -305,7 +320,8 @@ const ChatRoom: React.FC = () => {
       >
         <ChatRoomHeader
           chatroomId={chatroomId || ""}
-          name={name}
+          chatroomName={chatroomName} // Pass the chatroom name here
+          membersCount={membersCount} // Pass the members count here
           qrCodeIsVisible={qrCodeIsVisible}
           urlTooltipText={urlTooltipText}
           idTooltipText={idTooltipText}

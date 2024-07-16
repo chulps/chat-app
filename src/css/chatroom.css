@@ -2,8 +2,8 @@
 .chatroom {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - var(--space-4) - var(--space-3) - var(--space-1));
-  height: calc(100dvh - var(--space-4) - var(--space-3) - var(--space-1));
+  height: calc(100vh - 100px);
+  height: calc(100dvh - 100px);
 }
 
 @media screen and (min-width: 768px) {

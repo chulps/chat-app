@@ -98,6 +98,10 @@ const DropdownMenu = styled.div`
   button {
     background: var(--secondary);
     color: var(--danger-300) !important;
+
+    &:hover {
+      filter: brightness(1.3);
+    }
   }
 `;
 
@@ -121,6 +125,7 @@ const LogoutButton = styled.div`
   &:hover {
     background: var(--dark);
     cursor: pointer;
+    filter: brightness(1.3);
   }
 `;
 

@@ -13,11 +13,10 @@ const DropdownContainer = styled.div`
 `;
 
 const MenuButton = styled.span`
-  padding: 0.5em 1em;
+  padding: 0.5em;
   color: var(--white);
   cursor: pointer;
   font-size: var(--font-size-h4);
-  margin-right: -1em;
 `;
 
 const DropdownContent = styled.div<{ alignRight?: boolean }>`
@@ -33,6 +32,7 @@ const DropdownContent = styled.div<{ alignRight?: boolean }>`
   width: fit-content;
   border-radius: 1em;
   overflow: hidden;
+  font-size: var(--font-size-default);
 
   button {
     background: var(--secondary);

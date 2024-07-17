@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import QRCodeMessage from "./QRCodeMessage";
 import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
-import styled from 'styled-components'
+import styled from "styled-components";
 
 const OriginalText = styled.small`
   opacity: 0.25;
   border-top: 1px solid var(--white);
-`
+`;
 
 interface Message {
   sender?: string;
@@ -77,7 +77,7 @@ const MessageList: React.FC<MessageListProps> = ({
       const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
       const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g;
 
-      const parts = text.split(/(${emailRegex.source})|(${urlRegex.source})/g);
+      const parts = text.split(new RegExp(`(${emailRegex.source})|(${urlRegex.source})`, 'g'));
       return parts.map((part, index) => {
         if (part) {
           if (part.match(emailRegex)) {
@@ -208,12 +208,16 @@ const MessageList: React.FC<MessageListProps> = ({
               >
                 {memoizedRenderMessageContent(message, isCurrentUser)}
               </div>
-              {message.type !== "system" && message.type !== "qr" && (
+              {message.type !== "system" && message.type !== "qr" && message.timestamp && (
                 <small
                   style={{ color: "var(--neutral-400)" }}
                   className="timestamp"
                 >
-                  {message.timestamp}
+                  {new Date(message.timestamp).toLocaleTimeString(navigator.language, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
                 </small>
               )}
             </div>

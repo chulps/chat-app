@@ -38,7 +38,7 @@ const TabButton = styled.button<{ isActive: boolean }>`
 `;
 
 const TabContent = styled.div`
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
 `;
 
 const TabsContainer = styled.div`

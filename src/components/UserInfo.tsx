@@ -5,14 +5,12 @@ import { getEnv } from "../utils/getEnv";
 const UserInfoContainer = styled.div`
   display: flex;
   align-items: center;
-  padding: var(--space-2);
-  background-color: var(--dark);
+  padding: var(--space-2) 0;
   border-radius: var(--space-1);
-  margin-bottom: var(--space-3);
 `;
 
 const UserProfileImage = styled.img`
-  width: calc(var(--space-4) + var(--space-1));
+  width: calc(var(--space-3) + var(--space-2));
   aspect-ratio: 1/1;
   border-radius: 50%;
   object-fit: cover;

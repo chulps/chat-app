@@ -50,8 +50,6 @@ const ChatRoom: React.FC = () => {
   const navigate = useNavigate();
   const { user, getToken } = useAuth();
 
-  console.log("User from AuthContext:", user);
-
   const [urlTooltipText, setUrlTooltipText] = useState(
     content["tooltip-copy-chatroom-url"]
   );
@@ -66,8 +64,6 @@ const ChatRoom: React.FC = () => {
   const [membersCount, setMembersCount] = useState(0);
   const [name, setName] = useState(user?.username || initialName);
 
-  console.log("Initial name set to:", name);
-
   const [isNamePromptVisible, setIsNamePromptVisible] = useState(
     initialName === "Anonymous" && !user
   );
@@ -78,37 +74,30 @@ const ChatRoom: React.FC = () => {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
-  // eslint-disable-next-line
   const [isRecording, setIsRecording] = useState(false);
-  // eslint-disable-next-line
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
 
-  // New state for the toggle switches
   const [isPublic, setIsPublic] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
 
-  // New state for checking if user is the originator
   const [isOriginator, setIsOriginator] = useState(false);
 
   const fetchChatroomDetails = useCallback(async () => {
-    console.log('Fetching details for chatroom ID:', chatroomId); // Log chatroom ID
     try {
       const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const chatroom = response.data;
 
-      console.log('Fetched chatroom:', chatroom); // Log chatroom details
-      console.log('Current user:', user); // Log user details
-
-      setChatroomName(chatroom.name); // Set chatroom name
-      setMembersCount(chatroom.members.length); // Set members count
-
+      setChatroomName(chatroom.name);
+      setMembersCount(chatroom.members.length);
       const originator = chatroom.originator._id === user?.id;
-      console.log('Comparing:', chatroom.originator._id, 'with', user?.id); // Log comparison
       setIsOriginator(originator);
-      console.log(`isOriginator (fetched): ${originator}`); // Log the fetched value of isOriginator
       setIsPublic(chatroom.isPublic);
+      setMessages(chatroom.messages.map((msg: any) => ({
+        ...msg,
+        sender: msg.sender.username, // Ensuring sender is the username
+      })));
     } catch (error) {
       console.error("Error fetching chatroom details:", error);
     }
@@ -276,7 +265,6 @@ const ChatRoom: React.FC = () => {
     setIsLoading(false);
   };
 
-  // Handlers for the toggle switches
   const handleToggleIsPublic = async () => {
     const newIsPublic = !isPublic;
     setIsPublic(newIsPublic);
@@ -292,7 +280,6 @@ const ChatRoom: React.FC = () => {
       console.log(`Chatroom ${chatroomId} is now ${newIsPublic ? 'public' : 'private'}`);
     } catch (error) {
       console.error("Error updating chatroom public status:", error);
-      // Revert the change if there's an error
       setIsPublic(isPublic);
     }
   };
@@ -320,8 +307,8 @@ const ChatRoom: React.FC = () => {
       >
         <ChatRoomHeader
           chatroomId={chatroomId || ""}
-          chatroomName={chatroomName} // Pass the chatroom name here
-          membersCount={membersCount} // Pass the members count here
+          chatroomName={chatroomName}
+          membersCount={membersCount}
           qrCodeIsVisible={qrCodeIsVisible}
           urlTooltipText={urlTooltipText}
           idTooltipText={idTooltipText}
@@ -377,7 +364,7 @@ const ChatRoom: React.FC = () => {
           name={name}
           preferredLanguage={preferredLanguage}
           conversationContainerRef={conversationContainerRef}
-          showOriginal={showOriginal} // Pass the showOriginal state to MessageList
+          showOriginal={showOriginal}
         />
         <TypingIndicator typingUser={typingUser} />
         {isLoading && (

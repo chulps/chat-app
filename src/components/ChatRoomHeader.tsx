@@ -215,11 +215,29 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
     }
   };
 
+  const markMessagesAsRead = async () => {
+    try {
+      await axios.put(
+        `${apiUrl}/api/chatrooms/${chatroomId}/mark-read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
   useEffect(() => {
     if (isAccordionOpen) {
       fetchMembers();
     }
   }, [isAccordionOpen]);
+
+  useEffect(() => {
+    markMessagesAsRead();
+  }, []);
 
   const leaveChatroom = async () => {
     try {

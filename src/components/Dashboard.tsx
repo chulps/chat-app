@@ -7,14 +7,13 @@ import Tabs, { Tab } from "./Tabs";
 import {
   faAddressBook,
   faComments,
-  faBell,
+  // faBell,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 import UserInfo from "./UserInfo";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
-import NotificationsTab from "./NotificationsTab";
 import SearchTab from "./SearchTab";
 
 interface ChatRoom {
@@ -23,6 +22,7 @@ interface ChatRoom {
   originator: string;
   members: string[];
   isPublic: boolean;
+  unreadMessages?: boolean;
 }
 
 interface Friend {
@@ -39,7 +39,17 @@ interface FriendRequest {
 }
 
 const DashboardContainer = styled.div`
-  padding-top: var(--space-3);
+  position: relative;
+`;
+
+const NotificationDot = styled.span`
+  height: 10px;
+  width: 10px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
 `;
 
 const Dashboard: React.FC = () => {
@@ -55,6 +65,7 @@ const Dashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { apiUrl } = getEnv();
   const { getToken, user } = useAuth();
+  const [newMessage, setNewMessage] = useState(false);
   const navigate = useNavigate();
 
   const fetchChatrooms = useCallback(async () => {
@@ -64,6 +75,8 @@ const Dashboard: React.FC = () => {
       });
       setChatrooms(response.data);
       setFilteredChatrooms(response.data);
+      const hasUnreadMessages = response.data.some((chatroom: ChatRoom) => chatroom.unreadMessages);
+      setNewMessage(hasUnreadMessages);
     } catch (error) {
       console.error("Error fetching chatrooms:", error);
     }
@@ -138,13 +151,16 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchChatrooms();
     fetchFriends();
+    const interval = setInterval(fetchChatrooms, 30000); // Update every 30 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [fetchChatrooms, fetchFriends]);
 
   return (
-    <DashboardContainer className="dashboard-container">
+    <DashboardContainer>
       {user && <UserInfo user={user} />}
       <Tabs>
         <Tab label="Chatrooms" icon={faComments}>
+          {newMessage && <NotificationDot />}
           <ChatroomsTab
             chatrooms={chatrooms}
             setChatrooms={setChatrooms}
@@ -159,13 +175,13 @@ const Dashboard: React.FC = () => {
             setFilteredFriends={setFilteredFriends}
           />
         </Tab>
-        <Tab label="Notifications" icon={faBell}>
+        {/* <Tab label="Notifications" icon={faBell}>
           <NotificationsTab
             friendRequests={friendRequests}
             handleAcceptFriendRequest={handleAcceptFriendRequest}
             handleRejectFriendRequest={handleRejectFriendRequest}
           />
-        </Tab>
+        </Tab> */}
         <Tab label="Search" icon={faMagnifyingGlass}>
           <SearchTab
             apiUrl={apiUrl}

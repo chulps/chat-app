@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSearch, faChevronRight, faCrown, faCircle } from "@fortawesome/free-solid-svg-icons";
 
 const CreateChatroomInputContainer = styled.div`
   display: flex;
@@ -18,7 +18,7 @@ const DashboardList = styled.ul`
   list-style: none;
 
   li {
-    padding: 0.5em 1em;
+    padding: 0.5em;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -28,6 +28,38 @@ const DashboardList = styled.ul`
       background-color: var(--dark);
     }
   }
+`;
+
+const ChatroomInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const ChatroomNameContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ChatroomName = styled.span`
+  font-size: var(--font-size-h5);
+`;
+
+const LatestMessage = styled.span`
+  font-size: var(--font-size-h6);
+  color: var(--secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LatestMessageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 `;
 
 const EmptyState = styled.p`
@@ -52,6 +84,37 @@ const TabHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: var(--space-2);
+`;
+
+const StyledLink = styled(RouterLink)`
+  color: var(--white);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const TimeOfLastMessage = styled.div`
+  color: var(--secondary);
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+  font-size: var(--font-size-small);
+
+  svg[data-icon="crown"] {
+    font-size: 9px;
+    color: var(--warning);
+    padding-bottom: 1px;
+  }
+`;
+
+const NewMessageDot = styled.span`
+  height: 0.5em;
+  width: 0.5em;
+  background-color: var(--primary);
+  border-radius: 50%;
+  margin-right: 0.5em;
 `;
 
 interface ChatRoom {
@@ -60,6 +123,11 @@ interface ChatRoom {
   originator: string;
   members: string[];
   isPublic: boolean;
+  latestMessage?: {
+    text: string;
+    timestamp: string;
+  };
+  hasUnreadMessages?: boolean;
 }
 
 interface ChatroomsTabProps {
@@ -76,7 +144,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   setFilteredChatrooms,
 }) => {
   const { apiUrl } = getEnv();
-  const { getToken } = useAuth();
+  const { getToken, user } = useAuth();
   const [newChatroomName, setNewChatroomName] = useState("");
   const [chatroomSearchQuery, setChatroomSearchQuery] = useState("");
   const [showCreateInput, setShowCreateInput] = useState(false);
@@ -140,6 +208,57 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     }
   };
 
+  const fetchChatrooms = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/chatrooms`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const sortedChatrooms = response.data.sort((a: ChatRoom, b: ChatRoom) => {
+        const aLatest = a.latestMessage?.timestamp || 0;
+        const bLatest = b.latestMessage?.timestamp || 0;
+        return new Date(bLatest).getTime() - new Date(aLatest).getTime();
+      });
+      setChatrooms(sortedChatrooms);
+      setFilteredChatrooms(sortedChatrooms);
+    } catch (error) {
+      console.error("Error fetching chatrooms:", error);
+    }
+  };
+
+  const markMessagesAsRead = async (chatroomId: string) => {
+    try {
+      await axios.post(
+        `${apiUrl}/api/chatrooms/${chatroomId}/mark-read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      setChatrooms(prevChatrooms =>
+        prevChatrooms.map(chatroom =>
+          chatroom._id === chatroomId
+            ? { ...chatroom, hasUnreadMessages: false }
+            : chatroom
+        )
+      );
+      setFilteredChatrooms(prevFilteredChatrooms =>
+        prevFilteredChatrooms.map(chatroom =>
+          chatroom._id === chatroomId
+            ? { ...chatroom, hasUnreadMessages: false }
+            : chatroom
+        )
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChatrooms();
+    const interval = setInterval(fetchChatrooms, 30000); // Update every 30 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
+
   return (
     <>
       <TabHeader>
@@ -188,7 +307,32 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
       <DashboardList>
         {filteredChatrooms.map((chatroom) => (
           <li key={chatroom._id}>
-            <Link to={`/chatroom/${chatroom._id}`}>{chatroom.name}</Link>
+            <StyledLink to={`/chatroom/${chatroom._id}`} onClick={() => markMessagesAsRead(chatroom._id)}>
+              <ChatroomInfo>
+                <ChatroomNameContainer>
+                  {chatroom.hasUnreadMessages && <NewMessageDot />}
+                  <ChatroomName>{chatroom.name}</ChatroomName>
+                </ChatroomNameContainer>
+                {chatroom.latestMessage && (
+                  <TimeOfLastMessage>
+                    {chatroom.originator === user?.id && (
+                      <FontAwesomeIcon icon={faCrown} />
+                    )}
+                    <data>{new Date(chatroom.latestMessage.timestamp).toLocaleTimeString(navigator.language, {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                    })}</data>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </TimeOfLastMessage>
+                )}
+              </ChatroomInfo>
+              {chatroom.latestMessage && (
+                <LatestMessageContainer>
+                  <LatestMessage>{chatroom.latestMessage.text}</LatestMessage>
+                </LatestMessageContainer>
+              )}
+            </StyledLink>
           </li>
         ))}
       </DashboardList>

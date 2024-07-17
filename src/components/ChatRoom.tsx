@@ -40,6 +40,7 @@ export interface Message {
   chatroomId: string;
   timestamp?: string;
   type?: "system" | "user" | "qr";
+  readBy?: string[];
 }
 
 const ChatRoom: React.FC = () => {
@@ -97,6 +98,7 @@ const ChatRoom: React.FC = () => {
       setMessages(chatroom.messages.map((msg: any) => ({
         ...msg,
         sender: msg.sender.username, // Ensuring sender is the username
+        readBy: msg.readBy, // Ensure readBy is included
       })));
     } catch (error) {
       console.error("Error fetching chatroom details:", error);
@@ -122,6 +124,7 @@ const ChatRoom: React.FC = () => {
       language: preferredLanguage,
       chatroomId: chatroomId || "",
       type: "qr",
+      readBy: [], // No one has read this system message yet
     };
 
     const qrCodeMessageSentBefore = localStorage.getItem("qrCodeMessageSent");
@@ -222,7 +225,8 @@ const ChatRoom: React.FC = () => {
       name,
       preferredLanguage,
       chatroomId || "",
-      setInputMessage
+      setInputMessage,
+      user?.id // Include user ID
     );
     setIsLoading(false);
   };

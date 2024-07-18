@@ -7,7 +7,8 @@ import Register from './components/Register';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './components/Dashboard';
 import ChatRoom from './components/ChatRoom';
-import Profile from './components/Profile';
+import MyProfile from './components/MyProfile';
+import UserProfile from './components/UserProfile';
 import Settings from './components/Settings';
 import ResetPassword from './components/ResetPassword';
 import ForgotPassword from './components/ForgotPassword';
@@ -29,8 +30,8 @@ const App: React.FC = () => {
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/chatroom/:chatroomId" element={<ChatRoom />} />
         <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
-        <Route path="/profile/:userId" element={<ProtectedRoute element={<Profile />} />} />
-        <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
+        <Route path="/profile/me" element={<ProtectedRoute element={<MyProfile />} />} />
+        <Route path="/profile/:userId" element={<ProtectedRoute element={<UserProfile />} />} />
         <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

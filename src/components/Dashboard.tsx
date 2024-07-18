@@ -7,7 +7,7 @@ import Tabs, { Tab } from "./Tabs";
 import {
   faAddressBook,
   faComments,
-  // faBell,
+  faBell,
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
@@ -15,6 +15,7 @@ import UserInfo from "./UserInfo";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SearchTab from "./SearchTab";
+import NotificationsTab from "./NotificationsTab"; // Import NotificationsTab
 
 interface ChatRoom {
   _id: string;
@@ -43,13 +44,34 @@ const DashboardContainer = styled.div`
 `;
 
 const NotificationDot = styled.span`
-  height: 10px;
-  width: 10px;
+  height: 0.5rem;
+  width: 0.5rem;
   background-color: var(--primary);
   border-radius: 50%;
   position: absolute;
   top: 0;
   right: 0;
+`;
+
+const UserProfileHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+`;
+
+const ProfileImage = styled.img`
+  width: calc(var(--space-3) + var(--space-2));
+  height: calc(var(--space-3) + var(--space-2));
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const UserName = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-lg);
+  font-weight: bold;
 `;
 
 const Dashboard: React.FC = () => {
@@ -157,7 +179,15 @@ const Dashboard: React.FC = () => {
 
   return (
     <DashboardContainer>
-      {user && <UserInfo user={user} />}
+      {user && (
+        <UserProfileHeader>
+          {user.profileImage && <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />}
+          <UserName>
+            <div>{user.username}</div>
+            <div>{user.name}</div>
+          </UserName>
+        </UserProfileHeader>
+      )}
       <Tabs>
         <Tab label="Chatrooms" icon={faComments}>
           {newMessage && <NotificationDot />}
@@ -175,13 +205,13 @@ const Dashboard: React.FC = () => {
             setFilteredFriends={setFilteredFriends}
           />
         </Tab>
-        {/* <Tab label="Notifications" icon={faBell}>
+        <Tab label="Notifications" icon={faBell}>
           <NotificationsTab
             friendRequests={friendRequests}
             handleAcceptFriendRequest={handleAcceptFriendRequest}
             handleRejectFriendRequest={handleRejectFriendRequest}
           />
-        </Tab> */}
+        </Tab>
         <Tab label="Search" icon={faMagnifyingGlass}>
           <SearchTab
             apiUrl={apiUrl}

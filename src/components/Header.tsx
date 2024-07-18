@@ -133,7 +133,7 @@ const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
   const [menuVisible, setMenuVisible] = useState(false);
   const { content } = useLanguage();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -198,7 +198,7 @@ const Header: React.FC = () => {
             {isAuthenticated ? (
               <>
                 {renderLink("/dashboard", faGauge, "Dashboard")}
-                {renderLink("/profile", faUser, "Profile")}
+                {renderLink("/profile/me", faUser, "Profile")}
                 {renderLink("/settings", faGear, "Settings")}
               </>
             ) : (
@@ -225,9 +225,9 @@ const Header: React.FC = () => {
               />
             </MenuThemeToggle>
             {isAuthenticated && (
-                <LogoutButton onClick={logout}>
-                  <FontAwesomeIcon icon={faRightFromBracket} /> Logout
-                </LogoutButton>
+              <LogoutButton onClick={logout}>
+                <FontAwesomeIcon icon={faRightFromBracket} /> Logout
+              </LogoutButton>
             )}
           </DropdownMenu>
         )}

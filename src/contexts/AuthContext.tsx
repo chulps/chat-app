@@ -23,7 +23,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const decoded: any = jwtDecode(token);
         setUser(decoded.user); // Assuming the token contains the user object
-        console.log("decoded.user", decoded.user);
       } catch (error) {
         console.error('Error decoding token:', error);
       }
@@ -35,7 +34,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setToken(token);
     try {
       const decoded: any = jwtDecode(token);
-      console.log('Decoded token on login:', decoded);
       setUser(decoded.user); // Assuming the token contains the user object
     } catch (error) {
       console.error('Error decoding token on login:', error);

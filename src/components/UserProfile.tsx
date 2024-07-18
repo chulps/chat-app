@@ -6,10 +6,10 @@ import { getEnv } from "../utils/getEnv";
 import ProfileView from "./ProfileView";
 import { ProfileData } from "../types"; // Import the ProfileData type
 
-const Profile: React.FC = () => {
+const UserProfile: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>();
   const [profile, setProfile] = useState<ProfileData>({
-    _id: "", // Add _id property
+    _id: "",
     username: "",
     name: "",
     bio: "",
@@ -17,6 +17,7 @@ const Profile: React.FC = () => {
     friends: [],
     blocked: [],
   });
+  const [error, setError] = useState<string | null>(null);
   const { getToken, user } = useAuth();
   const { apiUrl } = getEnv();
 
@@ -27,26 +28,40 @@ const Profile: React.FC = () => {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         if (response.data) {
+          const friendsList = response.data.friends.map((friend: any) =>
+            typeof friend === "string" ? { _id: friend } : friend
+          );
           setProfile({
             _id: response.data._id,
             username: response.data.username || "",
             name: response.data.name || "",
             bio: response.data.bio || "",
             profileImage: response.data.profileImage || null,
-            friends: response.data.friends || [],
+            friends: friendsList,
             blocked: response.data.blocked || [],
           });
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
+        setError("Failed to fetch profile data.");
       }
     };
 
-    fetchProfile();
+    if (userId) fetchProfile();
   }, [userId, getToken, apiUrl]);
 
-  const isInContacts = profile.friends.some(friend => friend._id === user?.id);
-  const isBlocked = profile.blocked.some(blocked => blocked._id === user?.id);
+  useEffect(() => {
+    console.log("Profile friends list:", profile.friends);
+    console.log("Logged-in user ID:", user?.id);
+  }, [profile.friends, user?.id]);
+
+  const isInContacts = profile.friends.some(
+    (friend) => friend._id === user?.id
+  );
+  const isBlocked = profile.blocked.some((blocked) => blocked._id === user?.id);
+
+  console.log("isInContacts:", isInContacts);
+  console.log("isBlocked:", isBlocked);
 
   const handleSendFriendRequest = async () => {
     try {
@@ -55,11 +70,7 @@ const Profile: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      // Update profile contacts
-      setProfile(prevProfile => ({
-        ...prevProfile,
-        friends: [...prevProfile.friends, { _id: userId! }]
-      }));
+      console.log("Friend request sent successfully");
     } catch (error) {
       console.error("Error sending friend request:", error);
     }
@@ -71,15 +82,17 @@ const Profile: React.FC = () => {
 
   const handleRemoveContact = async () => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${apiUrl}/api/profile/${userId}/remove-contact`,
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      // Update profile contacts
-      setProfile(prevProfile => ({
+      const updatedFriends = response.data.userFriends.map((friend: any) =>
+        typeof friend === "string" ? { _id: friend } : friend
+      );
+      setProfile((prevProfile) => ({
         ...prevProfile,
-        friends: prevProfile.friends.filter(friend => friend._id !== userId)
+        friends: updatedFriends,
       }));
     } catch (error) {
       console.error("Error removing contact:", error);
@@ -93,10 +106,9 @@ const Profile: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      // Update profile blocked users
-      setProfile(prevProfile => ({
+      setProfile((prevProfile) => ({
         ...prevProfile,
-        blocked: [...prevProfile.blocked, { _id: userId! }]
+        blocked: [...prevProfile.blocked, { _id: user?.id || "" }],
       }));
     } catch (error) {
       console.error("Error blocking user:", error);
@@ -110,10 +122,11 @@ const Profile: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      // Update profile blocked users
-      setProfile(prevProfile => ({
+      setProfile((prevProfile) => ({
         ...prevProfile,
-        blocked: prevProfile.blocked.filter(blocked => blocked._id !== userId)
+        blocked: prevProfile.blocked.filter(
+          (blocked) => blocked._id !== userId
+        ),
       }));
     } catch (error) {
       console.error("Error unblocking user:", error);
@@ -122,6 +135,7 @@ const Profile: React.FC = () => {
 
   return (
     <div>
+      {error && <div style={{ color: "red" }}>{error}</div>}
       <ProfileView
         profile={profile}
         isInContacts={isInContacts}
@@ -131,10 +145,10 @@ const Profile: React.FC = () => {
         handleRemoveContact={handleRemoveContact}
         handleBlockUser={handleBlockUser}
         handleUnblockUser={handleUnblockUser}
-        apiUrl={apiUrl} // Pass apiUrl prop
+        apiUrl={apiUrl}
       />
     </div>
   );
 };
 
-export default Profile;
+export default UserProfile;

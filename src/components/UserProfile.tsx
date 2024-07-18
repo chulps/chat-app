@@ -18,6 +18,7 @@ const UserProfile: React.FC = () => {
     blocked: [],
   });
   const [error, setError] = useState<string | null>(null);
+  const [friendRequestStatus, setFriendRequestStatus] = useState<"none" | "pending" | "accepted">("none");
   const { getToken, user } = useAuth();
   const { apiUrl } = getEnv();
 
@@ -40,6 +41,12 @@ const UserProfile: React.FC = () => {
             friends: friendsList,
             blocked: response.data.blocked || [],
           });
+
+          // Check if a friend request is pending
+          const isPending = response.data.friendRequests.some(
+            (request: any) => request.sender === user?.id && request.status === "pending"
+          );
+          setFriendRequestStatus(isPending ? "pending" : "none");
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -48,7 +55,7 @@ const UserProfile: React.FC = () => {
     };
 
     if (userId) fetchProfile();
-  }, [userId, getToken, apiUrl]);
+  }, [userId, getToken, apiUrl, user?.id]);
 
   useEffect(() => {
     console.log("Profile friends list:", profile.friends);
@@ -70,7 +77,7 @@ const UserProfile: React.FC = () => {
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      console.log("Friend request sent successfully");
+      setFriendRequestStatus("pending");
     } catch (error) {
       console.error("Error sending friend request:", error);
     }
@@ -82,17 +89,16 @@ const UserProfile: React.FC = () => {
 
   const handleRemoveContact = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${apiUrl}/api/profile/${userId}/remove-contact`,
         {},
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      const updatedFriends = response.data.userFriends.map((friend: any) =>
-        typeof friend === "string" ? { _id: friend } : friend
-      );
       setProfile((prevProfile) => ({
         ...prevProfile,
-        friends: updatedFriends,
+        friends: prevProfile.friends.filter(
+          (friend) => friend._id !== userId
+        ),
       }));
     } catch (error) {
       console.error("Error removing contact:", error);
@@ -140,6 +146,7 @@ const UserProfile: React.FC = () => {
         profile={profile}
         isInContacts={isInContacts}
         isBlocked={isBlocked}
+        friendRequestStatus={friendRequestStatus}
         handleSendFriendRequest={handleSendFriendRequest}
         handleSendMessage={handleSendMessage}
         handleRemoveContact={handleRemoveContact}

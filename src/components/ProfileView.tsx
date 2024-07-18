@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus, faPaperPlane, faUserMinus, faBan } from "@fortawesome/free-solid-svg-icons";
+import { faUserPlus, faPaperPlane, faUserMinus, faBan, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import styled from "styled-components";
 import ChatroomSettingsMenu from "./ChatroomSettingsMenu";
 import { ProfileData } from "../types";
 
@@ -62,10 +62,16 @@ const ProfileImage = styled.img`
   aspect-ratio: 1/1;
 `;
 
+const FriendRequestStatus = styled.data`
+    font-size: var(--font-size-small);
+    color: var(--warning);
+`;
+
 interface ProfileViewProps {
   profile: ProfileData;
   isInContacts: boolean;
   isBlocked: boolean;
+  friendRequestStatus: "none" | "pending" | "accepted";
   handleSendFriendRequest: () => void;
   handleSendMessage: () => void;
   handleRemoveContact: () => void;
@@ -78,6 +84,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
   profile,
   isInContacts,
   isBlocked,
+  friendRequestStatus,
   handleSendFriendRequest,
   handleSendMessage,
   handleRemoveContact,
@@ -112,8 +119,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </HeaderLeft>
           <HeaderRight>
-            {!isInContacts && (
+            {friendRequestStatus === "none" && !isInContacts && (
               <FontAwesomeIcon icon={faUserPlus} onClick={handleSendFriendRequest} />
+            )}
+            {friendRequestStatus === "pending" && (
+              <FriendRequestStatus>
+                <FontAwesomeIcon icon={faClockRotateLeft} /> Friend request sent
+              </FriendRequestStatus>
             )}
             <FontAwesomeIcon icon={faPaperPlane} onClick={handleSendMessage} />
             <ChatroomSettingsMenu alignRight>

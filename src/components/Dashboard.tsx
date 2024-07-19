@@ -71,7 +71,6 @@ const UserName = styled.div`
   display: flex;
   flex-direction: column;
   font-size: var(--font-size-lg);
-  font-weight: bold;
 `;
 
 const Dashboard: React.FC = () => {
@@ -183,8 +182,8 @@ const Dashboard: React.FC = () => {
         <UserProfileHeader>
           {user.profileImage && <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />}
           <UserName>
-            <div>{user.username}</div>
-            <div>{user.name}</div>
+            <div>@{user.username}</div>
+            <small>{user.name}</small>
           </UserName>
         </UserProfileHeader>
       )}

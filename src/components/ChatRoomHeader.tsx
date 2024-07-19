@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -21,6 +21,7 @@ import {
   faTrash,
   faChevronDown,
   faChevronUp,
+  faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import ChatroomSettingsMenu from "./ChatroomSettingsMenu";
 import ToggleSwitch from "./ToggleSwitch";
@@ -32,14 +33,6 @@ const ChatroomHeaderContainer = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`;
-
-const ChatroomNameRow = styled.div`
-  font-size: var(--font-size-h4);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
 `;
 
 const RightControlsContainer = styled.div`
@@ -80,17 +73,11 @@ const MemberItem = styled.li`
 `;
 
 const MemberAvatar = styled.img`
-  width: 30px;
-  height: 30px;
+  width: var(--space-3);
+  height: var(--space-3);
   border-radius: 50%;
   margin-right: 0.5em;
-`;
-
-const ChatroomControlsRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+  object-fit: cover;
 `;
 
 const SettingsMenuItem = styled.div`
@@ -150,6 +137,59 @@ const ChatroomId = styled.span`
   }
 `;
 
+const AddFriendContainer = styled.div`
+  position: relative;
+`;
+
+const AddFriendDropdown = styled.div<{ isOpen: boolean }>`
+  display: ${(props) => (props.isOpen ? "block" : "none")};
+  position: absolute;
+  right: 0;
+  background: var(--dark);
+  border: 1px solid var(--secondary);
+  padding: 1em;
+  width: var(--space-6);
+  z-index: 1000;
+  border-radius: 1em;
+`;
+
+const SearchBar = styled.input`
+  width: 100%;
+  // padding: 0.5em;
+  margin-bottom: 0.5em;
+  border: 1px solid var(--secondary);
+  background: var(--dark);
+  border-radius: 0.5em;
+  color: var(--white);
+`;
+
+const ContactList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: var(--space-6);
+  overflow-y: auto;
+`;
+
+const ContactItem = styled.li`
+  display: flex;
+  align-items: center;
+  padding: 0.5em 0;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--secondary);
+  }
+`;
+
+const ContactAvatar = styled.img`
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  margin-right: 0.5em;
+  object-fit: cover;
+`;
+
 interface Member {
   _id: string;
   username: string;
@@ -157,10 +197,12 @@ interface Member {
   profileImage: string;
 }
 
+interface Contact extends Member {}
+
 interface ChatRoomHeaderProps {
   chatroomId: string;
-  chatroomName: string; // Updated to include chatroomName
-  membersCount: number; // Added to include members count
+  chatroomName: string;
+  membersCount: number;
   qrCodeIsVisible: boolean;
   urlTooltipText: string;
   idTooltipText: string;
@@ -180,8 +222,8 @@ interface ChatRoomHeaderProps {
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   chatroomId,
-  chatroomName, // Updated to include chatroomName
-  membersCount, // Added to include members count
+  chatroomName,
+  membersCount,
   qrCodeIsVisible,
   urlTooltipText,
   idTooltipText,
@@ -203,19 +245,46 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   const navigate = useNavigate();
   const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       const response = await axios.get(`${apiUrl}/api/chatrooms/${chatroomId}/members`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      setMembers(response.data.members); // Correctly set members
+      setMembers(response.data.members);
     } catch (error) {
       console.error("Error fetching chatroom members:", error);
     }
-  };
+  }, [apiUrl, chatroomId, getToken]);
 
-  const markMessagesAsRead = async () => {
+  const fetchContacts = useCallback(async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/friends/contacts`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setContacts(response.data.contacts);
+      console.log("Fetched Contacts: ", response.data.contacts); // Debug log for fetched contacts
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  }, [apiUrl, getToken]);
+
+  useEffect(() => {
+    if (isAccordionOpen) {
+      fetchMembers();
+    }
+  }, [isAccordionOpen, fetchMembers]);
+
+  useEffect(() => {
+    if (isDropdownOpen) {
+      fetchContacts();
+    }
+  }, [isDropdownOpen, fetchContacts]);
+
+  const markMessagesAsRead = useCallback(async () => {
     try {
       await axios.put(
         `${apiUrl}/api/chatrooms/${chatroomId}/mark-read`,
@@ -227,17 +296,11 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
-  };
-
-  useEffect(() => {
-    if (isAccordionOpen) {
-      fetchMembers();
-    }
-  }, [isAccordionOpen]);
+  }, [apiUrl, chatroomId, getToken]);
 
   useEffect(() => {
     markMessagesAsRead();
-  }, []);
+  }, [markMessagesAsRead]);
 
   const leaveChatroom = async () => {
     try {
@@ -265,6 +328,32 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
     }
   };
 
+  const handleAddContactToChatroom = async (contactId: string) => {
+    try {
+      await axios.post(
+        `${apiUrl}/api/chatrooms/${chatroomId}/add-member`,
+        { memberId: contactId },
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      setIsDropdownOpen(false);
+      fetchMembers();
+    } catch (error) {
+      console.error("Error adding contact to chatroom:", error);
+    }
+  };
+
+  const filteredContacts = contacts.filter(
+    (contact) =>
+      (contact.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      !members.some((member) => member._id === contact._id)
+  );
+
+  useEffect(() => {
+    console.log("Search Query: ", searchQuery);
+    console.log("Filtered Contacts: ", filteredContacts);
+  }, [searchQuery, filteredContacts]);
+
   return (
     <ChatroomHeaderContainer className="chatroom-header">
       <button
@@ -281,6 +370,30 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
       </button>
       <span>{chatroomName}</span>
       <RightControlsContainer>
+        {isAuthenticated && (
+          <AddFriendContainer>
+            <FontAwesomeIcon icon={faUserPlus} onClick={() => setIsDropdownOpen(!isDropdownOpen)} />
+            <AddFriendDropdown isOpen={isDropdownOpen}>
+              <SearchBar
+                type="text"
+                placeholder="Search contacts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <ContactList>
+                {filteredContacts.map((contact) => (
+                  <ContactItem key={contact._id} onClick={() => handleAddContactToChatroom(contact._id)}>
+                    {contact.profileImage && <ContactAvatar src={`${apiUrl}/${contact.profileImage}`} alt={contact.username} />}
+                    <div>
+                      <p>@{contact.username}</p>
+                      <small>{contact.name}</small>
+                    </div>
+                  </ContactItem>
+                ))}
+              </ContactList>
+            </AddFriendDropdown>
+          </AddFriendContainer>
+        )}
         <span
           data-tooltip={content["tooltip-show-qrcode"]}
           className="show-qr-button small tooltip bottom"
@@ -308,6 +421,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
               </span>
               <FontAwesomeIcon icon={faCopy} />
             </ChatroomId>
+            <hr/>
             <AccordionContainer>
               <AccordionHeader onClick={() => setIsAccordionOpen(!isAccordionOpen)}>
                 <MenuItemLeftContent>
@@ -320,7 +434,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
                 <MemberList>
                   {members.map((member) => (
                     <MemberItem key={member._id}>
-                      <MemberAvatar src={member.profileImage} alt={member.username} />
+                      <MemberAvatar src={`${apiUrl}/${member.profileImage}`} alt={`${apiUrl}/${member.profileImage}`} />
                       <div>
                         <p>{member.username}</p>
                         <small>{member.name}</small>
@@ -330,7 +444,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
                 </MemberList>
               </AccordionContent>
             </AccordionContainer>
-            <hr/>
+            <hr />
             <SettingsMenuItem>
               <MenuItemLeftContent>
                 <FontAwesomeIcon icon={faLanguage} />
@@ -378,7 +492,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
                 <MenuItemIcon>
                   <FontAwesomeIcon icon={faSignOutAlt} />
                 </MenuItemIcon>
-                <MenuItemText>Leave&nbsp;Chatroom</MenuItemText>
+                <MenuItemText>Leave Chatroom</MenuItemText>
               </MenuItemLeftContent>
             </SettingsMenuItem>
             {isOriginator && (
@@ -387,7 +501,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
                   <MenuItemIcon>
                     <FontAwesomeIcon icon={faTrash} />
                   </MenuItemIcon>
-                  <MenuItemText>Delete&nbsp;Chatroom</MenuItemText>
+                  <MenuItemText>Delete Chatroom</MenuItemText>
                 </MenuItemLeftContent>
               </SettingsMenuItem>
             )}

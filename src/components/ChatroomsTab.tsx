@@ -135,6 +135,7 @@ interface ChatroomsTabProps {
   setChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
   filteredChatrooms: ChatRoom[];
   setFilteredChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
+  fetchChatrooms: () => void; // Added fetchChatrooms as a prop
 }
 
 const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
@@ -142,6 +143,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   setChatrooms,
   filteredChatrooms,
   setFilteredChatrooms,
+  fetchChatrooms, // Destructured fetchChatrooms
 }) => {
   const { apiUrl } = getEnv();
   const { getToken, user } = useAuth();
@@ -208,23 +210,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     }
   };
 
-  const fetchChatrooms = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/chatrooms`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const sortedChatrooms = response.data.sort((a: ChatRoom, b: ChatRoom) => {
-        const aLatest = a.latestMessage?.timestamp || 0;
-        const bLatest = b.latestMessage?.timestamp || 0;
-        return new Date(bLatest).getTime() - new Date(aLatest).getTime();
-      });
-      setChatrooms(sortedChatrooms);
-      setFilteredChatrooms(sortedChatrooms);
-    } catch (error) {
-      console.error("Error fetching chatrooms:", error);
-    }
-  };
-
   const markMessagesAsRead = async (chatroomId: string) => {
     try {
       await axios.post(
@@ -257,7 +242,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     fetchChatrooms();
     const interval = setInterval(fetchChatrooms, 30000); // Update every 30 seconds
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, []);
+  }, [fetchChatrooms]);
 
   return (
     <>

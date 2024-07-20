@@ -194,6 +194,7 @@ const Dashboard: React.FC = () => {
             setChatrooms={setChatrooms}
             filteredChatrooms={filteredChatrooms}
             setFilteredChatrooms={setFilteredChatrooms}
+            fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
           />
         </Tab>
         <Tab label="Contacts" icon={faAddressBook}>

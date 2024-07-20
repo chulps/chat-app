@@ -217,6 +217,7 @@ interface ChatRoomHeaderProps {
   isPublic: boolean;
   handleToggleShowOriginal: () => void;
   showOriginal: boolean;
+  fetchChatrooms: () => void; // Added fetchChatrooms prop
 }
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
@@ -238,6 +239,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   isPublic,
   handleToggleShowOriginal,
   showOriginal,
+  fetchChatrooms, // Added fetchChatrooms prop
 }) => {
   const { apiUrl } = getEnv();
   const { getToken } = useAuth();
@@ -303,14 +305,14 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
 
   const leaveChatroom = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${apiUrl}/api/chatrooms/leave`,
         { chatroomId },
         {
           headers: { Authorization: `Bearer ${getToken()}` },
         }
       );
-      console.log('Leave chatroom response: ', response.data);
+      fetchChatrooms(); // Fetch updated chatrooms list
       navigate("/dashboard");
     } catch (error) {
       console.error("Error leaving chatroom:", error);
@@ -322,6 +324,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
       await axios.delete(`${apiUrl}/api/chatrooms/${chatroomId}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
+      fetchChatrooms(); // Fetch updated chatrooms list
       navigate("/dashboard");
     } catch (error) {
       console.error("Error deleting chatroom:", error);

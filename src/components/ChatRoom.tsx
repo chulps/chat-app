@@ -105,6 +105,17 @@ const ChatRoom: React.FC = () => {
     }
   }, [chatroomId, getToken, user]);
 
+  const fetchChatrooms = useCallback(async () => {
+    try {
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      // handle response as needed
+    } catch (error) {
+      console.error("Error fetching chatrooms:", error);
+    }
+  }, [getToken]);
+
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
       setTimeout(() => {
@@ -357,6 +368,7 @@ const ChatRoom: React.FC = () => {
           isPublic={isPublic}
           handleToggleShowOriginal={handleToggleShowOriginal}
           showOriginal={showOriginal}
+          fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
         />
         {qrCodeIsVisible && (
           <QRCodeModal

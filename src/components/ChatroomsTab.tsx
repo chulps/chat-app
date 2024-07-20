@@ -5,7 +5,7 @@ import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faSearch, faChevronRight, faCrown, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faSearch, faChevronRight, faCrown } from "@fortawesome/free-solid-svg-icons";
 
 const CreateChatroomInputContainer = styled.div`
   display: flex;

@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus, faPaperPlane, faUserMinus, faBan, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faUserPlus, faPaperPlane, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
-import ChatroomSettingsMenu from "./ChatroomSettingsMenu";
+import ProfileSettingsMenu from "./ProfileSettingsMenu";
 import { ProfileData } from "../types";
 
 const ProfileContainer = styled.div`
@@ -39,21 +39,6 @@ const HeaderRight = styled.div`
   align-items: center;
 `;
 
-const BlockUser = styled.span`
-  display: flex;
-  align-items: center;
-  padding: 0.5em 1em;
-  white-space: nowrap;
-  gap: var(--space-1);
-  color: var(--danger-300);
-  cursor: pointer;
-  background: var(--dark);
-
-  &:hover {
-    filter: brightness(1.3);
-  }
-`;
-
 const ProfileImage = styled.img`
   width: calc(var(--space-2) + var(--space-3));
   height: calc(var(--space-2) + var(--space-3));
@@ -63,8 +48,8 @@ const ProfileImage = styled.img`
 `;
 
 const FriendRequestStatus = styled.data`
-    font-size: var(--font-size-small);
-    color: var(--warning);
+  font-size: var(--font-size-small);
+  color: var(--warning);
 `;
 
 interface ProfileViewProps {
@@ -128,16 +113,14 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               </FriendRequestStatus>
             )}
             <FontAwesomeIcon icon={faPaperPlane} onClick={handleSendMessage} />
-            <ChatroomSettingsMenu alignRight>
-              {isInContacts && (
-                <button onClick={handleRemoveContact}>
-                  <FontAwesomeIcon icon={faUserMinus} /> Remove Contact
-                </button>
-              )}
-              <BlockUser onClick={isBlocked ? handleUnblockUser : handleBlockUser}>
-                <FontAwesomeIcon icon={faBan} /> {isBlocked ? "Unblock User" : "Block User"}
-              </BlockUser>
-            </ChatroomSettingsMenu>
+            <ProfileSettingsMenu
+              alignRight
+              isInContacts={isInContacts}
+              isBlocked={isBlocked}
+              handleRemoveContact={handleRemoveContact}
+              handleBlockUser={handleBlockUser}
+              handleUnblockUser={handleUnblockUser}
+            />
           </HeaderRight>
         </ProfileHeader>
         <ProfileBio>

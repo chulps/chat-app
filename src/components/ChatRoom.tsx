@@ -43,6 +43,13 @@ export interface Message {
   readBy?: string[];
 }
 
+interface Member {
+  _id: string;
+  username: string;
+  name: string;
+  profileImage: string;
+}
+
 const ChatRoom: React.FC = () => {
   const { chatroomId } = useParams<{ chatroomId: string }>();
   const query = new URLSearchParams(useLocation().search);
@@ -75,13 +82,16 @@ const ChatRoom: React.FC = () => {
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isRecording, setIsRecording] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
 
   const [isPublic, setIsPublic] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
 
   const [isOriginator, setIsOriginator] = useState(false);
+  const [members, setMembers] = useState<Member[]>([]);
 
   const fetchChatroomDetails = useCallback(async () => {
     try {
@@ -100,13 +110,27 @@ const ChatRoom: React.FC = () => {
         sender: msg.sender.username, // Ensuring sender is the username
         readBy: msg.readBy, // Ensure readBy is included
       })));
+      setMembers(chatroom.members); // Set members state here
     } catch (error) {
       console.error("Error fetching chatroom details:", error);
     }
   }, [chatroomId, getToken, user]);
 
+  const fetchMembers = useCallback(async () => {
+    try {
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}/members`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setMembers(response.data.members);
+    } catch (error) {
+      console.error("Error fetching chatroom members:", error);
+    }
+  }, [chatroomId, getToken]);
+
   const fetchChatrooms = useCallback(async () => {
     try {
+      //tell eslint to ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
@@ -369,6 +393,8 @@ const ChatRoom: React.FC = () => {
           handleToggleShowOriginal={handleToggleShowOriginal}
           showOriginal={showOriginal}
           fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
+          members={members}
+          fetchMembers={fetchMembers} // Pass fetchMembers as a prop
         />
         {qrCodeIsVisible && (
           <QRCodeModal

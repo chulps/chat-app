@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus, faPaperPlane, faUserMinus, faBan } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
-import ChatroomSettingsMenu from "./ChatroomSettingsMenu";
+import ProfileSettingsMenu from "./ProfileSettingsMenu";
 import { getEnv } from "../utils/getEnv";
 
 const ProfileHeaderContainer = styled.div`
@@ -37,21 +37,6 @@ const HeaderRight = styled.div`
   & > *:hover {
     cursor: pointer;
     transform: scale(1.1);
-  }
-`;
-
-const BlockUser = styled.span`
-  display: flex;
-  align-items: center;
-  padding: 0.5em 1em;
-  white-space: nowrap;
-  gap: var(--space-1);
-  color: var(--danger-300);
-  cursor: pointer;
-  background: var(--dark);
-
-  &:hover {
-    filter: brightness(1.3);
   }
 `;
 
@@ -95,16 +80,14 @@ const UserProfileHeader = ({
           <FontAwesomeIcon icon={faUserPlus} onClick={handleSendFriendRequest} />
         )}
         <FontAwesomeIcon icon={faPaperPlane} onClick={handleSendMessage} />
-        <ChatroomSettingsMenu alignRight>
-          {isInContacts && (
-            <button onClick={handleRemoveContact}>
-              <FontAwesomeIcon icon={faUserMinus} /> Remove Contact
-            </button>
-          )}
-          <BlockUser onClick={isBlocked ? handleUnblockUser : handleBlockUser}>
-            <FontAwesomeIcon icon={faBan} /> {isBlocked ? "Unblock User" : "Block User"}
-          </BlockUser>
-        </ChatroomSettingsMenu>
+        <ProfileSettingsMenu
+          alignRight
+          isInContacts={isInContacts}
+          isBlocked={isBlocked}
+          handleRemoveContact={handleRemoveContact}
+          handleBlockUser={handleBlockUser}
+          handleUnblockUser={handleUnblockUser}
+        />
       </HeaderRight>
     </ProfileHeaderContainer>
   );

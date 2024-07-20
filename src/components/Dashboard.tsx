@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import Tabs, { Tab } from "./Tabs";
@@ -11,7 +11,6 @@ import {
   faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
-import UserInfo from "./UserInfo";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SearchTab from "./SearchTab";

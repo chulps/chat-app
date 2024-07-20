@@ -155,7 +155,6 @@ const AddFriendDropdown = styled.div<{ isOpen: boolean }>`
 
 const SearchBar = styled.input`
   width: 100%;
-  // padding: 0.5em;
   margin-bottom: 0.5em;
   border: 1px solid var(--secondary);
   background: var(--dark);
@@ -304,13 +303,14 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
 
   const leaveChatroom = async () => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${apiUrl}/api/chatrooms/leave`,
         { chatroomId },
         {
           headers: { Authorization: `Bearer ${getToken()}` },
         }
       );
+      console.log('Leave chatroom response: ', response.data);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error leaving chatroom:", error);

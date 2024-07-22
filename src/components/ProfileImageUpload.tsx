@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
@@ -8,6 +8,7 @@ const FileInputContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 `;
 
 const FileInputLabel = styled.label<{ backgroundImage?: string }>`
@@ -55,22 +56,41 @@ const ProfileImageSetup = styled.div<{ backgroundImage?: string }>`
   }
 `;
 
+const Filename = styled.data`
+  margin-top: var(--space-1);
+  color: var(--secondary);
+`;
+
 interface ProfileImageUploadProps {
   profileImage: string | null;
   setImageFile: (file: File | null) => void;
+  imageFile: File | null; // Add this prop to show the filename
 }
 
-const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, setImageFile }) => {
+const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, setImageFile, imageFile }) => {
   const { apiUrl } = getEnv();
+  const [previewImage, setPreviewImage] = useState<string | null>(profileImage ? `${apiUrl}/${profileImage}` : null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <FileInputContainer>
       <FileInputLabel
         htmlFor="profileImage"
-        backgroundImage={profileImage ? `${apiUrl}/${profileImage}` : undefined}
+        backgroundImage={previewImage || (profileImage ? `${apiUrl}/${profileImage}` : undefined)}
       >
-        {!profileImage && (
-          <ProfileImageSetup backgroundImage={undefined}>
+        {!previewImage && !profileImage && (
+          <ProfileImageSetup>
             <FontAwesomeIcon icon={faCamera} />
             Choose photo
           </ProfileImageSetup>
@@ -80,10 +100,9 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, s
         id="profileImage"
         type="file"
         accept="image/*"
-        onChange={(e) =>
-          setImageFile(e.target.files ? e.target.files[0] : null)
-        }
+        onChange={handleImageChange}
       />
+      {imageFile && <Filename>{imageFile.name}</Filename>}
     </FileInputContainer>
   );
 };

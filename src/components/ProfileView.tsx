@@ -37,6 +37,12 @@ const HeaderRight = styled.div`
   display: flex;
   gap: var(--space-2);
   align-items: center;
+  cursor: pointer;
+
+  & > *:hover {
+    transform: scale(1.1);
+  }
+
 `;
 
 const ProfileImage = styled.img`
@@ -49,7 +55,7 @@ const ProfileImage = styled.img`
 
 const FriendRequestStatus = styled.data`
   font-size: var(--font-size-small);
-  color: var(--warning);
+  color: var(--info);
 `;
 
 interface ProfileViewProps {

@@ -42,7 +42,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, handleSa
 
   return (
     <ProfileFormContainer onSubmit={handleSave}>
-      <ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} />
+      <ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} imageFile={imageFile} />
       <div>
         <label htmlFor="name-input">Name</label>
         <input

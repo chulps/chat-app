@@ -51,7 +51,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
 
   return (
     <div>
-      <h2>Friend Requests</h2>
+      <h4>Notifications</h4>
       <DashboardList>
         {friendRequests.map((request) => (
           <li key={request.sender._id}>

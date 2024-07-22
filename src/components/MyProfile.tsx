@@ -164,15 +164,12 @@ const MyProfile: React.FC = () => {
         }));
       }
 
-      setProfile({
-        _id: response.data._id,
-        username: response.data.username || "",
-        name: response.data.name || "",
-        bio: response.data.bio || "",
-        profileImage: response.data.profileImage || null,
-        friends: response.data.friends || [],
-        blocked: response.data.blocked || [],
-      });
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        name: response.data.name || prevProfile.name,
+        bio: response.data.bio || prevProfile.bio,
+      }));
+
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile:", error);

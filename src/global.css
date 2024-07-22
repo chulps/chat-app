@@ -355,7 +355,7 @@ label {
   font-size: var(--font-size-label);
   display: block;
   line-height: var(--line-height-label);
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--secondary);
 }

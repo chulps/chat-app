@@ -35,7 +35,6 @@ const HeaderRight = styled.div`
   height: var(--space-3);
 
   & > *:hover {
-    cursor: pointer;
     transform: scale(1.1);
   }
 `;

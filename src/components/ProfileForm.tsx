@@ -1,12 +1,10 @@
-import React from "react";
-import { FormEvent } from "react";
+import React, { FormEvent } from "react";
+import { ProfileData } from "../types";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { getEnv } from "../utils/getEnv";
+import ProfileImageUpload from "./ProfileImageUpload";
 
-const Form = styled.form`
+const ProfileFormContainer = styled.form`
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -14,142 +12,65 @@ const Form = styled.form`
 
 const ButtonContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-top: var(--space-2);
-  align-items: center;
-`;
-
-const FileInputContainer = styled.div`
-  display: flex;
   justify-content: center;
   align-items: center;
-`;
-
-const FileInputLabel = styled.label<{ backgroundImage?: string }>`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: var(--font-family-default);
-  letter-spacing: unset;
-  color: white;
-  border: 1px solid var(--primary);
-  text-transform: unset;
-  line-height: var(--line-height-default);
-  width: var(--space-5);
-  aspect-ratio: 1/1;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  ${({ backgroundImage }) =>
-    backgroundImage ? `background-image: url(${backgroundImage});` : ''};
-  cursor: pointer;
-
-  &:hover {
-    background-color: var(--dark);
-  }
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
-const ProfileImageSetup = styled.div<{ backgroundImage?: string }>`
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
   flex-direction: column;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  ${({ backgroundImage }) =>
-    backgroundImage ? `background-image: url(${backgroundImage});` : ''};
 
-  svg {
-    font-size: var(--font-size-h3);
+  @media screen and (min-width: 576px) {
+    flex-direction: row-reverse;
+    justify-content: space-between;
   }
 `;
 
-const ProfileForm = ({
-  profile,
-  handleSave,
-  setProfile,
-  imageFile,
-  setImageFile,
-}: {
-  profile: any;
+const SkipButton = styled(Link)`
+  margin: 0 var(--space-2);
+`;
+
+interface ProfileFormProps {
+  profile: ProfileData;
+  setProfile: React.Dispatch<React.SetStateAction<ProfileData>>;
   handleSave: (event: FormEvent<HTMLFormElement>) => void;
-  setProfile: React.Dispatch<React.SetStateAction<any>>;
   imageFile: File | null;
   setImageFile: React.Dispatch<React.SetStateAction<File | null>>;
-}) => {
-  const { apiUrl } = getEnv();
+}
+
+const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, handleSave, imageFile, setImageFile }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
 
   return (
-    <Form onSubmit={handleSave}>
+    <ProfileFormContainer onSubmit={handleSave}>
+      <ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} />
       <div>
-        <FileInputContainer>
-          <FileInputLabel
-            htmlFor="profileImage"
-            backgroundImage={
-              profile.profileImage ? `${apiUrl}/${profile.profileImage}` : undefined
-            }
-          >
-            {!profile.profileImage && (
-              <ProfileImageSetup backgroundImage={undefined}>
-                <FontAwesomeIcon icon={faCamera} />
-                Choose photo
-              </ProfileImageSetup>
-            )}
-          </FileInputLabel>
-          <HiddenFileInput
-            id="profileImage"
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              setImageFile(e.target.files ? e.target.files[0] : null)
-            }
-          />
-        </FileInputContainer>
-      </div>
-      <div>
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="name-input">Name</label>
         <input
-          id="username"
+          id="name-input"
           type="text"
-          value={profile.username}
-          onChange={(e) =>
-            setProfile({ ...profile, username: e.target.value })
-          }
-          placeholder="Username"
-        />
-      </div>
-      <div>
-        <label htmlFor="name">Name:</label>
-        <input
-          id="name"
-          type="text"
+          name="name"
           value={profile.name}
-          onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-          placeholder="Name"
+          onChange={handleChange}
+          placeholder="Enter your name"
+          required
         />
       </div>
       <div>
-        <label htmlFor="bio">Bio:</label>
-        <input
-          id="bio"
-          type="text"
+        <label htmlFor="bio-input">Bio</label>
+        <textarea
+          id="bio-input"
+          rows={3}
+          name="bio"
           value={profile.bio}
-          onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-          placeholder="Bio"
+          onChange={handleChange}
+          placeholder="Enter your bio"
         />
       </div>
-      <ButtonContainer className="button-container">
-        <Link to="/dashboard">Skip</Link>
+      <ButtonContainer>
         <button type="submit">Save Profile</button>
+        <SkipButton to="/dashboard">Skip</SkipButton>
       </ButtonContainer>
-    </Form>
+    </ProfileFormContainer>
   );
 };
 

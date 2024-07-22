@@ -1,14 +1,101 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import ProfileForm from "./ProfileForm";
-import ProfileImageUpload from "./ProfileImageUpload";
-import { ProfileData } from "../types"; // Import the ProfileData type
+import styled from "styled-components";
+import { ProfileData } from "../types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencil, faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+
+const MyProfileContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  max-width: var(--space-7);
+  margin: 0 auto;
+`;
+
+const Error = styled.data`
+  color: var(--warning);
+`;
+
+const MyProfileHeader = styled.header`
+  display: flex;
+  align-items: start;
+  gap: var(--space-2);
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  border-bottom: 1px solid var(--secondary);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
+`;
+
+const MyProfileLeftContent = styled.aside`
+  display: flex;
+  justify-content: space-between;
+`;
+
+const MyProfileImg = styled.img`
+  object-fit: cover;
+  width: var(--space-4);
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  margin-right: var(--space-2);
+`;
+
+const MyProfileNameAndUserName = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const BackButton = styled.button`
+  background: var(--dark);
+  color: white;
+  font-size: var(--font-size-small);
+  padding: 1em;
+
+  &:hover {
+    background: var(--dark);
+    filter: brightness(1.2);
+  }
+`;
+
+const MyProfileMain = styled.main`
+  display: flex;
+`;
+
+const EditButton = styled.button`
+  background: var(--site-background);
+  padding: 1em;
+  font-size: var(--font-size-small);
+
+  &:hover {
+    background: var(--dark);
+    filter: brightness(1.2);
+  }
+`;
+
+const MyBio = styled.p`
+  margin-top: var(--space-2);
+`;
+
+const MyUserName = styled.p`
+  &::before {
+    content: "@";
+  }
+`;
+
+const MyName = styled.small`
+  color: var(--secondary);
+`;
 
 const MyProfile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData>({
-    _id: "", // Add _id property
+    _id: "",
     username: "",
     name: "",
     bio: "",
@@ -38,6 +125,7 @@ const MyProfile: React.FC = () => {
             friends: response.data.friends || [],
             blocked: response.data.blocked || [],
           });
+          setIsEditing(!response.data.name);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -56,6 +144,26 @@ const MyProfile: React.FC = () => {
       const response = await axios.post(`${apiUrl}/api/profile`, profile, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
+
+      // If an image file is selected, upload it
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("profileImage", imageFile);
+
+        const imageResponse = await axios.post(
+          `${apiUrl}/api/profile/upload-image`,
+          formData,
+          {
+            headers: { Authorization: `Bearer ${getToken()}` },
+          }
+        );
+
+        setProfile((prevProfile) => ({
+          ...prevProfile,
+          profileImage: imageResponse.data.profileImage,
+        }));
+      }
+
       setProfile({
         _id: response.data._id,
         username: response.data.username || "",
@@ -73,25 +181,49 @@ const MyProfile: React.FC = () => {
   };
 
   return (
-    <div>
-      <ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} />
+    <MyProfileContainer>
+      {error && <Error>{error}</Error>}
       {isEditing ? (
         <ProfileForm
           profile={profile}
           setProfile={setProfile}
           handleSave={handleSave}
-          imageFile={imageFile} // Pass imageFile here
+          imageFile={imageFile}
           setImageFile={setImageFile}
         />
       ) : (
         <div>
-          <h1>{profile.username}</h1>
-          <p>{profile.bio}</p>
-          <button onClick={() => setIsEditing(true)}>Edit</button>
+          <MyProfileHeader>
+            <Link to="/dashboard">
+              <BackButton>
+                <FontAwesomeIcon icon={faChevronLeft} />
+                Dashboard
+              </BackButton>
+            </Link>
+            <EditButton onClick={() => setIsEditing(true)}>
+              <FontAwesomeIcon icon={faPencil} />
+              Edit
+            </EditButton>
+          </MyProfileHeader>
+
+          <MyProfileMain>
+            <MyProfileLeftContent>
+              {profile.profileImage && (
+                <MyProfileImg
+                  src={`${apiUrl}/${profile.profileImage}`}
+                  alt={profile.username}
+                />
+              )}
+              <MyProfileNameAndUserName>
+                <MyUserName>{profile.username}</MyUserName>
+                <MyName>{profile.name}</MyName>
+              </MyProfileNameAndUserName>
+            </MyProfileLeftContent>
+          </MyProfileMain>
+          <MyBio>{profile.bio}</MyBio>
         </div>
       )}
-      {error && <div style={{ color: "red" }}>{error}</div>}
-    </div>
+    </MyProfileContainer>
   );
 };
 

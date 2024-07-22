@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { getEnv } from "../utils/getEnv";
 import styled from "styled-components";
+import { useAuth } from "../contexts/AuthContext";
 
 const Form = styled.form`
   display: flex;
@@ -50,6 +51,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const { apiUrl } = getEnv();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
@@ -86,16 +88,14 @@ const Register: React.FC = () => {
       return;
     }
 
-
-
     try {
       const response = await axios.post(`${apiUrl}/api/auth/register`, {
         username,
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
-      navigate("/profile"); // Redirect to profile creation after registration
+      login(response.data.token);
+      navigate("/profile/me"); // Redirect to profile creation after registration
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const errorMessage =

@@ -799,3 +799,13 @@ select {
   border: none;
 }
 
+textarea {
+  background: var(--dark);
+  padding: 1em;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--secondary);
+  font-family: var(--font-family-default);
+  font-size: var(--font-size-default);
+  color: inherit;
+}

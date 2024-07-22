@@ -84,7 +84,7 @@ const Login: React.FC = () => {
       if (response.data.isProfileComplete) {
         navigate("/dashboard");
       } else {
-        navigate("/profile");
+        navigate("/profile/me");
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {

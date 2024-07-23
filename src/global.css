@@ -103,11 +103,11 @@
   --neutral-050: #f0f1f2;
   --white: #ffffff;
 
-  --danger-950: #1a0000;
-  --danger-900: #330000;
-  --danger-800: #600505;
-  --danger-700: #8c0e0e;
-  --danger-600: #b91c1c;
+  --danger-950: #36252A;
+  --danger-900: #49262A;
+  --danger-800: #70282B;
+  --danger-700: #982A2C;
+  --danger-600: #982A2C;
   --danger-500: #e62e2e;
   --danger-400: #ff5a5a;
   --danger-300: #ff8080;
@@ -126,10 +126,10 @@
   --success-100: #cbf4dd;
 
   --warning-950: #1a170a;
-  --warning-900: #332e14;
-  --warning-800: #665c29;
-  --warning-700: #99893d;
-  --warning-600: #ccb751;
+  --warning-900: #4E4B35;
+  --warning-800: #7A7141;
+  --warning-700: #A7984D;
+  --warning-600: #D3BE59;
   --warning-500: #ffe565;
   --warning-400: #fff184;
   --warning-300: #fffaa3;

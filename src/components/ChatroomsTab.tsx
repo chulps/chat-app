@@ -135,7 +135,7 @@ interface ChatroomsTabProps {
   setChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
   filteredChatrooms: ChatRoom[];
   setFilteredChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
-  fetchChatrooms: () => void; // Added fetchChatrooms as a prop
+  fetchChatrooms: () => void;
 }
 
 const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
@@ -143,7 +143,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   setChatrooms,
   filteredChatrooms,
   setFilteredChatrooms,
-  fetchChatrooms, // Destructured fetchChatrooms
+  fetchChatrooms,
 }) => {
   const { apiUrl } = getEnv();
   const { getToken, user } = useAuth();
@@ -219,15 +219,15 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
           headers: { Authorization: `Bearer ${getToken()}` },
         }
       );
-      setChatrooms(prevChatrooms =>
-        prevChatrooms.map(chatroom =>
+      setChatrooms((prevChatrooms) =>
+        prevChatrooms.map((chatroom) =>
           chatroom._id === chatroomId
             ? { ...chatroom, hasUnreadMessages: false }
             : chatroom
         )
       );
-      setFilteredChatrooms(prevFilteredChatrooms =>
-        prevFilteredChatrooms.map(chatroom =>
+      setFilteredChatrooms((prevFilteredChatrooms) =>
+        prevFilteredChatrooms.map((chatroom) =>
           chatroom._id === chatroomId
             ? { ...chatroom, hasUnreadMessages: false }
             : chatroom
@@ -292,7 +292,10 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
       <DashboardList>
         {filteredChatrooms.map((chatroom) => (
           <li key={chatroom._id}>
-            <StyledLink to={`/chatroom/${chatroom._id}`} onClick={() => markMessagesAsRead(chatroom._id)}>
+            <StyledLink
+              to={`/chatroom/${chatroom._id}`}
+              onClick={() => markMessagesAsRead(chatroom._id)}
+            >
               <ChatroomInfo>
                 <ChatroomNameContainer>
                   {chatroom.hasUnreadMessages && <NewMessageDot />}
@@ -303,11 +306,16 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
                     {chatroom.originator === user?.id && (
                       <FontAwesomeIcon icon={faCrown} />
                     )}
-                    <data>{new Date(chatroom.latestMessage.timestamp).toLocaleTimeString(navigator.language, {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false,
-                    })}</data>
+                    <data>
+                      {new Date(chatroom.latestMessage.timestamp).toLocaleTimeString(
+                        navigator.language,
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        }
+                      )}
+                    </data>
                     <FontAwesomeIcon icon={faChevronRight} />
                   </TimeOfLastMessage>
                 )}

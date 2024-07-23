@@ -220,7 +220,7 @@ const Header: React.FC = () => {
                 targetLanguage={content.language}
                 onIconColor="var(--warning-500)"
                 offIconColor="var(--royal-400)"
-                onBackgroundColor="var(--royal-300)"
+                onBackgroundColor="red"
                 offBackgroundColor="var(--dark)"
               />
             </MenuThemeToggle>

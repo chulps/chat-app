@@ -13,14 +13,11 @@ const DashboardList = styled.ul`
   list-style: none;
 
   li {
-    padding: 1em 0;
+    padding: 1em;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid var(--secondary);
-    &:first-of-type {
-      border-top: none;
-    }
+    border-top: 1px solid var(--dark);
   }
 `;
 
@@ -46,6 +43,7 @@ const TabHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: var(--space-2);
 `;
 
 const ProfileImage = styled.img`
@@ -124,11 +122,12 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
     navigate(`/profile/${userId}`);
   };
 
-  const startChatWithFriend = async (friendId: string) => {
+  const startChatWithFriend = async (friend: Friend) => {
     try {
+      // Creating or finding an existing private chatroom with the friend
       const response = await axios.post(
-        `${apiUrl}/api/chatrooms`,
-        { name: "Private Chat", members: [friendId] },
+        `${apiUrl}/api/chatrooms/private`,
+        { name: friend.name || friend.username, members: [friend._id] },
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
       navigate(`/chatroom/${response.data._id}`);
@@ -184,7 +183,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                   <small>({friend.email})</small>
                 </span>
               </ContactListItemLeftContent>
-              <button onClick={() => startChatWithFriend(friend._id)}>
+              <button onClick={() => startChatWithFriend(friend)}>
                 Start Chat
               </button>
             </li>

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface TabProps {
   label: string;
-  icon: any; // Add the icon prop
+  icon: any;
   children: ReactNode;
 }
 
@@ -12,16 +12,16 @@ interface TabsProps {
   children: ReactNode;
 }
 
-const TabButton = styled.button<{ isActive: boolean }>`
-  background: ${(props) => (props.isActive ? "var(--dark)" : "transparent")};
+const TabButton = styled.button<{ $isActive: boolean }>`
+  background: ${(props) => (props.$isActive ? "var(--dark)" : "transparent")};
   cursor: pointer;
-  color: ${(props) => (props.isActive ? "var(--white) !important" : "var(--secondary) !important")};
+  color: ${(props) => (props.$isActive ? "var(--white) !important" : "var(--secondary) !important")};
   border-radius: var(--space-1) var(--space-1) 0 0;
   display: flex;
   align-items: center;
   padding: var(--space-2) 0;
   flex-direction: column;
-  flex-grow: ${(props) => (props.isActive ? 1.5 : 1)};
+  flex-grow: ${(props) => (props.$isActive ? 1.5 : 1)};
   gap: 0;
 
   &:hover {
@@ -78,7 +78,7 @@ const Tabs: React.FC<TabsProps> = ({ children }) => {
           return (
             <TabButton
               key={index}
-              isActive={index === activeTab}
+              $isActive={index === activeTab}
               onClick={() => handleTabClick(index)}
             >
               <FontAwesomeIcon icon={icon} />

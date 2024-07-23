@@ -99,7 +99,9 @@ const SearchTab: React.FC<SearchTabProps> = ({
   return (
     <div>
       <h2>Search Users and Chatrooms</h2>
+      <label htmlFor="big-search-input">Search</label>
       <input
+        id="big-search-input"
         type="text"
         value={searchQuery}
         onChange={handleSearchChange}

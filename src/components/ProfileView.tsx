@@ -53,6 +53,19 @@ const ProfileImage = styled.img`
   aspect-ratio: 1/1;
 `;
 
+const ProfilePlaceholder = styled.div`
+  width: calc(var(--space-2) + var(--space-3));
+  height: calc(var(--space-2) + var(--space-3));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--white);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+`;
+
 const FriendRequestStatus = styled.data`
   font-size: var(--font-size-small);
   color: var(--info);
@@ -98,11 +111,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
       <ProfileInfo>
         <ProfileHeader>
           <HeaderLeft>
-            {profile.profileImage && (
+            {profile.profileImage ? (
               <ProfileImage
                 src={`${apiUrl}/${profile.profileImage}`}
                 alt="Profile"
               />
+            ) : (
+              <ProfilePlaceholder>{profile.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
             )}
             <div>
               <h4>@{profile.username}</h4>

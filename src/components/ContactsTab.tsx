@@ -33,14 +33,29 @@ const TabHeader = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: calc(var(--space-3) + var(--space-2));
+  width: var(--space-3);
+  height: var(--space-3);
   aspect-ratio: 1/1;
   border-radius: 50%;
   object-fit: cover;
 `;
 
+const ProfilePlaceholder = styled.div`
+  width: var(--space-3);
+  height: var(--space-3);;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--white);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+`;
+
 const ContactListItemLeftContent = styled.div`
   display: flex;
+  align-items: center;
   gap: var(--space-1);
 `;
 
@@ -78,28 +93,28 @@ const ContactListItemRightContent = styled.div`
 `;
 
 const DashboardList = styled.ul`
-    display: flex;
-    flex-direction: column;
-    list-style: none;
-    }
-  `;
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+`;
 
 const Contact = styled.li`
-    cursor: pointer;
-          padding: 1em 0;
+  cursor: pointer;
+  padding: 1em 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--dark);
+
+  &:hover {
+    background-color: var(--dark);
+
+    & > ${ContactListItemRightContent} {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-top: 1px solid var(--dark);
-  
-      &:hover {
-        background-color: var(--dark);
+    }
+  }
+`;
 
-        & > ${ContactListItemRightContent} {
-          display: flex;
-
-        }
-  `;
 interface Friend {
   _id: string;
   username: string;
@@ -214,11 +229,13 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
           {filteredFriends.map((friend) => (
             <Contact key={friend._id} onClick={() => viewProfile(friend._id)}>
               <ContactListItemLeftContent>
-                {friend.profileImage && (
+                {friend.profileImage ? (
                   <ProfileImage
                     src={`${apiUrl}/${friend.profileImage}`}
                     alt={`${friend.username}'s profile`}
                   />
+                ) : (
+                  <ProfilePlaceholder>{friend.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
                 )}
                 <UserInfo>
                   <UserName>@{friend.username}</UserName>

@@ -66,6 +66,19 @@ const ProfileImage = styled.img`
   object-fit: cover;
 `;
 
+const ProfilePlaceholder = styled.div`
+  width: calc(var(--space-3) + var(--space-2));
+  height: calc(var(--space-3) + var(--space-2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--white);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+`;
+
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -187,7 +200,11 @@ const Dashboard: React.FC = () => {
     <DashboardContainer>
       {user && (
         <UserProfileHeader>
-          {user.profileImage && <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />}
+          {user.profileImage ? (
+            <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />
+          ) : (
+            <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
+          )}
           <UserInfo>
             <UserName>@{user.username}</UserName>
             <Name>{user.name}</Name>

@@ -27,6 +27,7 @@ const TabButton = styled.button<{ $isActive: boolean }>`
   &:hover {
     background: var(--dark);
     color: var(--white);
+    transform-origin: bottom;
   }
 
   @media (min-width: 576px) {

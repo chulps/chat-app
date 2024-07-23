@@ -40,6 +40,19 @@ const ProfileImage = styled.img`
   object-fit: cover;
 `;
 
+const ProfilePlaceholder = styled.div`
+  width: calc(var(--space-3) + var(--space-2));
+  height: calc(var(--space-3) + var(--space-2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--white);
+  font-size: var(--font-size-large);
+  font-weight: bold;
+`;
+
 const EmptyState = styled.p`
   color: var(--secondary);
 `;
@@ -148,11 +161,13 @@ const SearchTab: React.FC<SearchTabProps> = ({
                       key={user._id}
                       onClick={() => handleUserClick(user._id)}
                     >
-                      {user.profileImage && (
+                      {user.profileImage ? (
                         <ProfileImage
                           src={`${apiUrl}/${user.profileImage}`}
                           alt={user.username}
                         />
+                      ) : (
+                        <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
                       )}
                       <UserInfo>
                         <UserName>@{user.username}</UserName>
@@ -191,11 +206,13 @@ const SearchTab: React.FC<SearchTabProps> = ({
                       key={user._id}
                       onClick={() => handleUserClick(user._id)}
                     >
-                      {user.profileImage && (
+                      {user.profileImage ? (
                         <ProfileImage
                           src={`${apiUrl}/${user.profileImage}`}
                           alt={user.username}
                         />
+                      ) : (
+                        <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
                       )}
                       <div>
                         @{user.username}

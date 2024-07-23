@@ -76,22 +76,36 @@ const AccordionContent = styled.div<{ isOpen: boolean }>`
 
 const MemberList = styled.ul`
   list-style: none;
-  padding: 0;
+  padding: var(--space-1) 0 0 0;
   margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
 `;
 
 const MemberItem = styled.li`
   display: flex;
   align-items: center;
-  padding: 0.5em 0;
 `;
 
 const MemberAvatar = styled.img`
   width: var(--space-3);
   height: var(--space-3);
   border-radius: 50%;
-  margin-right: 0.5em;
   object-fit: cover;
+`;
+
+const MemberPlaceholder = styled.div`
+  width: var(--space-3);
+  height: var(--space-3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  color: var(--white);
+  font-size: var(--font-size-small);
+  font-weight: bold;
 `;
 
 const SettingsMenuItem = styled.div`
@@ -286,11 +300,13 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
               <MemberList>
                 {members.map((member) => (
                   <MemberItem key={member._id}>
-                    <MemberAvatar src={`${apiUrl}/${member.profileImage}`} alt={member.username} />
-                    <div>
-                      <p>{member.username}</p>
-                      <small>{member.name}</small>
-                    </div>
+                    {member.profileImage ? (
+                      <MemberAvatar src={`${apiUrl}/${member.profileImage}`} alt={member.username} />
+                    ) : (
+                      <MemberPlaceholder>
+                        {member.username.charAt(0).toUpperCase()}
+                      </MemberPlaceholder>
+                    )}
                   </MemberItem>
                 ))}
               </MemberList>

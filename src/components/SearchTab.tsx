@@ -52,6 +52,20 @@ const UserSearchResults = styled.div`
   margin-top: var(--space-3);
 `;
 
+const UserName = styled.p`
+  color: var(--white);
+`;
+
+const Name = styled.small`
+  color: var(--secondary);
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
 interface Friend {
   _id: string;
   username: string;
@@ -140,13 +154,12 @@ const SearchTab: React.FC<SearchTabProps> = ({
                           alt={user.username}
                         />
                       )}
-                      <div>
-                        @{user.username}
-                        <br />
-                        <small>
-                          ({user.email}) {user.name && `- ${user.name}`}
-                        </small>
-                      </div>
+                      <UserInfo>
+                        <UserName>@{user.username}</UserName>
+                        <Name>
+                          {user.name && `${user.name}`}
+                        </Name>
+                      </UserInfo>
                     </SearchResultItem>
                   ))
                 )}

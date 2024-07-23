@@ -129,6 +129,10 @@ const LogoutButton = styled.div`
   }
 `;
 
+const StyledLogo = styled(Logo)`
+  filter: drop-shadow(0 0 0.5rem var(--danger-500));
+`
+
 const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
   const [menuVisible, setMenuVisible] = useState(false);
@@ -233,7 +237,7 @@ const Header: React.FC = () => {
         )}
         <LogoContainer to="/">
           <RotatingText fill="var(--secondary)" />
-          <Logo src={logo} alt="Chuck Howard" />
+          <StyledLogo src={logo} alt="Chuck Howard" />
         </LogoContainer>
       </HeaderSection>
       <HeaderSection>

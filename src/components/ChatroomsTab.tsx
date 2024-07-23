@@ -22,7 +22,7 @@ const DashboardList = styled.ul`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid var(--secondary);
+    border-top: 1px solid var(--dark);
 
     &:hover {
       background-color: var(--dark);

@@ -133,7 +133,6 @@ const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
   const [menuVisible, setMenuVisible] = useState(false);
   const { content } = useLanguage();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -196,6 +195,7 @@ const Header: React.FC = () => {
         </MenuButton>
         {menuVisible && (
           <DropdownMenu ref={dropdownRef}>
+            {renderLink("/", faHome, "Home")}
             {isAuthenticated ? (
               <>
                 {renderLink("/dashboard", faGauge, "Dashboard")}
@@ -204,7 +204,6 @@ const Header: React.FC = () => {
               </>
             ) : (
               <>
-                {renderLink("/", faHome, "Home")}
                 {renderLink("/login", faRightToBracket, "Login")}
                 {renderLink("/register", faUserPlus, "Register")}
               </>

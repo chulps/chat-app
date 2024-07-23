@@ -76,15 +76,19 @@ const Register: React.FC = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!agreeTerms) {
-      setError("You must agree to the terms and conditions");
+      setError("You must agree to the terms and conditions.");
       return;
     }
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
+      setError("Please enter a valid email address.");
       return;
     }
     if (!validatePassword(password)) {
-      setError("Password must be at least 8 characters long");
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (!username) {
+      setError("Username is required.");
       return;
     }
 
@@ -102,7 +106,7 @@ const Register: React.FC = () => {
           err.response?.data?.msg || "Registration failed. Please try again.";
         setError(errorMessage);
       } else {
-        setError("Registration failed");
+        setError("Registration failed.");
       }
     }
   };
@@ -117,7 +121,7 @@ const Register: React.FC = () => {
           id="username"
           type="text"
           value={username}
-          placeholder="@example"
+          placeholder="@username"
           onChange={(e) => setUsername(e.target.value)}
         />
       </div>
@@ -151,7 +155,7 @@ const Register: React.FC = () => {
           />
           I agree to the <Link to="/terms-and-conditions">terms and conditions</Link>
         </TermsAndConditions>
-        <button type="submit"  disabled={!isFormValid()}>
+        <button type="submit" disabled={!isFormValid()}>
           Register
         </button>
       </ButtonContainer>

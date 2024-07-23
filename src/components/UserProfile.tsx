@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import ProfileView from "./ProfileView";
@@ -21,6 +21,7 @@ const UserProfile: React.FC = () => {
   const [friendRequestStatus, setFriendRequestStatus] = useState<"none" | "pending" | "accepted">("none");
   const { getToken, user } = useAuth();
   const { apiUrl } = getEnv();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -83,8 +84,18 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const handleSendMessage = () => {
-    // Handle send message logic
+  const handleSendMessage = async () => {
+    try {
+      // Creating or finding an existing private chatroom with the friend
+      const response = await axios.post(
+        `${apiUrl}/api/chatrooms/private`,
+        { members: [profile._id] },
+        { headers: { Authorization: `Bearer ${getToken()}` } }
+      );
+      navigate(`/chatroom/${response.data._id}`);
+    } catch (error) {
+      console.error("Error starting chatroom:", error);
+    }
   };
 
   const handleRemoveContact = async () => {

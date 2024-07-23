@@ -62,7 +62,6 @@ const ContactButton = styled.button`
   background: var(--site-background);
   padding: 0.5em;
   border-radius: 0.25em;
-  font-size: var(--font-size-h4);
 
   &:hover {
     background: var(--dark);
@@ -87,7 +86,7 @@ const DashboardList = styled.ul`
 
 const Contact = styled.li`
     cursor: pointer;
-          padding: 1em;
+          padding: 1em 0;
       display: flex;
       align-items: center;
       justify-content: space-between;

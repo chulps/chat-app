@@ -1,29 +1,19 @@
-import React, { useState, ReactNode } from "react";
+import React, { ReactNode } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-interface TabProps {
-  label: string;
-  icon: any;
-  children: ReactNode;
-}
-
-interface TabsProps {
-  children: ReactNode;
-}
-
-const TabButton = styled.button<{ $isActive: boolean }>`
+const TabButton = styled.button<{ $isActive: boolean; $hasLabel: boolean }>`
   background: ${(props) => (props.$isActive ? "var(--dark)" : "transparent")};
   cursor: pointer;
   color: ${(props) => (props.$isActive ? "var(--white) !important" : "var(--secondary) !important")};
-  border-radius: var(--space-1) var(--space-1) 0 0;
+  border-radius: var(--space-1);
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: var(--space-2) 0;
   flex-direction: column;
   flex-grow: ${(props) => (props.$isActive ? 1.5 : 1)};
-  gap: 0;
-
+  gap: ${(props) => (props.$hasLabel ? "var(--space-1)" : 0)};
   &:hover {
     background: var(--dark);
     color: var(--white);
@@ -34,26 +24,24 @@ const TabButton = styled.button<{ $isActive: boolean }>`
     flex-grow: unset;
     padding: var(--space-2);
     flex-direction: row;
-    gap: var(--space-1);
   }
+`;
+
+const TabsContainer = styled.div`
+  display: flex;
 `;
 
 const TabContent = styled.div`
   margin-top: var(--space-2);
 `;
 
-const TabsContainer = styled.div`
-  display: flex;
-  border-bottom: 1px solid var(--secondary);
-`;
-
 const Label = styled.span`
   display: none;
   font-size: var(--font-size-small);
+  margin-left: var(--space-1);
 
   @media (min-width: 420px) {
     display: flex;
-    margin-left: 0;
     margin-top: var(--space-1);
   }
 
@@ -63,15 +51,21 @@ const Label = styled.span`
   }
 `;
 
-const Tabs: React.FC<TabsProps> = ({ children }) => {
-  const [activeTab, setActiveTab] = useState(0);
+interface TabProps {
+  label?: string;
+  icon: any;
+  children?: ReactNode;
+}
 
-  const handleTabClick = (index: number) => {
-    setActiveTab(index);
-  };
+interface TabsProps {
+  children: ReactNode;
+  activeTab: number;
+  onTabClick: (index: number) => void;
+}
 
+const Tabs: React.FC<TabsProps> = ({ children, activeTab, onTabClick }) => {
   return (
-    <div>
+    <>
       <TabsContainer>
         {React.Children.map(children, (child, index) => {
           if (!React.isValidElement(child)) return null;
@@ -80,7 +74,8 @@ const Tabs: React.FC<TabsProps> = ({ children }) => {
             <TabButton
               key={index}
               $isActive={index === activeTab}
-              onClick={() => handleTabClick(index)}
+              $hasLabel={!!label}
+              onClick={() => onTabClick(index)}
             >
               <FontAwesomeIcon icon={icon} />
               <Label>{label}</Label>
@@ -94,7 +89,7 @@ const Tabs: React.FC<TabsProps> = ({ children }) => {
           return index === activeTab ? child.props.children : null;
         })}
       </TabContent>
-    </div>
+    </>
   );
 };
 

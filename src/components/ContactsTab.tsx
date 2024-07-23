@@ -100,7 +100,7 @@ const DashboardList = styled.ul`
 
 const Contact = styled.li`
   cursor: pointer;
-  padding: 1em 0;
+  padding: 1em;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -226,7 +226,9 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
 
       <div>
         <DashboardList>
-          {filteredFriends.map((friend) => (
+          {filteredFriends
+            .sort((a, b) => a.username.localeCompare(b.username))
+            .map((friend) => (
             <Contact key={friend._id} onClick={() => viewProfile(friend._id)}>
               <ContactListItemLeftContent>
                 {friend.profileImage ? (

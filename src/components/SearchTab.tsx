@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import Tabs, { Tab } from "./Tabs";
 import { faList, faUsers, faComments } from "@fortawesome/free-solid-svg-icons";
@@ -121,20 +121,31 @@ const SearchTab: React.FC<SearchTabProps> = ({
   fetchSearchResults,
   setSearchResults,
 }) => {
+  const [activeTab, setActiveTab] = useState(0);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
+    console.log('Search input changed:', query); // Log the search input value
     setSearchQuery(query);
     if (query) {
+      console.log(`Fetching search results for query: ${query}`); // Debugging log
       fetchSearchResults(query);
     } else {
+      console.log("Clearing search results"); // Debugging log
       setSearchResults({ users: [], chatrooms: [] });
     }
   };
 
+  useEffect(() => {
+    console.log(`Current search query: ${searchQuery}`); // Debugging log
+  }, [searchQuery]);
+
   return (
     <div>
-      <h2>Search Users and Chatrooms</h2>
-      <label htmlFor="big-search-input">Search</label>
+      <h4>Search Users and Chatrooms</h4>
+      <p>Find your friends by email address, username, or their actual name. Only public chatrooms are visible by search.</p>
+      <br/>
+      <label style={{display: "none"}} htmlFor="big-search-input">Search</label>
       <input
         id="big-search-input"
         type="text"
@@ -149,7 +160,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
 
       {searchQuery !== "" && (
         <SearchResults>
-          <Tabs>
+          <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
             <Tab label="All" icon={faList}>
               <UserSearchResults>
                 <label>Users</label>
@@ -171,9 +182,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                       )}
                       <UserInfo>
                         <UserName>@{user.username}</UserName>
-                        <Name>
-                          {user.name && `${user.name}`}
-                        </Name>
+                        <Name>{user.name && `${user.name}`}</Name>
                       </UserInfo>
                     </SearchResultItem>
                   ))

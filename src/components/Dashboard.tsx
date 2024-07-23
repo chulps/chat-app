@@ -14,7 +14,7 @@ import styled from "styled-components";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SearchTab from "./SearchTab";
-import NotificationsTab from "./NotificationsTab"; // Import NotificationsTab
+import NotificationsTab from "./NotificationsTab";
 
 interface ChatRoom {
   _id: string;
@@ -52,11 +52,13 @@ const NotificationDot = styled.span`
   right: 0;
 `;
 
-const UserProfileHeader = styled.div`
+const DashboardProfileHeader = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2);
+  border-bottom: 1px solid var(--secondary);
 `;
 
 const ProfileImage = styled.img`
@@ -85,12 +87,17 @@ const UserInfo = styled.div`
   font-size: var(--font-size-lg);
 `;
 
-const UserName = styled.p `
+const UserName = styled.p`
   color: var(--white);
 `;
 
 const Name = styled.small`
   color: var(--secondary);
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 const Dashboard: React.FC = () => {
@@ -108,6 +115,7 @@ const Dashboard: React.FC = () => {
   const { getToken, user } = useAuth();
   const [newMessage, setNewMessage] = useState(false);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(0);
 
   const fetchChatrooms = useCallback(async () => {
     try {
@@ -116,7 +124,9 @@ const Dashboard: React.FC = () => {
       });
       setChatrooms(response.data);
       setFilteredChatrooms(response.data);
-      const hasUnreadMessages = response.data.some((chatroom: ChatRoom) => chatroom.unreadMessages);
+      const hasUnreadMessages = response.data.some(
+        (chatroom: ChatRoom) => chatroom.unreadMessages
+      );
       setNewMessage(hasUnreadMessages);
     } catch (error) {
       console.error("Error fetching chatrooms:", error);
@@ -139,13 +149,15 @@ const Dashboard: React.FC = () => {
   const fetchSearchResults = useCallback(
     async (query: string) => {
       try {
+        console.log(`Making search API call with query: ${query}`); // Log the search query
         const response = await axios.get(`${apiUrl}/api/search`, {
           params: { query },
           headers: { Authorization: `Bearer ${getToken()}` },
         });
+        console.log('Search results received:', response.data); // Log the search results
         setSearchResults(response.data);
       } catch (error) {
-        console.error("Error fetching search results:", error);
+        console.error('Error fetching search results:', error);
       }
     },
     [apiUrl, getToken]
@@ -199,21 +211,30 @@ const Dashboard: React.FC = () => {
   return (
     <DashboardContainer>
       {user && (
-        <UserProfileHeader>
-          {user.profileImage ? (
-            <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />
-          ) : (
-            <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
-          )}
-          <UserInfo>
-            <UserName>@{user.username}</UserName>
-            <Name>{user.name}</Name>
-          </UserInfo>
-        </UserProfileHeader>
+        <DashboardProfileHeader>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+            {user.profileImage ? (
+              <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />
+            ) : (
+              <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
+            )}
+            <UserInfo>
+              <UserName>@{user.username}</UserName>
+              <Name>{user.name}</Name>
+            </UserInfo>
+          </div>
+          <HeaderRight>
+            <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
+              <Tab icon={faComments} />
+              <Tab icon={faAddressBook} />
+              <Tab icon={faBell} />
+              <Tab icon={faMagnifyingGlass} />
+            </Tabs>
+          </HeaderRight>
+        </DashboardProfileHeader>
       )}
-      <Tabs>
-        <Tab label="Chatrooms" icon={faComments}>
-          {newMessage && <NotificationDot />}
+      <div style={{ marginTop: "var(--space-2)"}}>
+        {activeTab === 0 && (
           <ChatroomsTab
             chatrooms={chatrooms}
             setChatrooms={setChatrooms}
@@ -221,22 +242,22 @@ const Dashboard: React.FC = () => {
             setFilteredChatrooms={setFilteredChatrooms}
             fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
           />
-        </Tab>
-        <Tab label="Contacts" icon={faAddressBook}>
+        )}
+        {activeTab === 1 && (
           <ContactsTab
             friends={friends}
             filteredFriends={filteredFriends}
             setFilteredFriends={setFilteredFriends}
           />
-        </Tab>
-        <Tab label="Notifications" icon={faBell}>
+        )}
+        {activeTab === 2 && (
           <NotificationsTab
             friendRequests={friendRequests}
             handleAcceptFriendRequest={handleAcceptFriendRequest}
             handleRejectFriendRequest={handleRejectFriendRequest}
           />
-        </Tab>
-        <Tab label="Search" icon={faMagnifyingGlass}>
+        )}
+        {activeTab === 3 && (
           <SearchTab
             apiUrl={apiUrl}
             searchResults={searchResults}
@@ -247,8 +268,8 @@ const Dashboard: React.FC = () => {
             fetchSearchResults={fetchSearchResults}
             setSearchResults={setSearchResults}
           />
-        </Tab>
-      </Tabs>
+        )}
+      </div>
     </DashboardContainer>
   );
 };

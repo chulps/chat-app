@@ -44,6 +44,14 @@ const EmptyState = styled.p`
   color: var(--secondary);
 `;
 
+const ChatroomSearchResults = styled.div`
+  margin-top: var(--space-3);
+`;
+
+const UserSearchResults = styled.div`
+  margin-top: var(--space-3);
+`;
+
 interface Friend {
   _id: string;
   username: string;
@@ -116,7 +124,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
         <SearchResults>
           <Tabs>
             <Tab label="All" icon={faList}>
-              <div>
+              <UserSearchResults>
                 <label>Users</label>
                 {searchResults.users.length === 0 ? (
                   <EmptyState>No users match your search query</EmptyState>
@@ -142,8 +150,8 @@ const SearchTab: React.FC<SearchTabProps> = ({
                     </SearchResultItem>
                   ))
                 )}
-              </div>
-              <div>
+              </UserSearchResults>
+              <ChatroomSearchResults>
                 <label>Chatrooms</label>
                 {searchResults.chatrooms.length === 0 ? (
                   <EmptyState>No chatrooms match your search query</EmptyState>
@@ -157,10 +165,10 @@ const SearchTab: React.FC<SearchTabProps> = ({
                     </SearchResultItem>
                   ))
                 )}
-              </div>
+              </ChatroomSearchResults>
             </Tab>
             <Tab label="Users" icon={faUsers}>
-              <div>
+              <UserSearchResults>
                 <label>Users</label>
                 {searchResults.users.length === 0 ? (
                   <EmptyState>No users match your search query</EmptyState>
@@ -185,7 +193,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                     </SearchResultItem>
                   ))
                 )}
-              </div>
+              </UserSearchResults>
             </Tab>
             <Tab label="Chatrooms" icon={faComments}>
               <div>

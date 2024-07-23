@@ -220,8 +220,8 @@ const Header: React.FC = () => {
                 targetLanguage={content.language}
                 onIconColor="var(--warning-500)"
                 offIconColor="var(--royal-400)"
-                onBackgroundColor="red"
-                offBackgroundColor="var(--dark)"
+                onBackgroundColor="var(--royal-300)"
+                offBackgroundColor="var(--site-background)"
               />
             </MenuThemeToggle>
             {isAuthenticated && (

@@ -5,21 +5,7 @@ import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-
-const DashboardList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  list-style: none;
-
-  li {
-    padding: 1em;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-top: 1px solid var(--dark);
-  }
-`;
+import { faSearch, faUser, faComment } from "@fortawesome/free-solid-svg-icons";
 
 const EmptyState = styled.p`
   color: var(--secondary);
@@ -58,6 +44,63 @@ const ContactListItemLeftContent = styled.div`
   gap: var(--space-1);
 `;
 
+const UserName = styled.p`
+  color: var(--white);
+`;
+
+const Name = styled.small`
+  color: var(--secondary);
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const ContactButton = styled.button`
+  background: var(--site-background);
+  padding: 0.5em;
+  border-radius: 0.25em;
+  font-size: var(--font-size-h4);
+
+  &:hover {
+    background: var(--dark);
+    filter: brightness(1.2);
+  }
+`;
+
+const ContactListItemRightContent = styled.div`
+  display: none;
+  align-items: center;
+  @media screen and (hover: none) {
+    display: flex;
+  }
+`;
+
+const DashboardList = styled.ul`
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    }
+  `;
+
+const Contact = styled.li`
+    cursor: pointer;
+          padding: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--dark);
+  
+      &:hover {
+        background-color: var(--dark);
+
+        & > ${ContactListItemRightContent} {
+          display: flex;
+
+        }
+  `;
 interface Friend {
   _id: string;
   username: string;
@@ -170,7 +213,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
       <div>
         <DashboardList>
           {filteredFriends.map((friend) => (
-            <li key={friend._id}>
+            <Contact key={friend._id} onClick={() => viewProfile(friend._id)}>
               <ContactListItemLeftContent>
                 {friend.profileImage && (
                   <ProfileImage
@@ -178,15 +221,20 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                     alt={`${friend.username}'s profile`}
                   />
                 )}
-                <span onClick={() => viewProfile(friend._id)}>
-                  <p>@{friend.username}</p>
-                  <small>({friend.email})</small>
-                </span>
+                <UserInfo>
+                  <UserName>@{friend.username}</UserName>
+                  <Name>{friend.name}</Name>
+                </UserInfo>
               </ContactListItemLeftContent>
-              <button onClick={() => startChatWithFriend(friend)}>
-                Start Chat
-              </button>
-            </li>
+              <ContactListItemRightContent>
+                <ContactButton>
+                  <FontAwesomeIcon icon={faUser} />
+                </ContactButton>
+                <ContactButton onClick={() => startChatWithFriend(friend)}>
+                  <FontAwesomeIcon icon={faComment} />
+                </ContactButton>
+              </ContactListItemRightContent>
+            </Contact>
           ))}
         </DashboardList>
       </div>

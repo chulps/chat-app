@@ -133,6 +133,7 @@ const Header: React.FC = () => {
   const [theme, setTheme] = useState("dark");
   const [menuVisible, setMenuVisible] = useState(false);
   const { content } = useLanguage();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isAuthenticated, logout, user } = useAuth();
   const location = useLocation();
   const dropdownRef = useRef<HTMLDivElement>(null);

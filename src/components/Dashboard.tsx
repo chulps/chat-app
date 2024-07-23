@@ -66,10 +66,18 @@ const ProfileImage = styled.img`
   object-fit: cover;
 `;
 
-const UserName = styled.div`
+const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
   font-size: var(--font-size-lg);
+`;
+
+const UserName = styled.p `
+  color: var(--white);
+`;
+
+const Name = styled.small`
+  color: var(--secondary);
 `;
 
 const Dashboard: React.FC = () => {
@@ -180,10 +188,10 @@ const Dashboard: React.FC = () => {
       {user && (
         <UserProfileHeader>
           {user.profileImage && <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />}
-          <UserName>
-            <div>@{user.username}</div>
-            <small>{user.name}</small>
-          </UserName>
+          <UserInfo>
+            <UserName>@{user.username}</UserName>
+            <Name>{user.name}</Name>
+          </UserInfo>
         </UserProfileHeader>
       )}
       <Tabs>

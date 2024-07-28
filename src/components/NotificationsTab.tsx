@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getEnv } from "../utils/getEnv";
+import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
 
 const DashboardList = styled.ul`
   display: flex;
@@ -26,18 +28,14 @@ const ProfileImage = styled.img`
   object-fit: cover;
 `;
 
-const ProfilePlaceholder = styled.div`
-  width: calc(var(--space-3) + var(--space-2));
-  height: calc(var(--space-3) + var(--space-2));
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--secondary);
-  color: var(--white);
-  font-size: var(--font-size-large);
-  font-weight: bold;
-`;
+interface Notification {
+  _id: string;
+  message: string;
+  type: string;
+  chatroomId?: string;
+  date: string;
+  read: boolean;
+}
 
 interface FriendRequest {
   sender: {
@@ -61,20 +59,40 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
   handleRejectFriendRequest,
 }) => {
   const { apiUrl } = getEnv();
+  const { getToken } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/notifications`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setNotifications(response.data.notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   return (
     <div>
       <h4>Notifications</h4>
       <DashboardList>
+        {notifications.map((notification) => (
+          <li key={notification._id}>
+            {notification.message}
+          </li>
+        ))}
         {friendRequests.map((request) => (
           <li key={request.sender._id}>
-            {request.sender.profileImage ? (
+            {request.sender.profileImage && (
               <ProfileImage
                 src={`${apiUrl}/${request.sender.profileImage}`}
                 alt={`${request.sender.username}'s profile`}
               />
-            ) : (
-              <ProfilePlaceholder>{request.sender.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
             )}
             {request.sender.username} ({request.sender.email})
             <button

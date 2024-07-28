@@ -289,22 +289,31 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
           </ChatroomId>
           <hr />
           <AccordionContainer>
-            <AccordionHeader onClick={() => setIsAccordionOpen(!isAccordionOpen)}>
+            <AccordionHeader
+              onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+            >
               <MenuItemLeftContent>
                 <FontAwesomeIcon icon={faUsers} />
                 <span>{members.length} Members</span>
               </MenuItemLeftContent>
-              <FontAwesomeIcon icon={isAccordionOpen ? faChevronUp : faChevronDown} />
+              <FontAwesomeIcon
+                icon={isAccordionOpen ? faChevronUp : faChevronDown}
+              />
             </AccordionHeader>
             <AccordionContent isOpen={isAccordionOpen}>
               <MemberList>
                 {members.map((member) => (
                   <MemberItem key={member._id}>
                     {member.profileImage ? (
-                      <MemberAvatar src={`${apiUrl}/${member.profileImage}`} alt={member.username} />
+                      <MemberAvatar
+                        src={`${apiUrl}/${member.profileImage}`}
+                        alt={member.username}
+                      />
                     ) : (
                       <MemberPlaceholder>
-                        {member.username.charAt(0).toUpperCase()}
+                        {member.username !== undefined
+                          ? member.username.charAt(0).toUpperCase()
+                          : ""}
                       </MemberPlaceholder>
                     )}
                   </MemberItem>

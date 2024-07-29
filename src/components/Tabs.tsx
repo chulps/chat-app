@@ -10,11 +10,11 @@ const TabButton = styled.button<{ $isActive: boolean; $hasLabel: boolean }>`
   border-radius: 0;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2) 0;
   flex-direction: column;
   flex-grow: ${(props) => (props.$isActive ? 1.5 : 1)};
   gap: ${(props) => (props.$hasLabel ? "var(--space-1)" : 0)};
   position: relative;
+  padding: 1em;
   &:hover {
     background: var(--dark);
     color: var(--white);
@@ -70,14 +70,13 @@ const TabContent = styled.div`
 const Label = styled.span`
   display: none;
   font-size: var(--font-size-small);
-  margin-left: var(--space-1);
-
+  
   @media (min-width: 420px) {
     display: flex;
-    margin-top: var(--space-1);
-  }
-
-  @media (min-width: 576px) {
+    }
+    
+    @media (min-width: 576px) {
+      margin-left: var(--space-1);
     font-size: var(--font-size-default);
     margin: 0;
   }

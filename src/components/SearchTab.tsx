@@ -79,6 +79,12 @@ const UserInfo = styled.div`
   justify-content: center;
 `;
 
+const BigSearch = styled.input`
+  margin-block: var(--space-0);
+  border-radius: var(--space-3);
+  border: 1px solid var(--secondary);
+`;
+
 interface Friend {
   _id: string;
   username: string;
@@ -145,8 +151,8 @@ const SearchTab: React.FC<SearchTabProps> = ({
       <h4>Search Users and Chatrooms</h4>
       <p>Find your friends by email address, username, or their actual name. Only public chatrooms are visible by search.</p>
       <br/>
-      <label style={{display: "none"}} htmlFor="big-search-input">Search</label>
-      <input
+      <label htmlFor="big-search-input">Search</label>
+      <BigSearch
         id="big-search-input"
         type="text"
         value={searchQuery}

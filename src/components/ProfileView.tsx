@@ -61,7 +61,7 @@ const ProfilePlaceholder = styled.div`
   font-weight: bold;
 `;
 
-const FriendRequestStatus = styled.data`
+const FriendRequestStatus = styled.div`
   font-size: var(--font-size-small);
   color: var(--info);
 `;

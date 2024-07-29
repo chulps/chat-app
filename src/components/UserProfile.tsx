@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import ProfileView from "./ProfileView";
-import { ProfileData } from "../types"; // Import the ProfileData type
+import { ProfileData } from "../types";
 
 const UserProfile: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -43,7 +43,6 @@ const UserProfile: React.FC = () => {
             blocked: response.data.blocked || [],
           });
 
-          // Check if a friend request is pending
           const isPending = response.data.friendRequests.some(
             (request: any) => request.sender === user?.id && request.status === "pending"
           );
@@ -86,7 +85,6 @@ const UserProfile: React.FC = () => {
 
   const handleSendMessage = async () => {
     try {
-      // Creating or finding an existing private chatroom with the friend
       const response = await axios.post(
         `${apiUrl}/api/chatrooms/private`,
         { members: [profile._id] },
@@ -108,9 +106,10 @@ const UserProfile: React.FC = () => {
       setProfile((prevProfile) => ({
         ...prevProfile,
         friends: prevProfile.friends.filter(
-          (friend) => friend._id !== userId
+          (friend) => friend._id !== user?.id
         ),
       }));
+      setFriendRequestStatus("none");
     } catch (error) {
       console.error("Error removing contact:", error);
     }

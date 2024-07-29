@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
@@ -80,6 +80,7 @@ const AddUserButton: React.FC<AddUserButtonProps> = ({ chatroomId, fetchMembers,
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchContacts = useCallback(async () => {
     try {
@@ -120,8 +121,25 @@ const AddUserButton: React.FC<AddUserButtonProps> = ({ chatroomId, fetchMembers,
       !members.some((member) => member._id === contact._id)
   );
 
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsDropdownOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen, handleClickOutside]);
+
   return (
-    <AddFriendContainer>
+    <AddFriendContainer ref={dropdownRef}>
       <FontAwesomeIcon icon={faUserPlus} onClick={() => setIsDropdownOpen(!isDropdownOpen)} />
       <AddFriendDropdown isOpen={isDropdownOpen}>
         <SearchBar

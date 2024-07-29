@@ -4,52 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import Tabs, { Tab } from "./Tabs";
-import {
-  faAddressBook,
-  faComments,
-  faBell,
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import { faAddressBook, faComments, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SearchTab from "./SearchTab";
-import NotificationsTab from "./NotificationsTab";
-
-interface ChatRoom {
-  _id: string;
-  name: string;
-  originator: string;
-  members: string[];
-  isPublic: boolean;
-  unreadMessages?: boolean;
-}
-
-interface Friend {
-  _id: string;
-  username: string;
-  email: string;
-  profileImage: string;
-  name?: string;
-}
-
-interface FriendRequest {
-  sender: Friend;
-  status: string;
-}
+import { io, Socket } from "socket.io-client";
+import { Friend, ChatRoom, Notification, FriendRequest } from "../types"; // Ensure FriendRequest is imported
 
 const DashboardContainer = styled.div`
   position: relative;
-`;
-
-const NotificationDot = styled.span`
-  height: 0.5rem;
-  width: 0.5rem;
-  background-color: var(--primary);
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  right: 0;
 `;
 
 const DashboardProfileHeader = styled.div`
@@ -114,8 +78,11 @@ const Dashboard: React.FC = () => {
   const { apiUrl } = getEnv();
   const { getToken, user } = useAuth();
   const [newMessage, setNewMessage] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
+
+  const socket: Socket = io(apiUrl);
 
   const fetchChatrooms = useCallback(async () => {
     try {
@@ -125,7 +92,7 @@ const Dashboard: React.FC = () => {
       setChatrooms(response.data);
       setFilteredChatrooms(response.data);
       const hasUnreadMessages = response.data.some(
-        (chatroom: ChatRoom) => chatroom.unreadMessages
+        (chatroom: ChatRoom) => chatroom.hasUnreadMessages
       );
       setNewMessage(hasUnreadMessages);
     } catch (error) {
@@ -141,6 +108,10 @@ const Dashboard: React.FC = () => {
       setFriends(response.data.friends);
       setFilteredFriends(response.data.friends);
       setFriendRequests(response.data.friendRequests);
+      const unreadFriendRequests = response.data.friendRequests.filter(
+        (friendRequest: any) => friendRequest.status === "pending"
+      ).length;
+      setUnreadNotifications(unreadFriendRequests);
     } catch (error) {
       console.error("Error fetching friends:", error);
     }
@@ -149,15 +120,13 @@ const Dashboard: React.FC = () => {
   const fetchSearchResults = useCallback(
     async (query: string) => {
       try {
-        console.log(`Making search API call with query: ${query}`); // Log the search query
         const response = await axios.get(`${apiUrl}/api/search`, {
           params: { query },
           headers: { Authorization: `Bearer ${getToken()}` },
         });
-        console.log('Search results received:', response.data); // Log the search results
         setSearchResults(response.data);
       } catch (error) {
-        console.error('Error fetching search results:', error);
+        console.error("Error fetching search results:", error);
       }
     },
     [apiUrl, getToken]
@@ -204,15 +173,41 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchChatrooms();
     fetchFriends();
-    const interval = setInterval(fetchChatrooms, 30000); // Update every 30 seconds
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [fetchChatrooms, fetchFriends]);
+
+    if (user) {
+      socket.emit("joinNotificationsRoom", user.id);
+
+      socket.on("newNotification", (notification: Notification) => {
+        if (notification.type === "chatroom_invite" || notification.type === "new_message") {
+          fetchChatrooms();
+        } else if (notification.type === "friend_request") {
+          fetchFriends();
+        }
+        setUnreadNotifications((prev) => prev + 1);
+      });
+
+      socket.on("notificationsRead", () => {
+        setUnreadNotifications(0);
+      });
+    }
+
+    const interval = setInterval(() => {
+      fetchChatrooms();
+      fetchFriends();
+    }, 30000);
+
+    return () => {
+      clearInterval(interval);
+      socket.off("newNotification");
+      socket.off("notificationsRead");
+    };
+  }, [fetchChatrooms, fetchFriends, user]);
 
   return (
     <DashboardContainer>
       {user && (
         <DashboardProfileHeader>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
             {user.profileImage ? (
               <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />
             ) : (
@@ -225,22 +220,23 @@ const Dashboard: React.FC = () => {
           </div>
           <HeaderRight>
             <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
-              <Tab icon={faComments} />
-              <Tab icon={faAddressBook} />
-              <Tab icon={faBell} />
+              <Tab icon={faComments} badge={newMessage ? 1 : null} />
+              <Tab icon={faAddressBook} badge={unreadNotifications > 0 ? unreadNotifications : null} />
               <Tab icon={faMagnifyingGlass} />
             </Tabs>
           </HeaderRight>
         </DashboardProfileHeader>
       )}
-      <div style={{ marginTop: "var(--space-2)"}}>
+      <div style={{ marginTop: "var(--space-2)" }}>
         {activeTab === 0 && (
           <ChatroomsTab
             chatrooms={chatrooms}
             setChatrooms={setChatrooms}
             filteredChatrooms={filteredChatrooms}
             setFilteredChatrooms={setFilteredChatrooms}
-            fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
+            fetchChatrooms={fetchChatrooms}
+            user={user}
+            socket={socket}
           />
         )}
         {activeTab === 1 && (
@@ -248,16 +244,14 @@ const Dashboard: React.FC = () => {
             friends={friends}
             filteredFriends={filteredFriends}
             setFilteredFriends={setFilteredFriends}
-          />
-        )}
-        {activeTab === 2 && (
-          <NotificationsTab
             friendRequests={friendRequests}
             handleAcceptFriendRequest={handleAcceptFriendRequest}
             handleRejectFriendRequest={handleRejectFriendRequest}
+            user={user}
+            socket={socket}
           />
         )}
-        {activeTab === 3 && (
+        {activeTab === 2 && (
           <SearchTab
             apiUrl={apiUrl}
             searchResults={searchResults}

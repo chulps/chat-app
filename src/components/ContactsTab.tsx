@@ -5,9 +5,11 @@ import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faUser, faComment } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faComment } from "@fortawesome/free-solid-svg-icons";
+import { Friend, FriendRequest } from "../types";
+import { Socket } from "socket.io-client";
 
-const EmptyState = styled.p`
+const EmptyState = styled.div`
   color: var(--secondary);
 `;
 
@@ -42,7 +44,7 @@ const ProfileImage = styled.img`
 
 const ProfilePlaceholder = styled.div`
   width: var(--space-3);
-  height: var(--space-3);;
+  height: var(--space-3);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -96,6 +98,7 @@ const DashboardList = styled.ul`
   display: flex;
   flex-direction: column;
   list-style: none;
+  margin-bottom: var(--space-2);
 `;
 
 const Contact = styled.li`
@@ -115,30 +118,77 @@ const Contact = styled.li`
   }
 `;
 
-interface Friend {
-  _id: string;
-  username: string;
-  email: string;
-  profileImage: string;
-  name?: string;
-}
+const ContactsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+`;
+
+const Badge = styled.span`
+  padding: 0.2em 0.5em;
+  display: inline;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  text-align: center;
+  color: white;
+  font-family: var(--font-family-data);
+  background: var(--primary);
+  font-size: var(--font-size-small);
+  color: var (--white);
+  box-shadow: 0 0 6px var(--primary);
+  border-radius: 1em;
+  text-shadow: 0 0 2px white;
+`;
+
+const ContactsLabel = styled.label`
+  display: flex;
+  margin-bottom: var(--space-1);
+  align-items: center;
+  gap: var(--space-1);
+`;
+
+const FriendRequestItem = styled.li`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1);
+  border-top: 1px solid var(--dark);
+`;
+
+const FriendRequestListItemRightContent = styled.div`
+  display: flex;
+  gap: var(--space-1);
+`;
 
 interface ContactsTabProps {
   friends: Friend[];
   filteredFriends: Friend[];
   setFilteredFriends: React.Dispatch<React.SetStateAction<Friend[]>>;
+  friendRequests: FriendRequest[];
+  handleAcceptFriendRequest: (senderId: string) => Promise<void>;
+  handleRejectFriendRequest: (senderId: string) => Promise<void>;
+  user: any;
+  socket: Socket;
 }
 
 const ContactsTab: React.FC<ContactsTabProps> = ({
   friends,
   filteredFriends,
   setFilteredFriends,
+  friendRequests,
+  handleAcceptFriendRequest,
+  handleRejectFriendRequest,
+  user,
+  socket,
 }) => {
   const { apiUrl } = getEnv();
   const { getToken } = useAuth();
   const navigate = useNavigate();
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [showFriendSearchInput, setShowFriendSearchInput] = useState(false);
+  const [loadingRequests, setLoadingRequests] = useState<string | null>(null);
 
   const friendSearchInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,30 +229,57 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
     navigate(`/profile/${userId}`);
   };
 
-  const startChatWithFriend = async (friend: Friend) => {
+  const startChatWithFriend = async (event: React.MouseEvent, friend: Friend) => {
+    event.stopPropagation();
     try {
-      // Creating or finding an existing private chatroom with the friend
+      const payload = {
+        name: friend.name || friend.username,
+        members: [friend._id],
+      };
+      console.log('Starting chat with payload:', payload);
+  
       const response = await axios.post(
         `${apiUrl}/api/chatrooms/private`,
-        { name: friend.name || friend.username, members: [friend._id] },
+        payload,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
+      console.log('Chatroom created:', response.data);
       navigate(`/chatroom/${response.data._id}`);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error starting chatroom:", error);
+      if (error instanceof Error && 'response' in error) {
+        const axiosError = error as { response?: { data: any } };
+        if (axiosError.response) {
+          console.error('Server responded with:', axiosError.response.data);
+        }
+      }
     }
+  };
+
+  const handleAcceptRequest = async (senderId: string) => {
+    setLoadingRequests(senderId);
+    await handleAcceptFriendRequest(senderId);
+    setLoadingRequests(null);
+  };
+
+  const handleRejectRequest = async (senderId: string) => {
+    setLoadingRequests(senderId);
+    await handleRejectFriendRequest(senderId);
+    setLoadingRequests(null);
   };
 
   return (
     <>
       <TabHeader>
         <h4>Contacts</h4>
-        <IconsContainer>
-          <FontAwesomeIcon
-            icon={faSearch}
-            onClick={() => setShowFriendSearchInput(!showFriendSearchInput)}
-          />
-        </IconsContainer>
+        {friends.length > 0 && (
+          <IconsContainer>
+            <FontAwesomeIcon
+              icon={faSearch}
+              onClick={() => setShowFriendSearchInput(!showFriendSearchInput)}
+            />
+          </IconsContainer>
+        )}
       </TabHeader>
 
       {showFriendSearchInput && (
@@ -220,42 +297,97 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
         </>
       )}
 
-      {friendSearchQuery !== "" && filteredFriends.length === 0 && (
-        <EmptyState>No users match your search query</EmptyState>
-      )}
-
-      <div>
-        <DashboardList>
-          {filteredFriends
-            .sort((a, b) => a.username.localeCompare(b.username))
-            .map((friend) => (
-            <Contact key={friend._id} onClick={() => viewProfile(friend._id)}>
-              <ContactListItemLeftContent>
-                {friend.profileImage ? (
-                  <ProfileImage
-                    src={`${apiUrl}/${friend.profileImage}`}
-                    alt={`${friend.username}'s profile`}
-                  />
-                ) : (
-                  <ProfilePlaceholder>{friend.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
-                )}
-                <UserInfo>
-                  <UserName>@{friend.username}</UserName>
-                  <Name>{friend.name}</Name>
-                </UserInfo>
-              </ContactListItemLeftContent>
-              <ContactListItemRightContent>
-                <ContactButton>
-                  <FontAwesomeIcon icon={faUser} />
-                </ContactButton>
-                <ContactButton onClick={() => startChatWithFriend(friend)}>
-                  <FontAwesomeIcon icon={faComment} />
-                </ContactButton>
-              </ContactListItemRightContent>
-            </Contact>
-          ))}
-        </DashboardList>
-      </div>
+      <ContactsContainer>
+        {friendRequests.length > 0 && (
+          <div>
+            <ContactsLabel>
+              Friend Requests 
+              <Badge>{friendRequests.length}</Badge>
+            </ContactsLabel>
+            <DashboardList>
+              {friendRequests.map((request) => (
+                <FriendRequestItem key={request.sender._id}>
+                  <ContactListItemLeftContent>
+                    {request.sender.profileImage ? (
+                      <ProfileImage
+                        src={`${apiUrl}/${request.sender.profileImage}`}
+                        alt={`${request.sender.username}'s profile`}
+                      />
+                    ) : (
+                      <ProfilePlaceholder>
+                        {request.sender.username.charAt(0).toUpperCase()}
+                      </ProfilePlaceholder>
+                    )}
+                    <UserInfo>
+                      <UserName>@{request.sender.username}</UserName>
+                      <Name>{request.sender.name}</Name>
+                    </UserInfo>
+                  </ContactListItemLeftContent>
+                    <>
+                    {loadingRequests === request.sender._id ? (
+                      <div className="system-message blink info">Loading...</div>
+                    ) : (
+                      <FriendRequestListItemRightContent>
+                        <ContactButton
+                          className="success small"
+                          onClick={() => handleAcceptRequest(request.sender._id)}
+                        >
+                          Accept
+                        </ContactButton>
+                        <ContactButton
+                          className="secondary small"
+                          onClick={() => handleRejectRequest(request.sender._id)}
+                        >
+                          Reject
+                        </ContactButton>
+                  </FriendRequestListItemRightContent>
+                    )}
+                    </>
+                </FriendRequestItem>
+              ))}
+            </DashboardList>
+          </div>
+        )}
+        {filteredFriends.length === 0 ? (
+          <EmptyState>You don't have any contacts.</EmptyState>
+        ) : (
+          <div>
+            <ContactsLabel>Your Contacts</ContactsLabel>
+            <DashboardList>
+              {filteredFriends
+                .sort((a, b) => a.username.localeCompare(b.username))
+                .map((friend) => (
+                  <Contact
+                    key={friend._id}
+                    onClick={() => viewProfile(friend._id)}
+                  >
+                    <ContactListItemLeftContent>
+                      {friend.profileImage ? (
+                        <ProfileImage
+                          src={`${apiUrl}/${friend.profileImage}`}
+                          alt={`${friend.username}'s profile`}
+                        />
+                      ) : (
+                        <ProfilePlaceholder>
+                          {friend.username.charAt(0).toUpperCase()}
+                        </ProfilePlaceholder>
+                      )}
+                      <UserInfo>
+                        <UserName>@{friend.username}</UserName>
+                        <Name>{friend.name}</Name>
+                      </UserInfo>
+                    </ContactListItemLeftContent>
+                    <ContactListItemRightContent>
+                      <ContactButton onClick={(e) => startChatWithFriend(e, friend)}>
+                        <FontAwesomeIcon icon={faComment} />
+                      </ContactButton>
+                    </ContactListItemRightContent>
+                  </Contact>
+                ))}
+            </DashboardList>
+          </div>
+        )}
+      </ContactsContainer>
     </>
   );
 };

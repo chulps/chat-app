@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { getEnv } from "../utils/getEnv";
-import axios from "axios";
-import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+const NotificationsTabHeader = styled.header`
+  font-size: var(--font-size-h4);
+  padding-bottom: var(--space-2);
+`;
 
 const DashboardList = styled.ul`
   display: flex;
@@ -14,9 +18,10 @@ const DashboardList = styled.ul`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid var(--secondary);
-    &:first-of-type {
-      border-top: none;
+    border-top: 1px solid var(--dark);
+    cursor: pointer;
+    &:hover {
+      background-color: var(--dark);
     }
   }
 `;
@@ -26,6 +31,21 @@ const ProfileImage = styled.img`
   aspect-ratio: 1/1;
   border-radius: 50%;
   object-fit: cover;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: var(--space-1);
+
+  button {
+    font-size: var(--font-size-small);
+  }
+`;
+
+const LeftContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 `;
 
 interface Notification {
@@ -51,60 +71,64 @@ interface NotificationsTabProps {
   friendRequests: FriendRequest[];
   handleAcceptFriendRequest: (senderId: string) => void;
   handleRejectFriendRequest: (senderId: string) => void;
+  notifications: Notification[];
+  markNotificationsAsRead: () => void;
 }
 
 const NotificationsTab: React.FC<NotificationsTabProps> = ({
   friendRequests,
   handleAcceptFriendRequest,
   handleRejectFriendRequest,
+  notifications,
+  markNotificationsAsRead,
 }) => {
   const { apiUrl } = getEnv();
-  const { getToken } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const navigate = useNavigate();
 
-  const fetchNotifications = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/notifications`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      setNotifications(response.data.notifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.chatroomId) {
+      navigate(`/chatroom/${notification.chatroomId}`);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    markNotificationsAsRead();
+  }, [markNotificationsAsRead]);
 
   return (
     <div>
-      <h4>Notifications</h4>
+      <NotificationsTabHeader>Notifications</NotificationsTabHeader>
       <DashboardList>
         {notifications.map((notification) => (
-          <li key={notification._id}>
+          <li key={notification._id} onClick={() => handleNotificationClick(notification)}>
             {notification.message}
           </li>
         ))}
         {friendRequests.map((request) => (
           <li key={request.sender._id}>
-            {request.sender.profileImage && (
-              <ProfileImage
-                src={`${apiUrl}/${request.sender.profileImage}`}
-                alt={`${request.sender.username}'s profile`}
-              />
-            )}
-            {request.sender.username} ({request.sender.email})
-            <button
-              onClick={() => handleAcceptFriendRequest(request.sender._id)}
-            >
-              Accept
-            </button>
-            <button
-              onClick={() => handleRejectFriendRequest(request.sender._id)}
-            >
-              Reject
-            </button>
+            <LeftContainer>
+              {request.sender.profileImage && (
+                <ProfileImage
+                  src={`${apiUrl}/${request.sender.profileImage}`}
+                  alt={`${request.sender.username}'s profile`}
+                />
+              )}
+              <span><b>@{request.sender.username}</b> Wants to add you as a friend</span>
+            </LeftContainer>
+            <ButtonContainer>
+              <button
+                className="success small"
+                onClick={() => handleAcceptFriendRequest(request.sender._id)}
+              >
+                Accept
+              </button>
+              <button
+                className="secondary small"
+                onClick={() => handleRejectFriendRequest(request.sender._id)}
+              >
+                Reject
+              </button>
+            </ButtonContainer>
           </li>
         ))}
       </DashboardList>

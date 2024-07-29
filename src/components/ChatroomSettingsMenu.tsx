@@ -34,10 +34,10 @@ const MenuButton = styled.span`
   font-size: var(--font-size-h4);
 `;
 
-const DropdownContent = styled.div<{ alignRight?: boolean }>`
+const DropdownContent = styled.div<{ alignright?: boolean }>`
   position: absolute;
   top: calc(100% + 1em);
-  ${({ alignRight }) => (alignRight ? "right: 0;" : "left: 0;")}
+  ${({ alignright }) => (alignright ? "right: 0;" : "left: 0;")}
   background: var(--dark);
   border: 1px solid var(--secondary);
   box-shadow: var(--shadow);
@@ -173,7 +173,7 @@ interface Member {
 }
 
 interface ChatroomSettingsMenuProps {
-  alignRight?: boolean;
+  alignright?: boolean;
   chatroomId: string;
   content: any;
   preferredLanguage: string;
@@ -189,7 +189,7 @@ interface ChatroomSettingsMenuProps {
 }
 
 const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
-  alignRight,
+  alignright,
   chatroomId,
   content,
   preferredLanguage,
@@ -275,7 +275,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
         )}
       </MenuButton>
       {menuVisible && (
-        <DropdownContent alignRight={alignRight}>
+        <DropdownContent alignright={alignright}>
           <ChatroomId
             data-tooltip={content["tooltip-copy-chatroom-id"]}
             className="copy-id tooltip bottom"

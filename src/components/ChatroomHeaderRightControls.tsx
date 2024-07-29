@@ -68,7 +68,7 @@ const ChatroomHeaderRightControls: React.FC<RightControlsProps> = ({
       <CopyLinkButton urlTooltipText={urlTooltipText} handleCopyChatroomUrl={handleCopyChatroomUrl} />
       {isAuthenticated && (
         <ChatroomSettingsMenu
-          alignRight
+          alignright
           chatroomId={chatroomId}
           content={content}
           preferredLanguage={preferredLanguage}

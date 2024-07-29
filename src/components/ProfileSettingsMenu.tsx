@@ -2,7 +2,12 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical, faTimes, faUserMinus, faBan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEllipsisVertical,
+  faTimes,
+  faUserMinus,
+  faBan,
+} from "@fortawesome/free-solid-svg-icons";
 
 const DropdownContainer = styled.div`
   position: relative;
@@ -44,13 +49,12 @@ const SettingsMenuItem = styled.div`
   gap: var(--space-3);
   background: var(--dark);
 
-  &.leave,
-  &.delete {
-    color: var(--danger-300);
-    border-top: 1px solid var(--secondary);
-
     &:hover {
       filter: brightness(1.3);
+    }
+
+    &:last-of-type {
+      border-bottom: 1px solid var(--secondary);
     }
   }
 `;
@@ -147,7 +151,7 @@ const ProfileSettingsMenu: React.FC<ProfileSettingsMenuProps> = ({
                 <MenuItemIcon>
                   <FontAwesomeIcon icon={faUserMinus} />
                 </MenuItemIcon>
-                <MenuItemText>Remove Contact</MenuItemText>
+                <MenuItemText>Remove&nbsp;Contact</MenuItemText>
               </MenuItemLeftContent>
             </SettingsMenuItem>
           )}
@@ -156,7 +160,9 @@ const ProfileSettingsMenu: React.FC<ProfileSettingsMenuProps> = ({
               <MenuItemIcon>
                 <FontAwesomeIcon icon={faBan} />
               </MenuItemIcon>
-              <MenuItemText>{isBlocked ? "Unblock User" : "Block User"}</MenuItemText>
+              <MenuItemText>
+                {isBlocked ? "Unblock User" : "Block User"}
+              </MenuItemText>
             </MenuItemLeftContent>
           </BlockUser>
         </DropdownContent>

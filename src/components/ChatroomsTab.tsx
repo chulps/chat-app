@@ -5,7 +5,10 @@ import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faSearch, faChevronRight, faCrown } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faChevronRight, faCrown } from "@fortawesome/free-solid-svg-icons";
+import { Notification } from "../types";
+import { Socket } from "socket.io-client";
+import { ChatRoom } from "../types";
 
 const CreateChatroomInputContainer = styled.div`
   display: flex;
@@ -62,7 +65,7 @@ const LatestMessageContainer = styled.div`
   gap: var(--space-1);
 `;
 
-const EmptyState = styled.p`
+const EmptyState = styled.div`
   color: var(--secondary);
 `;
 
@@ -117,25 +120,14 @@ const NewMessageDot = styled.span`
   margin-right: 0.5em;
 `;
 
-interface ChatRoom {
-  _id: string;
-  name: string;
-  originator: string;
-  members: string[];
-  isPublic: boolean;
-  latestMessage?: {
-    text: string;
-    timestamp: string;
-  };
-  hasUnreadMessages?: boolean;
-}
-
 interface ChatroomsTabProps {
   chatrooms: ChatRoom[];
   setChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
   filteredChatrooms: ChatRoom[];
   setFilteredChatrooms: React.Dispatch<React.SetStateAction<ChatRoom[]>>;
   fetchChatrooms: () => void;
+  user: any;
+  socket: Socket;
 }
 
 const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
@@ -144,16 +136,15 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   filteredChatrooms,
   setFilteredChatrooms,
   fetchChatrooms,
+  user,
+  socket,
 }) => {
   const { apiUrl } = getEnv();
-  const { getToken, user } = useAuth();
+  const { getToken } = useAuth();
   const [newChatroomName, setNewChatroomName] = useState("");
-  const [chatroomSearchQuery, setChatroomSearchQuery] = useState("");
   const [showCreateInput, setShowCreateInput] = useState(false);
-  const [showSearchInput, setShowSearchInput] = useState(false);
 
   const createInputRef = useRef<HTMLInputElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
     if (
@@ -161,12 +152,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
       !createInputRef.current.contains(event.target as Node)
     ) {
       setShowCreateInput(false);
-    }
-    if (
-      searchInputRef.current &&
-      !searchInputRef.current.contains(event.target as Node)
-    ) {
-      setShowSearchInput(false);
     }
   }, []);
 
@@ -176,21 +161,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [handleClickOutside]);
-
-  const handleChatroomSearchChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const query = e.target.value;
-    setChatroomSearchQuery(query);
-    if (query) {
-      const filtered = chatrooms.filter((chatroom) =>
-        chatroom.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredChatrooms(filtered);
-    } else {
-      setFilteredChatrooms(chatrooms);
-    }
-  };
 
   const createChatroom = async () => {
     try {
@@ -244,6 +214,22 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [fetchChatrooms]);
 
+  useEffect(() => {
+    if (user && socket) {
+      socket.on("newNotification", (notification: Notification) => {
+        if (notification.type === "chatroom_invite" || notification.type === "new_message") {
+          fetchChatrooms();
+        }
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off("newNotification");
+      }
+    };
+  }, [user, socket, fetchChatrooms]);
+
   return (
     <>
       <TabHeader>
@@ -252,10 +238,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
           <FontAwesomeIcon
             icon={faPlus}
             onClick={() => setShowCreateInput(!showCreateInput)}
-          />
-          <FontAwesomeIcon
-            icon={faSearch}
-            onClick={() => setShowSearchInput(!showSearchInput)}
           />
         </IconsContainer>
       </TabHeader>
@@ -270,16 +252,6 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
           />
           <button onClick={createChatroom}>Create</button>
         </CreateChatroomInputContainer>
-      )}
-
-      {showSearchInput && (
-        <input
-          ref={searchInputRef}
-          type="text"
-          value={chatroomSearchQuery}
-          onChange={handleChatroomSearchChange}
-          placeholder="Search Chatrooms"
-        />
       )}
 
       {filteredChatrooms.length === 0 && (
@@ -306,7 +278,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
                     {chatroom.originator === user?.id && (
                       <FontAwesomeIcon icon={faCrown} />
                     )}
-                    <data>
+                    <div>
                       {new Date(chatroom.latestMessage.timestamp).toLocaleTimeString(
                         navigator.language,
                         {
@@ -315,7 +287,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
                           hour12: false,
                         }
                       )}
-                    </data>
+                    </div>
                     <FontAwesomeIcon icon={faChevronRight} />
                   </TimeOfLastMessage>
                 )}

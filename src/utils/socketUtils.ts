@@ -11,8 +11,7 @@ export const sendMessage = (
   name: string,
   preferredLanguage: string,
   chatroomId: string,
-  setInputMessage: React.Dispatch<React.SetStateAction<string>>,
-  userId?: string // Add userId parameter
+  setInputMessage: React.Dispatch<React.SetStateAction<string>>
 ) => {
   const message: Message = {
     text: inputMessage,
@@ -25,7 +24,6 @@ export const sendMessage = (
       hour12: false,
     }),
     type: "user",
-    readBy: userId ? [userId] : [] // Mark as read by sender
   };
   socket.emit("sendMessage", message);
   setInputMessage("");

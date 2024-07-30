@@ -1,16 +1,30 @@
+// Updated ChatRoomHeader.tsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faHashtag,
-  faLink,
-  faQrcode,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import ChatroomHeaderRightControls from "./ChatroomHeaderRightControls";
+import styled from "styled-components";
+
+const ChatroomHeaderContainer = styled.header`
+  font-size: var(--font-size-h5);
+  padding: 0.5em 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+interface Member {
+  _id: string;
+  username: string;
+  name: string;
+  profileImage: string;
+}
 
 interface ChatRoomHeaderProps {
   chatroomId: string;
-  name: string;
+  chatroomName: string;
+  membersCount: number;
   qrCodeIsVisible: boolean;
   urlTooltipText: string;
   idTooltipText: string;
@@ -20,11 +34,21 @@ interface ChatRoomHeaderProps {
   handleCopyChatroomId: () => void;
   handleShowQrCode: () => void;
   handleLeaveRoom: () => void;
+  isAuthenticated: boolean;
+  isOriginator: boolean;
+  handleToggleIsPublic: () => void;
+  isPublic: boolean;
+  handleToggleShowOriginal: () => void;
+  showOriginal: boolean;
+  fetchChatrooms: () => void;
+  members: Member[];
+  fetchMembers: () => void;
 }
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   chatroomId,
-  name,
+  chatroomName,
+  membersCount,
   qrCodeIsVisible,
   urlTooltipText,
   idTooltipText,
@@ -34,46 +58,55 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   handleCopyChatroomId,
   handleShowQrCode,
   handleLeaveRoom,
+  isAuthenticated,
+  isOriginator,
+  handleToggleIsPublic,
+  isPublic,
+  handleToggleShowOriginal,
+  showOriginal,
+  fetchChatrooms,
+  members,
+  fetchMembers,
 }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="chatroom-header">
+    <ChatroomHeaderContainer className="chatroom-header">
       <button
         data-tooltip={content["tooltip-exit-chatroom"]}
         className="back-button small tooltip bottom-right"
-        style={{ color: "var(--danger-300)", background: "var(--dark)" }}
-        onClick={handleLeaveRoom}
+        style={{
+          color: "var(--white)",
+          background: "var(--dark)",
+        }}
+        onClick={() => navigate("/dashboard")}
       >
         <FontAwesomeIcon icon={faArrowLeft} />
-        &nbsp;{content["exit"]}
+        &nbsp;Back
       </button>
-      <span
-        data-tooltip={idTooltipText}
-        className="copy-id tooltip bottom"
-        onClick={handleCopyChatroomId}
-      >
-        <FontAwesomeIcon icon={faHashtag} /> {chatroomId}
-      </span>
-      <span
-        data-tooltip={content["tooltip-show-qrcode"]}
-        className="show-qr-button small tooltip bottom"
-        onClick={handleShowQrCode}
-      >
-        <FontAwesomeIcon icon={qrCodeIsVisible ? faTimes : faQrcode} />
-        &nbsp;
-        {content["QRCode"]}
-      </span>
-      <div className="chatroom-id-container">
-        <data
-          data-tooltip={urlTooltipText}
-          className="copy-chatroom-url tooltip bottom-left"
-          onClick={handleCopyChatroomUrl}
-        >
-          <FontAwesomeIcon icon={faLink} />
-          &nbsp;
-            {content['URL']}
-        </data>
-      </div>
-    </div>
+      <span>{chatroomName}</span>
+      <ChatroomHeaderRightControls
+        chatroomId={chatroomId}
+        qrCodeIsVisible={qrCodeIsVisible}
+        urlTooltipText={urlTooltipText}
+        idTooltipText={idTooltipText}
+        content={content}
+        preferredLanguage={preferredLanguage}
+        handleCopyChatroomUrl={handleCopyChatroomUrl}
+        handleCopyChatroomId={handleCopyChatroomId}
+        handleShowQrCode={handleShowQrCode}
+        handleLeaveRoom={handleLeaveRoom}
+        isAuthenticated={isAuthenticated}
+        isOriginator={isOriginator}
+        handleToggleIsPublic={handleToggleIsPublic}
+        isPublic={isPublic}
+        handleToggleShowOriginal={handleToggleShowOriginal}
+        showOriginal={showOriginal}
+        fetchChatrooms={fetchChatrooms}
+        members={members}
+        fetchMembers={fetchMembers}
+      />
+    </ChatroomHeaderContainer>
   );
 };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import ChatRoomHeader from "./ChatRoomHeader";
 import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
@@ -25,8 +25,9 @@ import {
   handleVisibilityChange,
   handleBeforeUnload,
 } from "../utils/chatRoomUtils";
-import { translateText } from "../utils/translate"; // Ensure translateText is imported
+import { translateText } from "../utils/translate";
 import "../css/chatroom.css";
+import { useAuth } from "../contexts/AuthContext";
 
 const { socketUrl, transcribeApiUrl } = getEnv();
 
@@ -39,6 +40,14 @@ export interface Message {
   chatroomId: string;
   timestamp?: string;
   type?: "system" | "user" | "qr";
+  readBy?: string[];
+}
+
+interface Member {
+  _id: string;
+  username: string;
+  name: string;
+  profileImage: string;
 }
 
 const ChatRoom: React.FC = () => {
@@ -47,6 +56,8 @@ const ChatRoom: React.FC = () => {
   const initialName = query.get("name") || "Anonymous";
   const { language: preferredLanguage, content } = useLanguage();
   const navigate = useNavigate();
+  const { user, getToken } = useAuth();
+
   const [urlTooltipText, setUrlTooltipText] = useState(
     content["tooltip-copy-chatroom-url"]
   );
@@ -57,22 +68,77 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
-  const [name, setName] = useState(initialName);
+  const [chatroomName, setChatroomName] = useState("");
+  const [membersCount, setMembersCount] = useState(0);
+  const [name, setName] = useState(user?.username || initialName);
+
   const [isNamePromptVisible, setIsNamePromptVisible] = useState(
-    initialName === "Anonymous"
+    initialName === "Anonymous" && !user
   );
   const [transcriptionText, setTranscriptionText] = useState<string | null>(
     null
   );
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
   const conversationContainerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isAway, setIsAway] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isRecording, setIsRecording] = useState(false); // Recording state
+  const [isRecording, setIsRecording] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [qrCodeMessageSent, setQrCodeMessageSent] = useState(false);
-  
+
+  const [isPublic, setIsPublic] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
+
+  const [isOriginator, setIsOriginator] = useState(false);
+  const [members, setMembers] = useState<Member[]>([]);
+
+  const fetchChatroomDetails = useCallback(async () => {
+    try {
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const chatroom = response.data;
+
+      setChatroomName(chatroom.name);
+      setMembersCount(chatroom.members.length);
+      const originator = chatroom.originator._id === user?.id;
+      setIsOriginator(originator);
+      setIsPublic(chatroom.isPublic);
+      setMessages(chatroom.messages.map((msg: any) => ({
+        ...msg,
+        sender: msg.sender.username, // Ensuring sender is the username
+        readBy: msg.readBy, // Ensure readBy is included
+      })));
+      setMembers(chatroom.members); // Set members state here
+    } catch (error) {
+      console.error("Error fetching chatroom details:", error);
+    }
+  }, [chatroomId, getToken, user]);
+
+  const fetchMembers = useCallback(async () => {
+    try {
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}/members`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setMembers(response.data.members);
+    } catch (error) {
+      console.error("Error fetching chatroom members:", error);
+    }
+  }, [chatroomId, getToken]);
+
+  const fetchChatrooms = useCallback(async () => {
+    try {
+      //tell eslint to ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      // handle response as needed
+    } catch (error) {
+      console.error("Error fetching chatrooms:", error);
+    }
+  }, [getToken]);
 
   const scrollToBottom = () => {
     if (conversationContainerRef.current) {
@@ -93,6 +159,7 @@ const ChatRoom: React.FC = () => {
       language: preferredLanguage,
       chatroomId: chatroomId || "",
       type: "qr",
+      readBy: [], // No one has read this system message yet
     };
 
     const qrCodeMessageSentBefore = localStorage.getItem("qrCodeMessageSent");
@@ -119,7 +186,7 @@ const ChatRoom: React.FC = () => {
         typingTimeoutRef
       );
 
-      sendQrCodeMessage(); // Call the sendQrCodeMessage function here
+      sendQrCodeMessage();
 
       const visibilityChangeHandler = () =>
         handleVisibilityChange(socket, chatroomId || "", name, setIsAway);
@@ -136,7 +203,7 @@ const ChatRoom: React.FC = () => {
           visibilityChangeHandler
         );
         window.removeEventListener("beforeunload", beforeUnloadHandler);
-        localStorage.removeItem("qrCodeMessageSent"); // Remove the flag from local storage
+        localStorage.removeItem("qrCodeMessageSent");
       };
     }
   }, [
@@ -152,8 +219,55 @@ const ChatRoom: React.FC = () => {
     setUrlTooltipText(content["tooltip-copy-chatroom-id"]);
   }, [content]);
 
+  useEffect(() => {
+    if (user?.username) {
+      setName(user.username);
+      setIsNamePromptVisible(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (name && !isNamePromptVisible) {
+      socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
+    }
+  }, [chatroomId, name, preferredLanguage, isNamePromptVisible]);
+
+  useEffect(() => {
+    if (user) {
+      fetchChatroomDetails();
+    }
+  }, [fetchChatroomDetails, user]);
+
+  useEffect(() => {
+    socket.on('updateMembersCount', (count) => {
+      setMembersCount(count);
+    });
+
+    return () => {
+      socket.off('updateMembersCount');
+    };
+  }, []);
+
+  // Add the event listener for chatroom deletion
+  useEffect(() => {
+    socket.on('chatroomDeleted', ({ chatroomId: deletedChatroomId }) => {
+      console.log(`Chatroom ${deletedChatroomId} has been deleted`);
+      if (deletedChatroomId === chatroomId) {
+        if (user) {
+          navigate("/dashboard");
+        } else {
+          navigate("/home");
+        }
+      }
+    });
+
+    return () => {
+      socket.off('chatroomDeleted');
+    };
+  }, [chatroomId, navigate, user]);
+
   const handleSendMessage = async (messageText?: string) => {
-    setIsLoading(true); // Start loading state
+    setIsLoading(true);
     const translatedText = await translateText(
       messageText || inputMessage,
       preferredLanguage
@@ -164,9 +278,10 @@ const ChatRoom: React.FC = () => {
       name,
       preferredLanguage,
       chatroomId || "",
-      setInputMessage
+      setInputMessage,
+      user?.id // Include user ID
     );
-    setIsLoading(false); // End loading state
+    setIsLoading(false);
   };
 
   const handleEmitUserTyping = () => {
@@ -184,7 +299,7 @@ const ChatRoom: React.FC = () => {
   };
 
   const handleRecordingStop = async (blob: Blob) => {
-    setIsLoading(true); // Start loading state
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("file", blob, "audio.m4a");
 
@@ -200,12 +315,33 @@ const ChatRoom: React.FC = () => {
       );
 
       const { transcription } = response.data;
-      setTranscriptionText(transcription); // Set the transcription text
+      setTranscriptionText(transcription);
     } catch (error) {
       console.error("Error during transcription:", error);
     }
-    setIsLoading(false); // End loading state
+    setIsLoading(false);
   };
+
+  const handleToggleIsPublic = async () => {
+    const newIsPublic = !isPublic;
+    setIsPublic(newIsPublic);
+    
+    try {
+      await axios.put(
+        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/public`,
+        { isPublic: newIsPublic },
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+      console.log(`Chatroom ${chatroomId} is now ${newIsPublic ? 'public' : 'private'}`);
+    } catch (error) {
+      console.error("Error updating chatroom public status:", error);
+      setIsPublic(isPublic);
+    }
+  };
+  
+  const handleToggleShowOriginal = () => setShowOriginal((prev) => !prev);
 
   return (
     <main className="chatroom">
@@ -228,7 +364,8 @@ const ChatRoom: React.FC = () => {
       >
         <ChatRoomHeader
           chatroomId={chatroomId || ""}
-          name={name}
+          chatroomName={chatroomName}
+          membersCount={membersCount}
           qrCodeIsVisible={qrCodeIsVisible}
           urlTooltipText={urlTooltipText}
           idTooltipText={idTooltipText}
@@ -265,8 +402,17 @@ const ChatRoom: React.FC = () => {
             socket.emit("leaveRoom", { chatroomId, name });
             setTimeout(() => {
               navigate("/");
-            }, 100); // Small delay to ensure the message is sent
+            }, 100);
           }}
+          isAuthenticated={!!user}
+          isOriginator={isOriginator}
+          handleToggleIsPublic={handleToggleIsPublic}
+          isPublic={isPublic}
+          handleToggleShowOriginal={handleToggleShowOriginal}
+          showOriginal={showOriginal}
+          fetchChatrooms={fetchChatrooms} // Pass fetchChatrooms as a prop
+          members={members}
+          fetchMembers={fetchMembers} // Pass fetchMembers as a prop
         />
         {qrCodeIsVisible && (
           <QRCodeModal
@@ -278,6 +424,7 @@ const ChatRoom: React.FC = () => {
           name={name}
           preferredLanguage={preferredLanguage}
           conversationContainerRef={conversationContainerRef}
+          showOriginal={showOriginal}
         />
         <TypingIndicator typingUser={typingUser} />
         {isLoading && (
@@ -294,7 +441,7 @@ const ChatRoom: React.FC = () => {
             handleKeyPress(e, handleSendMessage, handleEmitUserTyping)
           }
           isNamePromptVisible={isNamePromptVisible}
-          onStopRecording={handleRecordingStop} // Pass the recording stop handler
+          onStopRecording={handleRecordingStop}
         />
         {transcriptionText && (
           <TranscriptionModal
@@ -306,9 +453,9 @@ const ChatRoom: React.FC = () => {
             }}
             onCancel={() => {
               setTranscriptionText(null);
-              setIsRecording(false); // Reset the recording state
+              setIsRecording(false);
             }}
-            setIsRecording={setIsRecording} // Pass the setIsRecording function
+            setIsRecording={setIsRecording}
           />
         )}
       </div>

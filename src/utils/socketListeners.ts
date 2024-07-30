@@ -1,4 +1,3 @@
-// src/utils/socketListeners.ts
 import { Socket } from "socket.io-client";
 import { Message } from "../components/ChatRoom";
 

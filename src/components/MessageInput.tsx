@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import { useLanguage } from "../contexts/LanguageContext";
 
-
 interface MessageInputProps {
   inputMessage: string;
   setInputMessage: React.Dispatch<React.SetStateAction<string>>;

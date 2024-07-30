@@ -61,7 +61,6 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -160,18 +159,10 @@ const Register: React.FC = () => {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("username", username);
-      formData.append("email", email);
-      formData.append("password", password);
-      if (profileImage) {
-        formData.append("profileImage", profileImage);
-      }
-
-      const response = await axios.post(`${apiUrl}/api/auth/register`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const response = await axios.post(`${apiUrl}/api/auth/register`, {
+        username,
+        email,
+        password,
       });
       login(response.data.token);
       navigate("/profile/me"); // Redirect to profile creation after registration
@@ -271,14 +262,6 @@ const Register: React.FC = () => {
             ))}
           </>
         )}
-      </div>
-      <div>
-        <label htmlFor="profileImage">Profile Image:</label>
-        <input
-          id="profileImage"
-          type="file"
-          onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
-        />
       </div>
       <ButtonContainer>
         <TermsAndConditions>

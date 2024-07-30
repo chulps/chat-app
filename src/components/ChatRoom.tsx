@@ -248,6 +248,24 @@ const ChatRoom: React.FC = () => {
     };
   }, []);
 
+  // Add the event listener for chatroom deletion
+  useEffect(() => {
+    socket.on('chatroomDeleted', ({ chatroomId: deletedChatroomId }) => {
+      console.log(`Chatroom ${deletedChatroomId} has been deleted`);
+      if (deletedChatroomId === chatroomId) {
+        if (user) {
+          navigate("/dashboard");
+        } else {
+          navigate("/home");
+        }
+      }
+    });
+
+    return () => {
+      socket.off('chatroomDeleted');
+    };
+  }, [chatroomId, navigate, user]);
+
   const handleSendMessage = async (messageText?: string) => {
     setIsLoading(true);
     const translatedText = await translateText(

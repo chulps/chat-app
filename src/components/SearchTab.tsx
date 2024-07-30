@@ -1,23 +1,27 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Tabs, { Tab } from "./Tabs";
 import { faList, faUsers, faComments } from "@fortawesome/free-solid-svg-icons";
 
 const SearchResults = styled.div`
   background-color: inherit;
-  padding-top: var(--space-2);
+  padding-block: var(--space-2);
   position: absolute;
+  margin-right: -1em;
   width: 100%;
   z-index: 1000;
-  height: calc(100vh - 354px);
+  height: calc(100dvh - 354px);
+  height: calc(100dvh - 354px);
   overflow-y: auto;
 
   @media (min-width: 420px) {
     height: calc(100vh - 376px);
+    height: calc(100dvh - 376px);
   }
 
   @media (min-width: 576px) {
-    height: calc(100vh - 398px);
+    height: calc(100dvh - 359px);
+    height: calc(100dvh - 359px);
   }
 `;
 
@@ -149,6 +153,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
   return (
     <div>
       <h4>Search Users and Chatrooms</h4>
+      <br/>
       <p>Find your friends by email address, username, or their actual name. Only public chatrooms are visible by search.</p>
       <br/>
       <label htmlFor="big-search-input">Search</label>
@@ -159,10 +164,6 @@ const SearchTab: React.FC<SearchTabProps> = ({
         onChange={handleSearchChange}
         placeholder="Search by email, username, name, or chatroom"
       />
-
-      {searchQuery === "" && (
-        <EmptyState>Start typing to search users and chatrooms...</EmptyState>
-      )}
 
       {searchQuery !== "" && (
         <SearchResults>

@@ -60,6 +60,7 @@ const TabsContainer = styled.div`
   display: flex;
   border-radius: var(--space-1);
   border: 1px solid var(--dark);
+  width: fit-content;
   
 `;
 

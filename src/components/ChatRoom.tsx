@@ -95,9 +95,12 @@ const ChatRoom: React.FC = () => {
 
   const fetchChatroomDetails = useCallback(async () => {
     try {
-      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const response = await axios.get(
+        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}`,
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
       const chatroom = response.data;
 
       setChatroomName(chatroom.name);
@@ -105,11 +108,13 @@ const ChatRoom: React.FC = () => {
       const originator = chatroom.originator._id === user?.id;
       setIsOriginator(originator);
       setIsPublic(chatroom.isPublic);
-      setMessages(chatroom.messages.map((msg: any) => ({
-        ...msg,
-        sender: msg.sender.username, // Ensuring sender is the username
-        readBy: msg.readBy, // Ensure readBy is included
-      })));
+      setMessages(
+        chatroom.messages.map((msg: any) => ({
+          ...msg,
+          sender: msg.sender.username, // Ensuring sender is the username
+          readBy: msg.readBy, // Ensure readBy is included
+        }))
+      );
       setMembers(chatroom.members); // Set members state here
     } catch (error) {
       console.error("Error fetching chatroom details:", error);
@@ -118,9 +123,12 @@ const ChatRoom: React.FC = () => {
 
   const fetchMembers = useCallback(async () => {
     try {
-      const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms/${chatroomId}/members`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const response = await axios.get(
+        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/members`,
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
       setMembers(response.data.members);
     } catch (error) {
       console.error("Error fetching chatroom members:", error);
@@ -228,7 +236,11 @@ const ChatRoom: React.FC = () => {
 
   useEffect(() => {
     if (name && !isNamePromptVisible) {
-      socket.emit("joinRoom", { chatroomId, name, language: preferredLanguage });
+      socket.emit("joinRoom", {
+        chatroomId,
+        name,
+        language: preferredLanguage,
+      });
     }
   }, [chatroomId, name, preferredLanguage, isNamePromptVisible]);
 
@@ -239,18 +251,18 @@ const ChatRoom: React.FC = () => {
   }, [fetchChatroomDetails, user]);
 
   useEffect(() => {
-    socket.on('updateMembersCount', (count) => {
+    socket.on("updateMembersCount", (count) => {
       setMembersCount(count);
     });
 
     return () => {
-      socket.off('updateMembersCount');
+      socket.off("updateMembersCount");
     };
   }, []);
 
   // Add the event listener for chatroom deletion
   useEffect(() => {
-    socket.on('chatroomDeleted', ({ chatroomId: deletedChatroomId }) => {
+    socket.on("chatroomDeleted", ({ chatroomId: deletedChatroomId }) => {
       console.log(`Chatroom ${deletedChatroomId} has been deleted`);
       if (deletedChatroomId === chatroomId) {
         if (user) {
@@ -262,7 +274,7 @@ const ChatRoom: React.FC = () => {
     });
 
     return () => {
-      socket.off('chatroomDeleted');
+      socket.off("chatroomDeleted");
     };
   }, [chatroomId, navigate, user]);
 
@@ -272,6 +284,7 @@ const ChatRoom: React.FC = () => {
       messageText || inputMessage,
       preferredLanguage
     );
+    console.log("Sending message text:", translatedText);
     sendMessage(
       socket,
       translatedText,
@@ -315,6 +328,7 @@ const ChatRoom: React.FC = () => {
       );
 
       const { transcription } = response.data;
+      console.log("Transcription received:", transcription);
       setTranscriptionText(transcription);
     } catch (error) {
       console.error("Error during transcription:", error);
@@ -325,7 +339,7 @@ const ChatRoom: React.FC = () => {
   const handleToggleIsPublic = async () => {
     const newIsPublic = !isPublic;
     setIsPublic(newIsPublic);
-    
+
     try {
       await axios.put(
         `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/public`,
@@ -334,14 +348,23 @@ const ChatRoom: React.FC = () => {
           headers: { Authorization: `Bearer ${getToken()}` },
         }
       );
-      console.log(`Chatroom ${chatroomId} is now ${newIsPublic ? 'public' : 'private'}`);
+      console.log(
+        `Chatroom ${chatroomId} is now ${newIsPublic ? "public" : "private"}`
+      );
     } catch (error) {
       console.error("Error updating chatroom public status:", error);
       setIsPublic(isPublic);
     }
   };
-  
+
   const handleToggleShowOriginal = () => setShowOriginal((prev) => !prev);
+
+  const handleTranscriptionConfirm = (editedText: string) => {
+    console.log("Transcription confirmed:", editedText);
+    handleSendMessage(editedText);
+    setTranscriptionText(null);
+    setIsRecording(false);
+  };
 
   return (
     <main className="chatroom">
@@ -447,10 +470,7 @@ const ChatRoom: React.FC = () => {
           <TranscriptionModal
             transcriptionText={transcriptionText}
             setTranscriptionText={setTranscriptionText}
-            onConfirm={() => {
-              handleSendMessage(transcriptionText);
-              setTranscriptionText(null);
-            }}
+            onConfirm={handleTranscriptionConfirm}
             onCancel={() => {
               setTranscriptionText(null);
               setIsRecording(false);

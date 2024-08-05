@@ -7,6 +7,7 @@ import { faBomb, faCheck } from "@fortawesome/free-solid-svg-icons";
 import debounce from "lodash.debounce";
 import { getEnv } from "../utils/getEnv";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const Form = styled.form`
   display: flex;
@@ -73,6 +74,7 @@ const Register: React.FC = () => {
   const { apiUrl } = getEnv();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { content } = useLanguage();
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -80,11 +82,11 @@ const Register: React.FC = () => {
 
   const validatePassword = (password: string) => {
     const requirements = [
-      { regex: /.{8,}/, text: "At least 8 characters long" },
-      { regex: /[0-9]/, text: "Contains at least one number" },
-      { regex: /[A-Z]/, text: "Contains at least one uppercase letter" },
-      { regex: /[a-z]/, text: "Contains at least one lowercase letter" },
-      { regex: /[^A-Za-z0-9]/, text: "Contains at least one special character" },
+      { regex: /.{8,}/, text: content['password-req-8-chars'] },
+      { regex: /[0-9]/, text: content['password-req-number'] },
+      { regex: /[A-Z]/, text: content['password-req-uppercase'] },
+      { regex: /[a-z]/, text: content['password-req-lowercase'] },
+      { regex: /[^A-Za-z0-9]/, text: content['password-req-special'] },
     ];
 
     const satisfied = requirements.filter((req) => req.regex.test(password));
@@ -100,14 +102,14 @@ const Register: React.FC = () => {
     try {
       const response = await axios.post(`${apiUrl}/api/auth/check-username`, { username });
       if (response.data.exists) {
-        setUsernameError("Username already exists");
+        setUsernameError(content['username-exists']);
         setUsernameSuccess(null);
       } else {
         setUsernameError(null);
-        setUsernameSuccess("Username is available");
+        setUsernameSuccess(content['username-available']);
       }
     } catch (err) {
-      setUsernameError("Error checking username");
+      setUsernameError(content['username-check-error']);
       setUsernameSuccess(null);
     }
   }, 1000);
@@ -116,14 +118,14 @@ const Register: React.FC = () => {
     try {
       const response = await axios.post(`${apiUrl}/api/auth/check-email`, { email });
       if (response.data.exists) {
-        setEmailError("Email already exists");
+        setEmailError(content['email-exists']);
         setEmailSuccess(null);
       } else {
         setEmailError(null);
-        setEmailSuccess("Email is available");
+        setEmailSuccess(content['email-available']);
       }
     } catch (err) {
-      setEmailError("Error checking email");
+      setEmailError(content['email-check-error']);
       setEmailSuccess(null);
     }
   }, 1000);
@@ -147,13 +149,13 @@ const Register: React.FC = () => {
     setTermsError(null); // Reset terms error message
 
     if (!agreeTerms) {
-      setTermsError("You must agree to the terms and conditions");
+      setTermsError(content['agree-terms']);
       return;
     }
 
     const { satisfied, requirements } = validatePassword(password);
     if (requirements.length > 0) {
-      setPasswordError("Password does not meet all requirements");
+      setPasswordError(content['password-req-not-met']);
       setPasswordSuccess(satisfied);
       return;
     }
@@ -169,24 +171,24 @@ const Register: React.FC = () => {
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const errorMessage =
-          err.response?.data?.msg || "Registration failed. Please try again.";
+          err.response?.data?.msg || content['registration-failed'];
         setGeneralError(errorMessage);
       } else {
-        setGeneralError("Registration failed");
+        setGeneralError(content['registration-failed']);
       }
     }
   };
 
   return (
     <Form onSubmit={handleSubmit}>
-      <h1>Create an account</h1>
+      <h1>{content["create-an-account"]}</h1>
       <div>
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="username">{content["username"]}</label>
         <input
           id="username"
           type="text"
           value={username}
-          placeholder="@example"
+          placeholder={content["example"]}
           onChange={(e) => {
             setUsername(e.target.value);
             setUsernameError(null);
@@ -206,7 +208,7 @@ const Register: React.FC = () => {
         )}
       </div>
       <div>
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email">{content["email"]}</label>
         <input
           id="email"
           type="email"
@@ -231,7 +233,7 @@ const Register: React.FC = () => {
         )}
       </div>
       <div>
-        <label htmlFor="password">Password:</label>
+        <label htmlFor="password">{content["password"]}</label>
         <input
           id="password"
           type="password"
@@ -271,10 +273,11 @@ const Register: React.FC = () => {
             checked={agreeTerms}
             onChange={(e) => setAgreeTerms(e.target.checked)}
           />
-          I agree to the <Link to="/terms-and-conditions">terms and conditions</Link>
+          {content["i-agree"]}
+          <Link to="/terms-and-conditions">{content["terms-and-conditions"]}</Link>
         </TermsAndConditions>
         <button type="submit" disabled={!isFormValid()}>
-          Register
+          {content["create"]}
         </button>
       </ButtonContainer>
       {termsError && (
@@ -289,7 +292,7 @@ const Register: React.FC = () => {
       )}
       <hr style={{ marginBlock: "var(--space-2)" }} />
       <GoToLogin>
-        Already have an account?&nbsp;<Link to="/login">Login</Link>
+        {content["already-have-an-account"]}&nbsp;<Link to="/login">{content["login"]}</Link>
       </GoToLogin>
     </Form>
   );

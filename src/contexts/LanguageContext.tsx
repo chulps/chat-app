@@ -66,7 +66,13 @@ export const defaultContent = {
   'forgot-password': 'Forgot password?',
   'dont-have-an-account': "Don't have an account?",
   'sign-up': 'Sign up!',
-  'login': 'Login'
+  'login': 'Login',
+  'create-an-account': 'Create an account',
+  'username': 'Username',
+  'example': 'Example',
+  'i-agree': 'I agree to the ',
+  'terms-and-conditions': 'terms and conditions',
+  'already-have-an-account': 'Already have an account?'
 
   // Add more translations as needed
 };

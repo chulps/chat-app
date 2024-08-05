@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import styled from "styled-components";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const LoginScreen = styled.div`
   display: flex;
@@ -11,7 +12,7 @@ const LoginScreen = styled.div`
   max-width: var(--space-7);
   margin: 0 auto;
   gap: var(--space-3);
-`
+`;
 
 const Form = styled.form`
   display: flex;
@@ -56,12 +57,11 @@ const ButtonContainer = styled.div`
 
 const HorizontalDivider = styled.hr`
   width: 100%;
-`
+`;
 
 const SignUp = styled.p`
   text-align: center;
-`
-
+`;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -70,6 +70,7 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const { apiUrl } = getEnv();
   const navigate = useNavigate();
+  const { content } = useLanguage();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,7 +96,7 @@ const Login: React.FC = () => {
       } else {
         console.error("Error during login:", err);
       }
-      setError("Invalid email or password");
+      setError(content["invalid-email-or-password"]);
     }
   };
 
@@ -103,9 +104,9 @@ const Login: React.FC = () => {
     <LoginScreen>
       <Form onSubmit={handleSubmit}>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <h2>Login</h2>
+        <h2>{content["login"]}</h2>
         <div>
-          <label>Email</label>
+          <label>{content["email"]}</label>
           <input
             type="email"
             value={email}
@@ -115,7 +116,7 @@ const Login: React.FC = () => {
           />
         </div>
         <div>
-          <label>Password</label>
+          <label>{content["password"]}</label>
           <input
             type="password"
             value={password}
@@ -125,13 +126,13 @@ const Login: React.FC = () => {
           />
         </div>
         <ButtonContainer>
-          <button type="submit">Login</button>
-          <a href="/#/forgot-password">Forgot Password?</a>
+          <button type="submit">{content["login"]}</button>
+          <a href="/#/forgot-password">{content["forgot-password"]}</a>
         </ButtonContainer>
       </Form>
       <HorizontalDivider />
       <SignUp>
-        Don't have an account? <Link to="/register">Sign up!</Link>
+        {content["dont-have-an-account"]} <Link to="/register">{content["sign-up"]}</Link>
       </SignUp>
     </LoginScreen>
   );

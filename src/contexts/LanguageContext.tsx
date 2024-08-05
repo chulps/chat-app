@@ -61,6 +61,12 @@ export const defaultContent = {
   'send': 'Send',
   'tap-to-edit': 'Tap to edit',
   'stop-recording': 'Press the button to stop recording',
+  'email': 'Email',
+  'password': 'Password',
+  'forgot-password': 'Forgot password?',
+  'dont-have-an-account': "Don't have an account?",
+  'sign-up': 'Sign up!',
+  'login': 'Login'
 
   // Add more translations as needed
 };

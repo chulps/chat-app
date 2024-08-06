@@ -82,7 +82,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
         onClick={() => navigate("/dashboard")}
       >
         <FontAwesomeIcon icon={faArrowLeft} />
-        &nbsp;Back
+        &nbsp;{content['back']}
       </button>
       <span>{chatroomName}</span>
       <ChatroomHeaderRightControls

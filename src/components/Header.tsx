@@ -199,22 +199,22 @@ const Header: React.FC = () => {
         </MenuButton>
         {menuVisible && (
           <DropdownMenu ref={dropdownRef}>
-            {renderLink("/", faHome, "Home")}
+            {renderLink("/", faHome, content.home)}
             {isAuthenticated ? (
               <>
-                {renderLink("/dashboard", faGauge, "Dashboard")}
-                {renderLink("/profile/me", faUser, "Profile")}
-                {renderLink("/settings", faGear, "Settings")}
+                {renderLink("/dashboard", faGauge, content.dashboard)}
+                {renderLink("/profile/me", faUser, content.profile)}
+                {renderLink("/settings", faGear, content.settings)}
               </>
             ) : (
               <>
-                {renderLink("/login", faRightToBracket, "Login")}
-                {renderLink("/register", faUserPlus, "Register")}
+                {renderLink("/login", faRightToBracket, content.login)}
+                {renderLink("/register", faUserPlus, content.register)}
               </>
             )}
             <hr />
             <MenuThemeToggle>
-              Theme ({theme === "dark" ? "Dark" : "Light"})
+              {content.theme} ({theme === "dark" ? content.dark : content.light})
               <ToggleSwitch
                 id="theme-toggle"
                 isOn={theme === "light"}
@@ -230,7 +230,7 @@ const Header: React.FC = () => {
             </MenuThemeToggle>
             {isAuthenticated && (
               <LogoutButton onClick={logout}>
-                <FontAwesomeIcon icon={faRightFromBracket} /> Logout
+                <FontAwesomeIcon icon={faRightFromBracket} /> {content.logout}
               </LogoutButton>
             )}
           </DropdownMenu>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Tabs, { Tab } from "./Tabs";
 import { faList, faUsers, faComments } from "@fortawesome/free-solid-svg-icons";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const SearchResults = styled.div`
   background-color: inherit;
@@ -132,6 +133,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
   setSearchResults,
 }) => {
   const [activeTab, setActiveTab] = useState(0);
+  const { content } = useLanguage();
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -152,17 +154,17 @@ const SearchTab: React.FC<SearchTabProps> = ({
 
   return (
     <div>
-      <h4>Search Users and Chatrooms</h4>
+      <h4>{content['search-users-and-chatrooms']}</h4>
       <br/>
-      <p>Find your friends by email address, username, or their actual name. Only public chatrooms are visible by search.</p>
+      <p>{content['find-your-friends']}</p>
       <br/>
-      <label htmlFor="big-search-input">Search</label>
+      <label htmlFor="big-search-input">{content['search']}</label>
       <BigSearch
         id="big-search-input"
         type="text"
         value={searchQuery}
         onChange={handleSearchChange}
-        placeholder="Search by email, username, name, or chatroom"
+        placeholder={content['search-by-email']}
       />
 
       {searchQuery !== "" && (
@@ -170,9 +172,9 @@ const SearchTab: React.FC<SearchTabProps> = ({
           <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
             <Tab label="All" icon={faList}>
               <UserSearchResults>
-                <label>Users</label>
+                <label>{content['users']}</label>
                 {searchResults.users.length === 0 ? (
-                  <EmptyState>No users match your search query</EmptyState>
+                  <EmptyState>{content['no-match']}</EmptyState>
                 ) : (
                   searchResults.users.map((user) => (
                     <SearchResultItem
@@ -196,9 +198,9 @@ const SearchTab: React.FC<SearchTabProps> = ({
                 )}
               </UserSearchResults>
               <ChatroomSearchResults>
-                <label>Chatrooms</label>
+                <label>{content['chatrooms']}</label>
                 {searchResults.chatrooms.length === 0 ? (
-                  <EmptyState>No chatrooms match your search query</EmptyState>
+                  <EmptyState>{content['no-match']}</EmptyState>
                 ) : (
                   searchResults.chatrooms.map((chatroom) => (
                     <SearchResultItem
@@ -213,9 +215,9 @@ const SearchTab: React.FC<SearchTabProps> = ({
             </Tab>
             <Tab label="Users" icon={faUsers}>
               <UserSearchResults>
-                <label>Users</label>
+                <label>{content['users']}</label>
                 {searchResults.users.length === 0 ? (
-                  <EmptyState>No users match your search query</EmptyState>
+                  <EmptyState>{content['no-match']}</EmptyState>
                 ) : (
                   searchResults.users.map((user) => (
                     <SearchResultItem
@@ -243,9 +245,9 @@ const SearchTab: React.FC<SearchTabProps> = ({
             </Tab>
             <Tab label="Chatrooms" icon={faComments}>
               <div>
-                <label>Chatrooms</label>
+                <label>{content['chatrooms']}</label>
                 {searchResults.chatrooms.length === 0 ? (
-                  <EmptyState>No chatrooms match your search query</EmptyState>
+                  <EmptyState>{content['no-match']}</EmptyState>
                 ) : (
                   searchResults.chatrooms.map((chatroom) => (
                     <SearchResultItem

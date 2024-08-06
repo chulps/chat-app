@@ -282,7 +282,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
             onClick={handleCopyChatroomId}
           >
             <span>
-              <label>Chatroom ID:</label>
+              <label>{content['chatroomID']}:</label>
               <data>{chatroomId}</data>
             </span>
             <FontAwesomeIcon icon={faCopy} />

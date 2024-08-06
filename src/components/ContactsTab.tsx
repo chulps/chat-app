@@ -8,6 +8,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faComment } from "@fortawesome/free-solid-svg-icons";
 import { Friend, FriendRequest } from "../types";
 import { Socket } from "socket.io-client";
+import { useLanguage } from "../contexts/LanguageContext";
+
 
 const EmptyState = styled.div`
   color: var(--secondary);
@@ -189,6 +191,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
   const [friendSearchQuery, setFriendSearchQuery] = useState("");
   const [showFriendSearchInput, setShowFriendSearchInput] = useState(false);
   const [loadingRequests, setLoadingRequests] = useState<string | null>(null);
+  const { content } = useLanguage();
 
   const friendSearchInputRef = useRef<HTMLInputElement>(null);
 
@@ -271,7 +274,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
   return (
     <>
       <TabHeader>
-        <h4>Contacts</h4>
+        <h4>{content['contacts']}</h4>
         {friends.length > 0 && (
           <IconsContainer>
             <FontAwesomeIcon

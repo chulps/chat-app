@@ -21,20 +21,37 @@ export const useLanguage = (): LanguageContextProps => {
 };
 
 export const defaultContent = {
+  'chatroomID': 'Chatroom ID',
+  'back': 'Back',
+  'chatroomsTabEmptyState': 'Join a chatroom.',
+  'search-users-and-chatrooms': 'Search users and chatrooms',
+  'find-your-friends': 'Find your friends by email address, username, or their actual name. Only public chatrooms are visible by search.',
+  'register': 'Register',
+  'home': 'Home',
+  'theme': 'Theme',
+  'settings': 'Settings',
+  'profile': 'Profile',
+  'dashboard': 'Dashboard',
+  'dark': 'Dark',
+  'light': 'Light',
+  'logout': 'Logout',
   'about-this-app': 'About this app',
   'app-description': '"T" is for "Translation". Chat with anyone anywhere without any language barriers. Enter your name and then either create a chatroom or join one using the Chatroom ID. Be safe, and have fun!',
   'chat-joined': 'has joined the chat',
   'chat-left': 'has left the chat',
   'clear-button-text': 'Clear',
   'continue': 'Continue',
+  'search-by-email': 'Search by email, username, name, or chatroom',
   'create': 'Create',
   'enter-chatroom-id': 'Enter Chatroom ID',
   'enter-name': 'Enter your name to join the chat',
   'exit': 'Exit',
   'join': 'Join',
+  'no-match': 'No items matched your search query',
   'language': 'Language',
   'loading': 'Loading...',
   'or': 'or',
+  'search': 'Search',
   'placeholder-message': 'Type a message...',
   'placeholder-name': 'Enter your name',
   'QRCode': 'QR Code',
@@ -54,6 +71,7 @@ export const defaultContent = {
   'tooltip-theme-light': 'Switch to light theme',
   'tooltip-url-copied': 'Chatroom URL copied to clipboard!',
   'URL': 'URL',
+  'users': 'Users',
   'user-away': 'is away',
   'user-connected': 'has connected',
   'user-returned': 'has returned',
@@ -69,12 +87,14 @@ export const defaultContent = {
   'login': 'Login',
   'create-an-account': 'Create an account',
   'username': 'Username',
+  'chatroomName': 'Chatroom name',
   'example': 'Example',
   'i-agree': 'I agree to the ',
   'terms-and-conditions': 'terms and conditions',
-  'already-have-an-account': 'Already have an account?'
+  'already-have-an-account': 'Already have an account?',
+  'chatrooms': 'Chatrooms',
+  'contacts': 'Contacts'
 
-  // Add more translations as needed
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

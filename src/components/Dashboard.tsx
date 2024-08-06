@@ -10,7 +10,8 @@ import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
 import SearchTab from "./SearchTab";
 import { io, Socket } from "socket.io-client";
-import { Friend, ChatRoom, Notification, FriendRequest } from "../types"; // Ensure FriendRequest is imported
+import { Friend, ChatRoom, Notification, FriendRequest } from "../types";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const DashboardContainer = styled.div`
   position: relative;
@@ -81,7 +82,7 @@ const Dashboard: React.FC = () => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
-
+  const { content } = useLanguage();
   const socket: Socket = io(apiUrl);
 
   const fetchChatrooms = useCallback(async () => {
@@ -209,7 +210,7 @@ const Dashboard: React.FC = () => {
         <DashboardProfileHeader>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
             {user.profileImage ? (
-              <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt="Profile" />
+              <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt={content['profile']} />
             ) : (
               <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
             )}

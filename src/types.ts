@@ -34,9 +34,11 @@ export interface ChatRoom {
   latestMessage?: {
     text: string;
     timestamp: string;
+    language?: string; // Add this line
   };
   hasUnreadMessages?: boolean;
 }
+
 
 
 export interface Friend {

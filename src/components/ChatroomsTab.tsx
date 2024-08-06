@@ -9,6 +9,8 @@ import { faPlus, faChevronRight, faCrown } from "@fortawesome/free-solid-svg-ico
 import { Notification } from "../types";
 import { Socket } from "socket.io-client";
 import { ChatRoom } from "../types";
+import { useLanguage } from "../contexts/LanguageContext";
+import TranslationWrapper from "./TranslationWrapper";
 
 const CreateChatroomInputContainer = styled.div`
   display: flex;
@@ -143,6 +145,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   const { getToken } = useAuth();
   const [newChatroomName, setNewChatroomName] = useState("");
   const [showCreateInput, setShowCreateInput] = useState(false);
+  const { content } = useLanguage();
 
   const createInputRef = useRef<HTMLInputElement>(null);
 
@@ -233,7 +236,7 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
   return (
     <>
       <TabHeader>
-        <h4>Chatrooms</h4>
+        <h4>{content["chatrooms"]}</h4>
         <IconsContainer>
           <FontAwesomeIcon
             icon={faPlus}
@@ -248,16 +251,15 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
             type="text"
             value={newChatroomName}
             onChange={(e) => setNewChatroomName(e.target.value)}
-            placeholder="Chatroom Name"
+            placeholder={content["chatroomName"]}
           />
-          <button onClick={createChatroom}>Create</button>
+          <button onClick={createChatroom}>{content['create']}</button>
         </CreateChatroomInputContainer>
       )}
 
       {filteredChatrooms.length === 0 && (
         <EmptyState>
-          You haven't joined any chatrooms yet. Create one or join an existing
-          chatroom.
+          {content['chatroomsTabEmptyState']}
         </EmptyState>
       )}
 
@@ -271,7 +273,14 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
               <ChatroomInfo>
                 <ChatroomNameContainer>
                   {chatroom.hasUnreadMessages && <NewMessageDot />}
-                  <ChatroomName>{chatroom.name}</ChatroomName>
+                  <ChatroomName>
+                    <TranslationWrapper
+                      targetLanguage={user?.language}
+                      originalLanguage={chatroom.latestMessage?.language || 'en'}
+                    >
+                      {chatroom.name}
+                    </TranslationWrapper>
+                  </ChatroomName>
                 </ChatroomNameContainer>
                 {chatroom.latestMessage && (
                   <TimeOfLastMessage>

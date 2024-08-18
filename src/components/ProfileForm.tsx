@@ -34,15 +34,23 @@ interface ProfileFormProps {
   setImageFile: React.Dispatch<React.SetStateAction<File | null>>;
 }
 
-const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, handleSave, imageFile, setImageFile }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+const ProfileForm: React.FC<ProfileFormProps> = ({
+  profile,
+  setProfile,
+  handleSave,
+  imageFile,
+  setImageFile,
+}) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });
   };
 
   return (
     <ProfileFormContainer onSubmit={handleSave}>
-      <ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} imageFile={imageFile} />
+<ProfileImageUpload profileImage={profile.profileImage} setImageFile={setImageFile} imageFile={imageFile} />
       <div>
         <label htmlFor="name-input">Name</label>
         <input

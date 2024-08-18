@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
-import { getEnv } from "../utils/getEnv";
+import { getEnv } from "../utils/getEnv"; // Ensure you have this utility to get the API URL
 
 const FileInputContainer = styled.div`
   display: flex;
@@ -40,16 +40,11 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-const ProfileImageSetup = styled.div<{ backgroundImage?: string }>`
+const ProfileImageSetup = styled.div`
   display: flex;
   align-items: center;
   gap: var(--space-1);
   flex-direction: column;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  ${({ backgroundImage }) =>
-    backgroundImage ? `background-image: url(${backgroundImage});` : ''};
 
   svg {
     font-size: var(--font-size-h3);
@@ -64,12 +59,22 @@ const Filename = styled.data`
 interface ProfileImageUploadProps {
   profileImage: string | null;
   setImageFile: (file: File | null) => void;
-  imageFile: File | null; // Add this prop to show the filename
+  imageFile: File | null;
 }
 
-const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, setImageFile, imageFile }) => {
+const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({
+  profileImage,
+  setImageFile,
+  imageFile,
+}) => {
   const { apiUrl } = getEnv();
-  const [previewImage, setPreviewImage] = useState<string | null>(profileImage ? `${apiUrl}/${profileImage}` : null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (profileImage) {
+      setPreviewImage(`${profileImage}`);
+    }
+  }, [profileImage, apiUrl]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -87,9 +92,9 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, s
     <FileInputContainer>
       <FileInputLabel
         htmlFor="profileImage"
-        backgroundImage={previewImage || (profileImage ? `${profileImage}` : undefined)}
+        backgroundImage={previewImage || undefined}
       >
-        {!previewImage && !profileImage && (
+        {!previewImage && (
           <ProfileImageSetup>
             <FontAwesomeIcon icon={faCamera} />
             Choose photo

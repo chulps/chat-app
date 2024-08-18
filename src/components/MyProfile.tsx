@@ -160,7 +160,7 @@ const MyProfile: React.FC = () => {
 
         setProfile((prevProfile) => ({
           ...prevProfile,
-          profileImage: imageResponse.data.profileImage,
+          profileImage: imageResponse.data.profileImage, // Update profile image with S3 URL
         }));
       }
 
@@ -207,7 +207,7 @@ const MyProfile: React.FC = () => {
             <MyProfileLeftContent>
               {profile.profileImage && (
                 <MyProfileImg
-                  src={`${apiUrl}/${profile.profileImage}`}
+                  src={profile.profileImage} // Ensure this URL is correct and comes from S3
                   alt={profile.username}
                 />
               )}

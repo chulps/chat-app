@@ -4,7 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import Tabs, { Tab } from "./Tabs";
-import { faAddressBook, faComments, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAddressBook,
+  faComments,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 import ChatroomsTab from "./ChatroomsTab";
 import ContactsTab from "./ContactsTab";
@@ -179,7 +183,10 @@ const Dashboard: React.FC = () => {
       socket.emit("joinNotificationsRoom", user.id);
 
       socket.on("newNotification", (notification: Notification) => {
-        if (notification.type === "chatroom_invite" || notification.type === "new_message") {
+        if (
+          notification.type === "chatroom_invite" ||
+          notification.type === "new_message"
+        ) {
           fetchChatrooms();
         } else if (notification.type === "friend_request") {
           fetchFriends();
@@ -208,11 +215,19 @@ const Dashboard: React.FC = () => {
     <DashboardContainer>
       {user && (
         <DashboardProfileHeader>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-1)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-1)",
+            }}
+          >
             {user.profileImage ? (
-              <ProfileImage src={`${apiUrl}/${user.profileImage}`} alt={content['profile']} />
+              <ProfileImage src={user.profileImage} alt={content["profile"]} />
             ) : (
-              <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
+              <ProfilePlaceholder>
+                {user.username.charAt(0).toUpperCase()}
+              </ProfilePlaceholder>
             )}
             <UserInfo>
               <UserName>@{user.username}</UserName>
@@ -222,7 +237,10 @@ const Dashboard: React.FC = () => {
           <HeaderRight>
             <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
               <Tab icon={faComments} badge={newMessage ? 1 : null} />
-              <Tab icon={faAddressBook} badge={unreadNotifications > 0 ? unreadNotifications : null} />
+              <Tab
+                icon={faAddressBook}
+                badge={unreadNotifications > 0 ? unreadNotifications : null}
+              />
               <Tab icon={faMagnifyingGlass} />
             </Tabs>
           </HeaderRight>

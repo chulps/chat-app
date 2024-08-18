@@ -306,7 +306,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
                   <MemberItem key={member._id}>
                     {member.profileImage ? (
                       <MemberAvatar
-                        src={`${apiUrl}/${member.profileImage}`}
+                        src={`${member.profileImage}`}
                         alt={member.username}
                       />
                     ) : (

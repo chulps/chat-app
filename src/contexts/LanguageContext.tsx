@@ -50,6 +50,7 @@ export const defaultContent = {
   'no-match': 'No items matched your search query',
   'language': 'Language',
   'loading': 'Loading...',
+  'members': 'Members',
   'or': 'or',
   'search': 'Search',
   'placeholder-message': 'Type a message...',
@@ -74,6 +75,8 @@ export const defaultContent = {
   'users': 'Users',
   'user-away': 'is away',
   'user-connected': 'has connected',
+  'show-original': 'Show original?',
+  'public': 'Public?',
   'user-returned': 'has returned',
   'cancel': 'Cancel',
   'send': 'Send',
@@ -93,7 +96,9 @@ export const defaultContent = {
   'terms-and-conditions': 'terms and conditions',
   'already-have-an-account': 'Already have an account?',
   'chatrooms': 'Chatrooms',
-  'contacts': 'Contacts'
+  'contacts': 'Contacts',
+  'leave-chatroom': 'Leave chatroom',
+  'delete-chatroom': 'Delete chatroom',
 
 };
 

@@ -207,6 +207,7 @@ const MyProfile: React.FC = () => {
             <MyProfileLeftContent>
               {profile.profileImage && (
                 <MyProfileImg
+                  loading="lazy"
                   src={profile.profileImage} // Ensure this URL is correct and comes from S3
                   alt={profile.username}
                 />

@@ -223,7 +223,7 @@ const Dashboard: React.FC = () => {
             }}
           >
             {user.profileImage ? (
-              <ProfileImage src={user.profileImage} alt={content["profile"]} />
+              <ProfileImage loading="lazy" src={user.profileImage} alt={content["profile"]} />
             ) : (
               <ProfilePlaceholder>
                 {user.username.charAt(0).toUpperCase()}

@@ -151,7 +151,7 @@ const AddUserButton: React.FC<AddUserButtonProps> = ({ chatroomId, fetchMembers,
         <ContactList>
           {filteredContacts.map((contact) => (
             <ContactItem key={contact._id} onClick={() => handleAddContactToChatroom(contact._id)}>
-              {contact.profileImage && <ContactAvatar src={`${apiUrl}/${contact.profileImage}`} alt={contact.username} />}
+              {contact.profileImage && <ContactAvatar loading="lazy" src={`${apiUrl}/${contact.profileImage}`} alt={contact.username} />}
               <div>
                 <p>@{contact.username}</p>
                 <small>{contact.name}</small>

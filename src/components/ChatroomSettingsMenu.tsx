@@ -22,6 +22,7 @@ import ToggleSwitch from "./ToggleSwitch";
 import { useAuth } from "../contexts/AuthContext";
 import { getEnv } from "../utils/getEnv";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const DropdownContainer = styled.div`
   position: relative;
@@ -144,6 +145,7 @@ const MenuItemIcon = styled.div`
 const MenuItemText = styled.div`
   display: flex;
   width: fit-content;
+  white-space: nowrap;
 `;
 
 const ChatroomId = styled.span`
@@ -294,7 +296,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
             >
               <MenuItemLeftContent>
                 <FontAwesomeIcon icon={faUsers} />
-                <span>{members.length} Members</span>
+                <span>{members.length} {content["members"]}</span>
               </MenuItemLeftContent>
               <FontAwesomeIcon
                 icon={isAccordionOpen ? faChevronUp : faChevronDown}
@@ -306,6 +308,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
                   <MemberItem key={member._id}>
                     {member.profileImage ? (
                       <MemberAvatar
+                        loading="lazy"
                         src={`${member.profileImage}`}
                         alt={member.username}
                       />
@@ -325,7 +328,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
           <SettingsMenuItem>
             <MenuItemLeftContent>
               <FontAwesomeIcon icon={faLanguage} />
-              <MenuItemText>Show&nbsp;original?</MenuItemText>
+              <MenuItemText>{content['show-original']}</MenuItemText>
             </MenuItemLeftContent>
             <ToggleSwitch
               id="show-original-toggle"
@@ -347,7 +350,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
                 <MenuItemIcon>
                   <FontAwesomeIcon icon={faGlobe} />
                 </MenuItemIcon>
-                <MenuItemText>Public?</MenuItemText>
+                <MenuItemText>{content['public']}</MenuItemText>
               </MenuItemLeftContent>
               <ToggleSwitch
                 id="public-toggle"
@@ -369,7 +372,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
               <MenuItemIcon>
                 <FontAwesomeIcon icon={faSignOutAlt} />
               </MenuItemIcon>
-              <MenuItemText>Leave Chatroom</MenuItemText>
+              <MenuItemText>{content['leave-chatroom']}</MenuItemText>
             </MenuItemLeftContent>
           </SettingsMenuItem>
           {isOriginator && (
@@ -378,7 +381,7 @@ const ChatroomSettingsMenu: React.FC<ChatroomSettingsMenuProps> = ({
                 <MenuItemIcon>
                   <FontAwesomeIcon icon={faTrash} />
                 </MenuItemIcon>
-                <MenuItemText>Delete Chatroom</MenuItemText>
+                <MenuItemText>{content['delete-chatroom']}</MenuItemText>
               </MenuItemLeftContent>
             </SettingsMenuItem>
           )}

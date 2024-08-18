@@ -233,6 +233,13 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
     };
   }, [user, socket, fetchChatrooms]);
 
+  // Sorting the chatrooms based on the latest message timestamp in descending order
+  const sortedChatrooms = [...filteredChatrooms].sort((a, b) => {
+    const timestampA = a.latestMessage ? new Date(a.latestMessage.timestamp).getTime() : 0;
+    const timestampB = b.latestMessage ? new Date(b.latestMessage.timestamp).getTime() : 0;
+    return timestampB - timestampA; // Sort in descending order
+  });
+
   return (
     <>
       <TabHeader>
@@ -257,14 +264,14 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
         </CreateChatroomInputContainer>
       )}
 
-      {filteredChatrooms.length === 0 && (
+      {sortedChatrooms.length === 0 && (
         <EmptyState>
           {content['chatroomsTabEmptyState']}
         </EmptyState>
       )}
 
       <DashboardList>
-        {filteredChatrooms.map((chatroom) => (
+        {sortedChatrooms.map((chatroom) => (
           <li key={chatroom._id}>
             <StyledLink
               to={`/chatroom/${chatroom._id}`}
@@ -299,18 +306,18 @@ const ChatroomsTab: React.FC<ChatroomsTabProps> = ({
                     </div>
                     <FontAwesomeIcon icon={faChevronRight} />
                   </TimeOfLastMessage>
-                )}
-              </ChatroomInfo>
-              {chatroom.latestMessage && (
-                <LatestMessageContainer>
-                  <LatestMessage>{chatroom.latestMessage.text}</LatestMessage>
-                </LatestMessageContainer>
-              )}
-            </StyledLink>
-          </li>
-        ))}
-      </DashboardList>
-    </>
+               )}
+               </ChatroomInfo>
+               {chatroom.latestMessage && (
+                 <LatestMessageContainer>
+                   <LatestMessage>{chatroom.latestMessage.text}</LatestMessage>
+                 </LatestMessageContainer>
+               )}
+             </StyledLink>
+           </li>
+         ))}
+       </DashboardList>
+     </>
   );
 };
 

@@ -110,6 +110,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
               <ProfileImage
                 src={`${profile.profileImage}`}
                 alt="Profile"
+                loading="lazy"
               />
             ) : (
               <ProfilePlaceholder>{profile.username.charAt(0).toUpperCase()}</ProfilePlaceholder>

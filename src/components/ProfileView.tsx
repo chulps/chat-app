@@ -108,7 +108,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
           <HeaderLeft>
             {profile.profileImage ? (
               <ProfileImage
-                src={`${apiUrl}/${profile.profileImage}`}
+                src={`${profile.profileImage}`}
                 alt="Profile"
               />
             ) : (

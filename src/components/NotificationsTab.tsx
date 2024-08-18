@@ -109,7 +109,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
             <LeftContainer>
               {request.sender.profileImage && (
                 <ProfileImage
-                  src={`${apiUrl}/${request.sender.profileImage}`}
+                  src={`${request.sender.profileImage}`}
                   alt={`${request.sender.username}'s profile`}
                 />
               )}

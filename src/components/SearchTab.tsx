@@ -183,7 +183,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                     >
                       {user.profileImage ? (
                         <ProfileImage
-                          src={`${apiUrl}/${user.profileImage}`}
+                          src={`${user.profileImage}`}
                           alt={user.username}
                         />
                       ) : (
@@ -226,7 +226,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                     >
                       {user.profileImage ? (
                         <ProfileImage
-                          src={`${apiUrl}/${user.profileImage}`}
+                          src={`${user.profileImage}`}
                           alt={user.username}
                         />
                       ) : (

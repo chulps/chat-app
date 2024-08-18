@@ -313,7 +313,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                   <ContactListItemLeftContent>
                     {request.sender.profileImage ? (
                       <ProfileImage
-                        src={`${apiUrl}/${request.sender.profileImage}`}
+                        src={`${request.sender.profileImage}`}
                         alt={`${request.sender.username}'s profile`}
                       />
                     ) : (
@@ -367,7 +367,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                     <ContactListItemLeftContent>
                       {friend.profileImage ? (
                         <ProfileImage
-                          src={`${apiUrl}/${friend.profileImage}`}
+                          src={`${friend.profileImage}`}
                           alt={`${friend.username}'s profile`}
                         />
                       ) : (

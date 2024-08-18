@@ -87,7 +87,7 @@ const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ profileImage, s
     <FileInputContainer>
       <FileInputLabel
         htmlFor="profileImage"
-        backgroundImage={previewImage || (profileImage ? `${apiUrl}/${profileImage}` : undefined)}
+        backgroundImage={previewImage || (profileImage ? `${profileImage}` : undefined)}
       >
         {!previewImage && !profileImage && (
           <ProfileImageSetup>

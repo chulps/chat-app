@@ -1,8 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera } from "@fortawesome/free-solid-svg-icons";
-import { getEnv } from "../utils/getEnv";
 
 const ProfileHeaderContainer = styled.div`
   display: flex;
@@ -33,14 +30,13 @@ const MyProfileHeader = ({
   profile: any;
   setIsEditing: (isEditing: boolean) => void;
 }) => {
-  const { apiUrl } = getEnv();
 
   return (
     <ProfileHeaderContainer>
       <HeaderLeft>
         {profile.profileImage && (
           <ProfileImage
-            src={`${apiUrl}/${profile.profileImage}`}
+            src={`${profile.profileImage}`}
             alt="Profile"
           />
         )}

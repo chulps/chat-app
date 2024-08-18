@@ -1,9 +1,8 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus, faPaperPlane, faUserMinus, faBan } from "@fortawesome/free-solid-svg-icons";
+import { faUserPlus, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import styled from "styled-components";
 import ProfileSettingsMenu from "./ProfileSettingsMenu";
-import { getEnv } from "../utils/getEnv";
 
 const ProfileHeaderContainer = styled.div`
   display: flex;
@@ -58,7 +57,6 @@ const UserProfileHeader = ({
   handleBlockUser: () => void;
   handleUnblockUser: () => void;
 }) => {
-  const { apiUrl } = getEnv();
 
   return (
     <ProfileHeaderContainer>
@@ -67,6 +65,7 @@ const UserProfileHeader = ({
           <ProfileImage
             src={`${profile.profileImage}`}
             alt="Profile"
+            loading="lazy"
           />
         )}
         <div>

@@ -109,6 +109,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
             <LeftContainer>
               {request.sender.profileImage && (
                 <ProfileImage
+                  loading="lazy"
                   src={`${request.sender.profileImage}`}
                   alt={`${request.sender.username}'s profile`}
                 />

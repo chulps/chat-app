@@ -142,6 +142,7 @@ const MessageList: React.FC<MessageListProps> = ({
                     <>
                       <div className="url-image">
                         <img
+                          loading="lazy"
                           src={urlMetadata[url].image}
                           alt={urlMetadata[url].title}
                         />

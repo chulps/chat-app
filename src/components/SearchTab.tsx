@@ -185,6 +185,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                         <ProfileImage
                           src={`${user.profileImage}`}
                           alt={user.username}
+                          loading="lazy"
                         />
                       ) : (
                         <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>
@@ -228,6 +229,7 @@ const SearchTab: React.FC<SearchTabProps> = ({
                         <ProfileImage
                           src={`${user.profileImage}`}
                           alt={user.username}
+                          loading="lazy"
                         />
                       ) : (
                         <ProfilePlaceholder>{user.username.charAt(0).toUpperCase()}</ProfilePlaceholder>

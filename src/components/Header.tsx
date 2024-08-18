@@ -237,7 +237,7 @@ const Header: React.FC = () => {
         )}
         <LogoContainer to="/">
           <RotatingText fill="var(--secondary)" />
-          <StyledLogo src={logo} alt="Chuck Howard" />
+          <StyledLogo loading="lazy" src={logo} alt="Chuck Howard" />
         </LogoContainer>
       </HeaderSection>
       <HeaderSection>

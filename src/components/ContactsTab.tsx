@@ -313,6 +313,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                   <ContactListItemLeftContent>
                     {request.sender.profileImage ? (
                       <ProfileImage
+                        loading="lazy"
                         src={`${request.sender.profileImage}`}
                         alt={`${request.sender.username}'s profile`}
                       />
@@ -367,6 +368,7 @@ const ContactsTab: React.FC<ContactsTabProps> = ({
                     <ContactListItemLeftContent>
                       {friend.profileImage ? (
                         <ProfileImage
+                          loading="lazy"
                           src={`${friend.profileImage}`}
                           alt={`${friend.username}'s profile`}
                         />

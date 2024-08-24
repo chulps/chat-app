@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AudioRecorder from "./AudioRecorder";
 import { useLanguage } from "../contexts/LanguageContext";
 import styled from "styled-components";
@@ -98,6 +98,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const { content } = useLanguage();
 
+  // useEffect(() => {
+  //   console.log('Replied message in MessageInput:', repliedMessage); // Add this line
+  // }, [repliedMessage]);
+  
   return (
     <MessageInputContainer>
 {repliedMessage && (

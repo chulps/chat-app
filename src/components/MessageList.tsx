@@ -74,6 +74,12 @@ const RepliedMessagePreview = styled.div`
   color: var(--neutral-500);
 `;
 
+const ReactionsWrapper = styled.div`
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.5em;
+`;
+
 interface MessageListProps {
   messages: MessageType[];
   name: string;
@@ -258,6 +264,14 @@ const MessageList: React.FC<MessageListProps> = ({
                 </OriginalText>
               )}
             </MessageText>
+          )}
+
+          {message.reactions && message.reactions.length > 0 && (
+            <ReactionsWrapper>
+              {message.reactions.map((reaction, idx) => (
+                <small key={idx}>{reaction}</small>
+              ))}
+            </ReactionsWrapper>
           )}
         </div>
       );

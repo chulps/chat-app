@@ -39,7 +39,25 @@ export interface ChatRoom {
   hasUnreadMessages?: boolean;
 }
 
+export interface Message {
+  _id?: string;
+  sender: string;
+  text: string;
+  language: string;
+  chatroomId: string;
+  timestamp?: string;
+  type?: "system" | "user" | "qr";
+  readBy?: string[];
+  reactions?: string[];
+  repliedTo?: string | null; // Include repliedTo field for message replies
+}
 
+export interface Member {
+  _id: string;
+  username: string;
+  profileImage: string;
+  name: string;
+}
 
 export interface Friend {
   _id: string;

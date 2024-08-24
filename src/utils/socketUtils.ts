@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { Message } from "../components/ChatRoom";
+import { Message as MessageType } from "../types"; // Correct import path
 import { KeyboardEvent } from "react";
 import { defaultContent } from '../contexts/LanguageContext';
 import axios from "axios";
@@ -13,7 +13,7 @@ export const sendMessage = (
   chatroomId: string,
   setInputMessage: React.Dispatch<React.SetStateAction<string>>
 ) => {
-  const message: Message = {
+  const message: MessageType = {
     text: inputMessage,
     sender: name,
     language: preferredLanguage,
@@ -71,7 +71,7 @@ export const handleCopy = (
   });
 };
 
-export const saveMessageToLocalStorage = (chatroomId: string, message: Message) => {
+export const saveMessageToLocalStorage = (chatroomId: string, message: MessageType) => {
   const storedMessages = localStorage.getItem(chatroomId);
   const messages = storedMessages ? JSON.parse(storedMessages) : [];
   messages.push(message);
@@ -90,11 +90,20 @@ export const handleNameSubmit = (
   setIsNamePromptVisible(false);
 
   // Emit system message for new user
-  const systemMessage: Message = {
+
+  const systemMessage: {
+    text: string;
+    chatroomId: string;
+
+    type: "system";
+    language: string;
+    sender: string;
+  } = {
     text: `${submittedName} ${defaultContent["chat-joined"]}`,
     chatroomId,
     type: "system",
     language: preferredLanguage,
+    sender: "System",
   };
 
   socket.emit("sendSystemMessage", systemMessage);
@@ -145,7 +154,7 @@ export const handleStopRecording = async (
   name: string,
   chatroomId: string,
   preferredLanguage: string,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>
 ) => {
   const formData = new FormData();
   formData.append('file', blob, 'audio.wav');
@@ -163,7 +172,13 @@ export const handleStopRecording = async (
     const translatedText = await translateText(transcription, preferredLanguage);
 
     // Send the transcribed message via socket
-    const message: Message = {
+    const message: {
+      sender: string;
+      text: string;
+      language: string;
+      chatroomId: string;
+      type: string;
+    } = {
       sender: name,
       text: translatedText,
       language: preferredLanguage,
@@ -171,8 +186,8 @@ export const handleStopRecording = async (
       type: "user",
     };
     socket.emit("sendMessage", message);
-    setMessages((prevMessages) => [...prevMessages, message]);
-  } catch (error) {
+
+    setMessages((prevMessages) => [...prevMessages, message as MessageType]);  } catch (error) {
     console.error('Error during transcription or translation:', error);
   }
 };

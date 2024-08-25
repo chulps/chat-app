@@ -28,11 +28,43 @@ import {
 import { translateText } from "../utils/translate";
 import "../css/chatroom.css";
 import { useAuth } from "../contexts/AuthContext";
-import { Message as MessageType, Member } from "../types"; // Correct import path
+import { Message as MessageType, Member } from "../types";
+import styled from "styled-components";
 
 const { socketUrl, transcribeApiUrl } = getEnv();
 
 const socket = socketIOClient(socketUrl);
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(27, 29, 33, 0.7);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 0;
+`;
+
+const ChatRoomContainer = styled.div`
+  position: relative;
+`;
+
+const CancelButton = styled.button`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--danger-300);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5em 1em;
+  cursor: pointer;
+  z-index: 11;
+`;
 
 const ChatRoom: React.FC = () => {
   const { chatroomId } = useParams<{ chatroomId: string }>();
@@ -77,6 +109,8 @@ const ChatRoom: React.FC = () => {
   const [repliedMessage, setRepliedMessage] = useState<MessageType | null>(
     null
   );
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null); // Track the ID of the message being edited
 
   const fetchChatroomDetails = useCallback(async () => {
     try {
@@ -88,7 +122,7 @@ const ChatRoom: React.FC = () => {
       );
       const chatroom = response.data;
 
-      console.log("Fetched chatroom details:", chatroom); // Log the fetched data
+      console.log("Fetched chatroom details:", chatroom);
 
       setChatroomName(chatroom.name);
       setMembersCount(chatroom.members.length);
@@ -106,8 +140,8 @@ const ChatRoom: React.FC = () => {
       );
       setMembers(chatroom.members);
     } catch (error) {
-      console.error("Error fetching chatroom details:", error); // Log the error
-      alert('Failed to fetch chatroom details. Please try again later.'); // Optionally, show an alert or error message to the user
+      console.error("Error fetching chatroom details:", error);
+      alert("Failed to fetch chatroom details. Please try again later.");
     }
   }, [chatroomId, getToken, user]);
 
@@ -130,7 +164,7 @@ const ChatRoom: React.FC = () => {
       const response = await axios.get(`${getEnv().apiUrl}/api/chatrooms`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      console.log("Fetched chatrooms:", response.data); // Log the fetched chatrooms
+      console.log("Fetched chatrooms:", response.data);
     } catch (error) {
       console.error("Error fetching chatrooms:", error);
     }
@@ -269,29 +303,65 @@ const ChatRoom: React.FC = () => {
       messageText || inputMessage,
       preferredLanguage
     );
-  
+
     const newMessage: MessageType = {
       sender: name,
       text: translatedText,
       language: preferredLanguage,
       chatroomId: chatroomId || "",
       type: "user",
-      repliedTo: repliedMessage?._id || null,  // Make sure repliedMessage._id is passed
+      repliedTo: repliedMessage?._id || null,
       readBy: user?.id ? [user.id] : [],
     };
-  
-    // Add logging here
-    console.log('Sending message payload:', newMessage);
-  
-    // Emit the message
-    socket.emit("sendMessage", newMessage);
-  
-    // Clear input and reset replied message
+
+    console.log("Sending message payload:", newMessage);
+
+    if (isEditing && editingMessageId) {
+      // Handle editing logic
+      await handleEditMessage(editingMessageId, translatedText);
+      setIsEditing(false);
+      setEditingMessageId(null);
+    } else {
+      socket.emit("sendMessage", newMessage);
+    }
+
     setInputMessage("");
-    setRepliedMessage(null);  // Clear the replied message after sending
+    setRepliedMessage(null);
   };
-  
-  
+
+  const handleEditMessage = async (messageId: string, newText: string) => {
+    try {
+      console.log("Editing message:", messageId, "with new text:", newText);
+
+      await axios.put(
+        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/message/${messageId}`,
+        { text: newText },
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }
+      );
+
+      console.log("Message successfully edited, updating UI...");
+
+      // Update the message in the UI
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === messageId ? { ...msg, text: newText, edited: true } : msg
+        )
+      );
+
+      setIsEditing(false); // Close the editing state
+      setEditingMessageId(null); // Reset editing message ID
+    } catch (error) {
+      console.error("Error editing message:", error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingMessageId(null);
+  };
+
   const handleEmitUserTyping = () => {
     emitUserTyping(
       socket,
@@ -359,7 +429,9 @@ const ChatRoom: React.FC = () => {
   const handleReaction = async (messageId: string, emoji: string) => {
     try {
       await axios.post(
-        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/message/${messageId}/react`,
+        `${
+          getEnv().apiUrl
+        }/api/chatrooms/${chatroomId}/message/${messageId}/react`,
         { emoji },
         {
           headers: { Authorization: `Bearer ${getToken()}` },
@@ -380,28 +452,14 @@ const ChatRoom: React.FC = () => {
   const handleReply = (messageId: string) => {
     const messageToReply = messages.find((msg) => msg._id === messageId);
     if (messageToReply) {
-      console.log('Setting replied message:', messageToReply); // Debugging log
       setRepliedMessage(messageToReply);
     }
   };
 
-  const handleEdit = async (messageId: string, newText: string) => {
-    try {
-      await axios.put(
-        `${getEnv().apiUrl}/api/chatrooms/${chatroomId}/message/${messageId}`,
-        { text: newText },
-        {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }
-      );
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg._id === messageId ? { ...msg, text: newText } : msg
-        )
-      );
-    } catch (error) {
-      console.error("Error editing message:", error);
-    }
+  const handleEdit = (messageId: string, text: string) => {
+    setIsEditing(true);
+    setInputMessage(text);
+    setEditingMessageId(messageId); // Store the message ID being edited
   };
 
   const handleDelete = async (messageId: string) => {
@@ -436,7 +494,7 @@ const ChatRoom: React.FC = () => {
           }
         />
       )}
-      <div
+      <ChatRoomContainer
         className={`chatroom-container ${isNamePromptVisible ? "blur" : ""}`}
       >
         <ChatRoomHeader
@@ -524,9 +582,12 @@ const ChatRoom: React.FC = () => {
           }
           isNamePromptVisible={isNamePromptVisible}
           onStopRecording={handleRecordingStop}
-          repliedMessage={repliedMessage} // Pass the repliedMessage prop
-          setRepliedMessage={setRepliedMessage} // Pass the setRepliedMessage prop
+          repliedMessage={repliedMessage}
+          setRepliedMessage={setRepliedMessage}
+          isEditing={isEditing} // Pass isEditing prop
+          cancelEdit={handleCancelEdit}
         />
+
         {transcriptionText && (
           <TranscriptionModal
             transcriptionText={transcriptionText}
@@ -539,7 +600,12 @@ const ChatRoom: React.FC = () => {
             setIsRecording={setIsRecording}
           />
         )}
-      </div>
+      </ChatRoomContainer>
+      {isEditing && (
+        <Overlay id="overlay">
+          <CancelButton onClick={handleCancelEdit}>Cancel</CancelButton>
+        </Overlay>
+      )}
     </main>
   );
 };

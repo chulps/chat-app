@@ -50,6 +50,7 @@ export interface Message {
   readBy?: string[];
   reactions?: string[];
   repliedTo?: string | null; // Include repliedTo field for message replies
+  edited?: boolean; // Add this line
 }
 
 export interface Member {

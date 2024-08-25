@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AudioRecorder from "./AudioRecorder";
 import { useLanguage } from "../contexts/LanguageContext";
 import styled from "styled-components";
-import { Message as MessageType } from "../types"; // Correct import path
+import { Message as MessageType } from "../types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 
@@ -43,11 +43,12 @@ const RepliedTextHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0.25em 0.5em;
-  `
+`;
 
 const MessageInputContainer = styled.div`
   display: flex;
   flex-direction: column;
+  z-index: 1;
 `;
 
 const MessageInputField = styled.input`
@@ -72,7 +73,29 @@ const CancelReplyButton = styled.button`
     background: var(--dark);
     filter: brightness(1.3);
   }
-`
+`;
+
+const CancelEditButton = styled.button`
+  background: var(--danger-300);
+  border: none;
+  color: white;
+  border-radius: var(--space-2);
+  padding: 0.5em 1em;
+  margin-bottom: 0.5em;
+
+  &:hover {
+    background: var(--danger-500);
+  }
+`;
+
+const EditingInputHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5em;
+  position: absolute;
+  bottom: 100%;
+`;
 
 interface MessageInputProps {
   inputMessage: string;
@@ -81,8 +104,10 @@ interface MessageInputProps {
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   isNamePromptVisible: boolean;
   onStopRecording: (blob: Blob) => void;
-  repliedMessage: MessageType | null; // Update to use MessageType
-  setRepliedMessage: React.Dispatch<React.SetStateAction<MessageType | null>>; // Update to use MessageType
+  repliedMessage: MessageType | null;
+  setRepliedMessage: React.Dispatch<React.SetStateAction<MessageType | null>>;
+  isEditing: boolean;
+  cancelEdit: () => void;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -93,40 +118,47 @@ const MessageInput: React.FC<MessageInputProps> = ({
   isNamePromptVisible,
   onStopRecording,
   repliedMessage,
-  setRepliedMessage, // Function to clear repliedMessage
+  setRepliedMessage,
+  isEditing,
+  cancelEdit,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const { content } = useLanguage();
 
-  // useEffect(() => {
-  //   console.log('Replied message in MessageInput:', repliedMessage); // Add this line
-  // }, [repliedMessage]);
-  
+  useEffect(() => {
+    if (!isEditing) {
+      setInputMessage(""); // Clear the input field when not editing
+    }
+  }, [isEditing, setInputMessage]);
+
   return (
     <MessageInputContainer>
-{repliedMessage && (
-  <RepliedMessageWrapper>
-    <RepliedTextHeader>
-      <ReplyingToLabel>{repliedMessage.sender} </ReplyingToLabel>
-      <CancelReplyButton onClick={() => setRepliedMessage(null)}>
-        <FontAwesomeIcon icon={faTimes} />
-      </CancelReplyButton>
-    </RepliedTextHeader>
-    <RepliedMessageText>{repliedMessage.text}</RepliedMessageText>
-  </RepliedMessageWrapper>
-)}
+      {isEditing && (
+        <EditingInputHeader>
+          <CancelEditButton onClick={cancelEdit}>Cancel Edit</CancelEditButton>
+        </EditingInputHeader>
+      )}
+      {repliedMessage && !isEditing && (
+        <RepliedMessageWrapper>
+          <RepliedTextHeader>
+            <ReplyingToLabel>{repliedMessage.sender}</ReplyingToLabel>
+            <CancelReplyButton onClick={() => setRepliedMessage(null)}>
+              <FontAwesomeIcon icon={faTimes} />
+            </CancelReplyButton>
+          </RepliedTextHeader>
+          <RepliedMessageText>{repliedMessage.text}</RepliedMessageText>
+        </RepliedMessageWrapper>
+      )}
       <MessageInputField
+        id="message-input"
         type="text"
         value={inputMessage}
         placeholder={
-          isRecording
-            ? content["stop-recording"]
-            : content["placeholder-message"]
+          isEditing ? "Edit your message..." : content["placeholder-message"]
         }
         onChange={(e) => setInputMessage(e.target.value)}
         onKeyDown={handleKeyPress}
         disabled={isNamePromptVisible}
-        className={isRecording ? "recording" : ""}
       />
       <div className="message-input-buttons">
         {inputMessage && (

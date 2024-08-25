@@ -92,6 +92,12 @@
   max-width: 80%;
 }
 
+.message-wrapper.system-message {
+  margin: 0 auto;
+  font-size: var(--font-size-small);
+  color: var(--neutral-400);
+}
+
 .sender-name {
   margin-left: 0.5em;
   color: var(--neutral-400);
@@ -141,16 +147,16 @@
   padding: 1em 0;
   border-bottom: 1px solid var(--dark);
 }
-
-.conversation-container .message-wrapper.system-message {
-    color: var(--neutral-500); /* Change this to any color that will stand out */
-    gap: 0;
-  }
-
+  
   .message.system-message {
-    gap: unset;
-    background-color: transparent;
+    all: unset;
+    width: 100%;
+    margin: 0 auto;
     padding:0;
+    text-align: center;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
   }
 
   .typing-notification {
@@ -161,13 +167,6 @@
     position: relative;
     bottom: 0;
     padding: 0;
-  }
-  
-  .message-wrapper.system-message {
-    flex-direction: row;
-    align-items: center;
-    font-size: var(--font-size-small);
-    margin: 0 auto;
   }
 
 .message-wrapper.me .sender-name {
@@ -185,6 +184,11 @@
 .message-row:has(.qr-code-message):not(:nth-of-type(2)),
 .message-row:nth-of-type(3) {
   display: none;
+}
+
+.message-row:has(.system-message) {
+  display: flex;
+  justify-content: center;
 }
 
 html.light .message-wrapper.me {
@@ -207,7 +211,7 @@ html.light .message-wrapper.me {
 .url-description {
   display: -webkit-box;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;  
+  line-clamp: 3;  -webkit-box-orient: vertical;  
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--font-size-small);

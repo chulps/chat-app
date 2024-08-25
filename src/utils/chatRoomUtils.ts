@@ -12,8 +12,10 @@ export const sendMessage = (
   preferredLanguage: string,
   chatroomId: string,
   setInputMessage: React.Dispatch<React.SetStateAction<string>>,
+  isEditing: boolean, // Add isEditing as a parameter
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>, // Add setIsEditing as a parameter
   userId?: string,
-  repliedMessage?: MessageType | null // Update to use MessageType
+  repliedMessage?: MessageType | null
 ) => {
   const message: MessageType = {
     text: inputMessage,
@@ -27,12 +29,18 @@ export const sendMessage = (
     }),
     type: "user",
     readBy: userId ? [userId] : [],
-    repliedTo: repliedMessage?._id || null, // Handle the replied message
+    repliedTo: repliedMessage?._id || null,
   };
 
   socket.emit("sendMessage", message);
   setInputMessage("");
+
+  // Handle editing state
+  if (isEditing) {
+    setIsEditing(false); // Reset editing state after sending
+  }
 };
+
 
 export const emitUserTyping = (
   socket: Socket,

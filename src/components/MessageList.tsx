@@ -4,11 +4,26 @@ import TranslationWrapper from "./TranslationWrapper";
 import { getUrlMetadata } from "../utils/urlUtils";
 import styled from "styled-components";
 import moment from "moment";
-import { Message as MessageType } from "../types"; // Importing Message from types
+import { Message as MessageType } from "../types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faReply,
+  faCopy,
+  faPen,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 
 const OriginalText = styled.small`
   opacity: 0.25;
   border-top: 1px solid var(--white);
+`;
+
+const MessageFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: var(---space-1);
+  width: 100%;
+  padding-inline: 0.5em;
 `;
 
 const ReactionMenu = styled.div`
@@ -19,6 +34,7 @@ const ReactionMenu = styled.div`
   background-color: var(--dark);
   border-radius: 1em;
   overflow: hidden;
+  border: 1px solid var(--neutral-800);
 
   span {
     background: var(--dark);
@@ -36,8 +52,7 @@ const ReactionMenu = styled.div`
 `;
 
 const ActionMenu = styled.div`
-  position: absolute;
-  top: calc(100% - 1em);
+  position: relative;
   width: 100%;
   left: 0;
   display: flex;
@@ -46,6 +61,7 @@ const ActionMenu = styled.div`
   border-radius: 1em;
   overflow: hidden;
   z-index: 1;
+  border: 1px solid var(--secondary);
 
   span {
     padding: 0.5em 1em;
@@ -57,27 +73,62 @@ const ActionMenu = styled.div`
     &:hover {
       filter: brightness(1.3);
     }
+
+    &.delete {
+      color: var(--danger-300);
+    }
   }
 `;
 
 const MessageText = styled.span`
-  position: relative;
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  white-space: nowrap;
+  text-align: center;
+  margin: 0;
 `;
 
 const RepliedMessagePreview = styled.div`
-  background-color: var(--neutral-800);
-  border-left: 3px solid var(--primary);
-  padding: 0.5em;
-  margin-bottom: 0.5em;
+  background-color: rgba(0,0,0,0.2);
+  color: white;
+  border-left: 3px solid rgba(255,255,255,0.5);
+  padding: 0.25em 0.5em;
+  margin-inline: -0.5em;
+  margin-bottom: 0.25em;
   border-radius: 0.5em;
   font-size: 0.9em;
-  color: var(--neutral-500);
+
+    small {
+      color: rgba(255,255,255,0.5);
+      &::before {
+        content: "@"
+      }
+    }
+
+    p {
+      font-size: var(--font-size-small);
+      display: -webkit-box
+      -webkit-line-clamp: 3
+      -webkit-box-orient: vertical
+      overflow: hidden
+      text-overflow: ellipsis
+
+    }
 `;
 
 const ReactionsWrapper = styled.div`
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.25em 0.5em;
+  margin-inline: -0.5em;
+
+  border-radius: 0.5em;
   display: flex;
   gap: 0.5em;
-  margin-top: 0.5em;
+  flex-wrap: wrap;
+  margin-top: 0.25em;
+  padding-top: 0.25em;
+  width: fit-content;
 `;
 
 interface MessageListProps {
@@ -145,6 +196,12 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, [fetchMetadata, messages.length]);
 
+  /**
+   * Renders a string of text with any email addresses or URLs detected as clickable links.
+   *
+   * @param text - The input text to be rendered with links.
+   * @returns A React element containing the text with email and URL links.
+   */
   const renderTextWithLinks = useCallback((text: string) => {
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
     const urlRegex =
@@ -204,12 +261,8 @@ const MessageList: React.FC<MessageListProps> = ({
         <div>
           {repliedMessage && (
             <RepliedMessagePreview>
-              <small style={{ color: "var(--secondary)" }}>
-                {repliedMessage.sender}:
-              </small>
-              <p style={{ margin: "0", color: "var(--neutral-500)" }}>
-                {repliedMessage.text}
-              </p>
+              <small>{repliedMessage.sender}:</small>
+              <p>{repliedMessage.text}</p>
             </RepliedMessagePreview>
           )}
 
@@ -276,7 +329,13 @@ const MessageList: React.FC<MessageListProps> = ({
         </div>
       );
     },
-    [preferredLanguage, renderTextWithLinks, urlMetadata, showOriginal, messages]
+    [
+      preferredLanguage,
+      renderTextWithLinks,
+      urlMetadata,
+      showOriginal,
+      messages,
+    ]
   );
 
   const memoizedRenderMessageContent = useMemo(
@@ -320,16 +379,21 @@ const MessageList: React.FC<MessageListProps> = ({
               >
                 {memoizedRenderMessageContent(message, isCurrentUser)}
               </div>
-              {message.type !== "system" &&
-                message.type !== "qr" &&
-                message.timestamp && (
-                  <small
-                    style={{ color: "var(--neutral-400)" }}
-                    className="timestamp"
-                  >
-                    {moment(message.timestamp).format("HH:mm")}
-                  </small>
+              <MessageFooter>
+                {message.edited && (
+                  <small style={{ color: "var(--primary)" }}>(Edited)</small>
                 )}
+                {message.type !== "system" &&
+                  message.type !== "qr" &&
+                  message.timestamp && (
+                    <small
+                      style={{ color: "var(--neutral-400)" }}
+                      className="timestamp"
+                    >
+                      {moment(message.timestamp).format("HH:mm")}
+                    </small>
+                  )}
+              </MessageFooter>
 
               {isMessageSelected && (
                 <>
@@ -338,6 +402,11 @@ const MessageList: React.FC<MessageListProps> = ({
                       onClick={() => handleReaction(message._id || "", "👍")}
                     >
                       👍
+                    </span>
+                    <span
+                      onClick={() => handleReaction(message._id || "", "👎")}
+                    >
+                      👎
                     </span>
                     <span
                       onClick={() => handleReaction(message._id || "", "❤️")}
@@ -358,15 +427,18 @@ const MessageList: React.FC<MessageListProps> = ({
 
                   <ActionMenu>
                     <span onClick={() => handleReply(message._id || "")}>
-                      Reply
+                      <FontAwesomeIcon icon={faReply} />
+                      &nbsp;&nbsp;Reply
                     </span>
                     <span
                       onClick={() =>
                         navigator.clipboard.writeText(message.text)
                       }
                     >
-                      Copy
+                      <FontAwesomeIcon icon={faCopy} />
+                      &nbsp;&nbsp;Copy
                     </span>
+                    <hr />
                     {isCurrentUser && (
                       <>
                         <span
@@ -374,10 +446,15 @@ const MessageList: React.FC<MessageListProps> = ({
                             handleEdit(message._id || "", message.text)
                           }
                         >
-                          Edit
+                          <FontAwesomeIcon icon={faPen} />
+                          &nbsp;&nbsp;Edit
                         </span>
-                        <span onClick={() => handleDelete(message._id || "")}>
-                          Delete
+                        <span
+                          className="delete"
+                          onClick={() => handleDelete(message._id || "")}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                          &nbsp;&nbsp;Delete
                         </span>
                       </>
                     )}

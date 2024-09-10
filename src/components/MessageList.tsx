@@ -26,10 +26,13 @@ const MessageFooter = styled.div`
   padding-inline: 0.5em;
 `;
 
-const ReactionMenu = styled.div`
+const ReactionMenu = styled.div<{ isCurrentUser: boolean }>`
   position: absolute;
   bottom: 100%;
-  left: 0;
+  left: ${({ isCurrentUser }) =>
+    isCurrentUser ? "auto" : "0"}; /* Align to the right if current user */
+  right: ${({ isCurrentUser }) =>
+    isCurrentUser ? "0" : "auto"}; /* Align to the left if not current user */
   display: flex;
   background-color: var(--dark);
   border-radius: 1em;
@@ -396,7 +399,7 @@ const MessageList: React.FC<MessageListProps> = ({
 
               {isMessageSelected && (
                 <>
-                  <ReactionMenu>
+                  <ReactionMenu isCurrentUser={isCurrentUser}>
                     <span
                       onClick={() => handleReaction(message._id || "", "👍")}
                     >
@@ -437,6 +440,8 @@ const MessageList: React.FC<MessageListProps> = ({
                       <FontAwesomeIcon icon={faCopy} />
                       &nbsp;&nbsp;Copy
                     </span>
+
+                    {/* edit and delete buttons commented out until later */}
                     {/* <hr />
                     {isCurrentUser && (
                       <>

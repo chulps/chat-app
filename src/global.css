@@ -293,6 +293,7 @@ h5,
 h6 {
   line-height: var(--line-height-header);
   font-family: var(--font-family-default);
+  text-wrap: balance;
 }
 
 h1 {

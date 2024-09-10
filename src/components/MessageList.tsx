@@ -83,7 +83,6 @@ const ActionMenu = styled.div`
 const MessageText = styled.span`
   display: flex;
   width: 100%;
-  justify-content: center;
   white-space: nowrap;
   text-align: center;
   margin: 0;
@@ -438,7 +437,7 @@ const MessageList: React.FC<MessageListProps> = ({
                       <FontAwesomeIcon icon={faCopy} />
                       &nbsp;&nbsp;Copy
                     </span>
-                    <hr />
+                    {/* <hr />
                     {isCurrentUser && (
                       <>
                         <span
@@ -457,7 +456,7 @@ const MessageList: React.FC<MessageListProps> = ({
                           &nbsp;&nbsp;Delete
                         </span>
                       </>
-                    )}
+                    )} */}
                   </ActionMenu>
                 </>
               )}

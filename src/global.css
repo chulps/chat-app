@@ -164,6 +164,7 @@
   --background-color: var(--neutral-950);
   --font-color: var(--neutral-100);
 
+  
 }
 
 html {
@@ -182,6 +183,7 @@ html {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   position: relative;
+  text-wrap: pretty;
 }
 
 i,
@@ -291,6 +293,7 @@ h5,
 h6 {
   line-height: var(--line-height-header);
   font-family: var(--font-family-default);
+  text-wrap: balance;
 }
 
 h1 {
@@ -754,6 +757,9 @@ html.light .tooltip:hover::after {
   gap: var(--space-1);
   display: flex;
   background: transparent;
+  width: 100%;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .system-message.warning {

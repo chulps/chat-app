@@ -1,12 +1,12 @@
 import { Socket } from "socket.io-client";
-import { Message } from "../components/ChatRoom";
+import { Message as MessageType } from "../types"; // Correct import path
 
 export const setupSocketListeners = (
   socket: Socket,
   chatroomId: string,
   name: string,
   preferredLanguage: string,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
+  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>,
   setTypingUser: React.Dispatch<React.SetStateAction<string | null>>,
   sendQrCodeMessage: () => void,
   scrollToBottom: () => void,
@@ -18,17 +18,23 @@ export const setupSocketListeners = (
       name,
       language: preferredLanguage,
     });
-    const joinMessage: Message = {
+    const joinMessage: MessageType = {
       text: `${name} has joined the chat.`,
       chatroomId,
       type: "system",
       language: preferredLanguage,
+      sender: "system",
+      timestamp: new Date().toLocaleTimeString(navigator.language, {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }),
     };
     socket.emit("sendSystemMessage", joinMessage);
     sendQrCodeMessage();
   });
 
-  socket.on("message", (message: Message) => {
+  socket.on("message", (message: MessageType) => {
     message.timestamp = new Date().toLocaleTimeString(navigator.language, {
       hour: "2-digit",
       minute: "2-digit",
@@ -49,7 +55,7 @@ export const setupSocketListeners = (
   });
 
   socket.on("userJoined", (userName: string) => {
-    const systemMessage: Message = {
+    const systemMessage: MessageType = {
       text: `${userName} has joined the chat.`,
       chatroomId,
       type: "system",
@@ -59,12 +65,13 @@ export const setupSocketListeners = (
         minute: "2-digit",
         hour12: false,
       }),
+      sender: "system"
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
 
   socket.on("userLeft", (userName: string) => {
-    const systemMessage: Message = {
+    const systemMessage: MessageType = {
       text: `${userName} has left the chat.`,
       chatroomId,
       type: "system",
@@ -74,12 +81,13 @@ export const setupSocketListeners = (
         minute: "2-digit",
         hour12: false,
       }),
+      sender: "system"
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
 
   socket.on("userAway", (userName: string) => {
-    const systemMessage: Message = {
+    const systemMessage: MessageType = {
       text: `${userName} is away.`,
       chatroomId,
       type: "system",
@@ -89,12 +97,13 @@ export const setupSocketListeners = (
         minute: "2-digit",
         hour12: false,
       }),
+      sender: "system"
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
 
   socket.on("userReturned", (userName: string) => {
-    const systemMessage: Message = {
+    const systemMessage: MessageType = {
       text: `${userName} has returned.`,
       chatroomId,
       type: "system",
@@ -104,6 +113,7 @@ export const setupSocketListeners = (
         minute: "2-digit",
         hour12: false,
       }),
+      sender: "system"
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   });
@@ -117,7 +127,8 @@ export const setupSocketListeners = (
     );
   });
 
-  socket.on("messageHistory", (history: Message[]) => {
+
+  socket.on("messageHistory", (history: MessageType[]) => {
     history.forEach((message) => {
       message.timestamp = new Date().toLocaleTimeString(navigator.language, {
         hour: "2-digit",

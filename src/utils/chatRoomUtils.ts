@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { Message } from "../components/ChatRoom";
+import { Message as MessageType } from "../types"; // Correct import path
 import { KeyboardEvent } from "react";
 import { defaultContent } from '../contexts/LanguageContext';
 import axios from "axios";
@@ -12,9 +12,12 @@ export const sendMessage = (
   preferredLanguage: string,
   chatroomId: string,
   setInputMessage: React.Dispatch<React.SetStateAction<string>>,
-  userId?: string // Add userId parameter
+  isEditing: boolean, // Add isEditing as a parameter
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>, // Add setIsEditing as a parameter
+  userId?: string,
+  repliedMessage?: MessageType | null
 ) => {
-  const message: Message = {
+  const message: MessageType = {
     text: inputMessage,
     sender: name,
     language: preferredLanguage,
@@ -25,11 +28,19 @@ export const sendMessage = (
       hour12: false,
     }),
     type: "user",
-    readBy: userId ? [userId] : [] // Mark as read by sender
+    readBy: userId ? [userId] : [],
+    repliedTo: repliedMessage?._id || null,
   };
+
   socket.emit("sendMessage", message);
   setInputMessage("");
+
+  // Handle editing state
+  if (isEditing) {
+    setIsEditing(false); // Reset editing state after sending
+  }
 };
+
 
 export const emitUserTyping = (
   socket: Socket,
@@ -73,7 +84,7 @@ export const handleCopy = (
   });
 };
 
-export const saveMessageToLocalStorage = (chatroomId: string, message: Message) => {
+export const saveMessageToLocalStorage = (chatroomId: string, message: any) => {
   const storedMessages = localStorage.getItem(chatroomId);
   const messages = storedMessages ? JSON.parse(storedMessages) : [];
   messages.push(message);
@@ -91,8 +102,12 @@ export const handleNameSubmit = (
   setName(submittedName);
   setIsNamePromptVisible(false);
 
-  // Emit system message for new user
-  const systemMessage: Message = {
+  const systemMessage: {
+    text: string;
+    chatroomId: string;
+    type: string;
+    language: string;
+  } = {
     text: `${submittedName} ${defaultContent["chat-joined"]}`,
     chatroomId,
     type: "system",
@@ -100,9 +115,8 @@ export const handleNameSubmit = (
   };
 
   socket.emit("sendSystemMessage", systemMessage);
-  saveMessageToLocalStorage(chatroomId, systemMessage); // Save to localStorage
+  saveMessageToLocalStorage(chatroomId, systemMessage);
 
-  // Establish socket connection and join room
   socket.emit("joinRoom", {
     chatroomId,
     name: submittedName,
@@ -147,7 +161,7 @@ export const handleStopRecording = async (
   name: string,
   chatroomId: string,
   preferredLanguage: string,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>
 ) => {
   const formData = new FormData();
   formData.append('file', blob, 'audio.wav');
@@ -161,11 +175,9 @@ export const handleStopRecording = async (
 
     const { transcription } = response.data;
 
-    // Translate the transcription
     const translatedText = await translateText(transcription, preferredLanguage);
 
-    // Send the transcribed message via socket
-    const message: Message = {
+    const message: MessageType = {
       sender: name,
       text: translatedText,
       language: preferredLanguage,

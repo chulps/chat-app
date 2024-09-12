@@ -86,7 +86,6 @@ const ActionMenu = styled.div`
 const MessageText = styled.span`
   display: flex;
   width: 100%;
-  text-align: center;
   margin: 0;
 `;
 

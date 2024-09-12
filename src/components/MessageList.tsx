@@ -86,7 +86,6 @@ const ActionMenu = styled.div`
 const MessageText = styled.span`
   display: flex;
   width: 100%;
-  white-space: nowrap;
   text-align: center;
   margin: 0;
 `;
@@ -442,7 +441,7 @@ const MessageList: React.FC<MessageListProps> = ({
                     </span>
 
                     {/* edit and delete buttons commented out until later */}
-                    {/* <hr />
+                    <hr />
                     {isCurrentUser && (
                       <>
                         <span
@@ -461,7 +460,7 @@ const MessageList: React.FC<MessageListProps> = ({
                           &nbsp;&nbsp;Delete
                         </span>
                       </>
-                    )} */}
+                    )}
                   </ActionMenu>
                 </>
               )}

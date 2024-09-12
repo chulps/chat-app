@@ -101,12 +101,14 @@ interface MessageInputProps {
   inputMessage: string;
   setInputMessage: React.Dispatch<React.SetStateAction<string>>;
   sendMessage: (messageText?: string) => void;
+  handleEditMessage: (messageId: string, newText: string) => void; // New prop for editing
   handleKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   isNamePromptVisible: boolean;
   onStopRecording: (blob: Blob) => void;
   repliedMessage: MessageType | null;
   setRepliedMessage: React.Dispatch<React.SetStateAction<MessageType | null>>;
   isEditing: boolean;
+  editingMessageId: string | null; // Track which message is being edited
   cancelEdit: () => void;
 }
 
@@ -114,12 +116,14 @@ const MessageInput: React.FC<MessageInputProps> = ({
   inputMessage,
   setInputMessage,
   sendMessage,
+  handleEditMessage, // New handler for editing
   handleKeyPress,
   isNamePromptVisible,
   onStopRecording,
   repliedMessage,
   setRepliedMessage,
   isEditing,
+  editingMessageId,
   cancelEdit,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -164,7 +168,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
         {inputMessage && (
           <button
             style={{ padding: "1em 1.25em" }}
-            onClick={() => sendMessage()}
+            onClick={() =>
+              isEditing && editingMessageId
+                ? handleEditMessage(editingMessageId, inputMessage) // Call edit function when editing
+                : sendMessage()
+            }
             disabled={isNamePromptVisible}
           >
             <FontAwesomeIcon icon={faArrowUp} />

@@ -577,16 +577,15 @@ const ChatRoom: React.FC = () => {
           inputMessage={inputMessage}
           setInputMessage={setInputMessage}
           sendMessage={handleSendMessage}
-          handleKeyPress={(e) =>
-            handleKeyPress(e, handleSendMessage, handleEmitUserTyping)
-          }
+          handleKeyPress={(e) => handleKeyPress(e, handleSendMessage, handleEmitUserTyping)}
           isNamePromptVisible={isNamePromptVisible}
           onStopRecording={handleRecordingStop}
           repliedMessage={repliedMessage}
           setRepliedMessage={setRepliedMessage}
           isEditing={isEditing} // Pass isEditing prop
-          cancelEdit={handleCancelEdit}
-        />
+          cancelEdit={handleCancelEdit} handleEditMessage={function (messageId: string, newText: string): void {
+            throw new Error("Function not implemented.");
+          } } editingMessageId={null}        />
 
         {transcriptionText && (
           <TranscriptionModal

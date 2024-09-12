@@ -87,6 +87,7 @@ const MessageText = styled.span`
   display: flex;
   width: 100%;
   margin: 0;
+  flex-direction: column;
 `;
 
 const RepliedMessagePreview = styled.div`

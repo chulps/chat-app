@@ -109,10 +109,10 @@ const RepliedMessagePreview = styled.div`
 
     p {
       font-size: var(--font-size-small);
-      display: -webkit-box
-      -webkit-line-clamp: 3
-      -webkit-box-orient: vertical
-      overflow: hidden
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
       text-overflow: ellipsis
 
     }
@@ -159,43 +159,39 @@ const MessageList: React.FC<MessageListProps> = ({
   const [fetchedUrls, setFetchedUrls] = useState<Set<string>>(new Set());
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
 
-  const fetchMetadata = useCallback(async () => {
+  // New logic for fetching metadata
+  const fetchMetadata = useCallback(async (urls: string[]) => {
     const newMetadata: { [url: string]: any } = {};
 
-    for (const message of messages) {
-      if (message.type === "user") {
-        const urls = message.text?.match(
-          /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
-        );
-        if (urls) {
-          for (const url of urls) {
-            setFetchedUrls((prev) => {
-              if (!prev.has(url)) {
-                getUrlMetadata(url)
-                  .then((metadata) => {
-                    setUrlMetadata((prevMetadata) => ({
-                      ...prevMetadata,
-                      [url]: metadata,
-                    }));
-                  })
-                  .catch((error) => {
-                    console.error(`Error fetching metadata for ${url}:`, error);
-                  });
-                return new Set(prev).add(url);
-              }
-              return prev;
-            });
-          }
+    for (const url of urls) {
+      if (!fetchedUrls.has(url)) {
+        try {
+          const metadata = await getUrlMetadata(url);
+          newMetadata[url] = metadata;
+          setUrlMetadata((prevMetadata) => ({ ...prevMetadata, ...newMetadata }));
+          setFetchedUrls((prev) => new Set(prev).add(url));
+        } catch (error) {
+          console.error(`Error fetching metadata for ${url}:`, error);
         }
       }
     }
-  }, [messages]);
+  }, [fetchedUrls]);
 
+  // Collect URLs from messages and trigger metadata fetching
   useEffect(() => {
-    if (messages.length > 0) {
-      fetchMetadata();
+    const allUrls: string[] = [];
+    messages.forEach((message) => {
+      const urls = message.text?.match(
+        /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/g
+      );
+      if (urls) {
+        allUrls.push(...urls);
+      }
+    });
+    if (allUrls.length > 0) {
+      fetchMetadata(allUrls);
     }
-  }, [fetchMetadata, messages.length]);
+  }, [messages, fetchMetadata]);
 
   /**
    * Renders a string of text with any email addresses or URLs detected as clickable links.
@@ -440,7 +436,6 @@ const MessageList: React.FC<MessageListProps> = ({
                       &nbsp;&nbsp;Copy
                     </span>
 
-                    {/* edit and delete buttons commented out until later */}
                     <hr />
                     {isCurrentUser && (
                       <>

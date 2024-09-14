@@ -478,6 +478,21 @@ const ChatRoom: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    // Listen for message updates (edits or reactions)
+    socket.on("messageUpdated", (updatedMessage: MessageType) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message._id === updatedMessage._id ? updatedMessage : message
+        )
+      );
+    });
+
+    return () => {
+      socket.off("messageUpdated");
+    };
+  }, [chatroomId]);
+
   return (
     <main className="chatroom">
       {isNamePromptVisible && (
@@ -583,9 +598,10 @@ const ChatRoom: React.FC = () => {
           repliedMessage={repliedMessage}
           setRepliedMessage={setRepliedMessage}
           isEditing={isEditing} // Pass isEditing prop
-          cancelEdit={handleCancelEdit} handleEditMessage={function (messageId: string, newText: string): void {
-            throw new Error("Function not implemented.");
-          } } editingMessageId={null}        />
+          cancelEdit={handleCancelEdit}
+          handleEditMessage={handleEditMessage} // Pass handleEditMessage for editing
+          editingMessageId={editingMessageId} // Pass editingMessageId
+        />
 
         {transcriptionText && (
           <TranscriptionModal

@@ -8,27 +8,25 @@ import { faTimes, faArrowUp } from "@fortawesome/free-solid-svg-icons";
 
 const RepliedMessageWrapper = styled.div`
   background-color: transparent;
-  border-radius: 1em;
+  border-radius: 0.5em;
   margin-bottom: 0.5em;
   position: absolute;
   bottom: 100%;
-  width: fit-content;
-  max-width: 80%;
+  flex-grow: 1;
+  border-left: 3px solid var(--secondary);
+  backdrop-filter: blur(4px) brightness(0.4);
+  margin-inline: 0.5em;
 `;
 
 const ReplyingToLabel = styled.small`
   color: var(--secondary);
-
   &::before {
     content: "@";
   }
 `;
 
 const RepliedMessageText = styled.small`
-  border: 1px solid var(--primary);
-  color: var(--royal-300);
-  padding: 0.25em 0.5em;
-  border-radius: 1em;
+  padding: 0 1em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -42,7 +40,7 @@ const RepliedTextHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25em 0.5em;
+  padding: 0 0.5em;
 `;
 
 const MessageInputContainer = styled.div`

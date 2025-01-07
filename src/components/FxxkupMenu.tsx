@@ -133,8 +133,8 @@ const menuData = [
   {
     category: "Tequila",
     items: [
-      { name: "Olmeca Reposado", price: 900 },
-      { name: "Olmeca Silver", price: 900 },
+      { name: "Olmeca Reposado", price: 700 },
+      { name: "Olmeca Silver", price: 700 },
       { name: "Kirkland Añejo", price: 900 },
       { name: "1800 Añejo", price: 1300 },
     ],
@@ -210,8 +210,9 @@ const menuData = [
     items: [
       {
         name: "Custom Cocktails",
-        price: "Varies",
-        description: "• Prices may vary • Availability depends on what ingredients are in stock, as well as the moods and creativity of our staff. • We often add new products to our inventory before we update the menu so please ask the staff if there are any new items.",
+        price: "???",
+        description:
+          "• Prices may vary. Availability depends on what ingredients are in stock, as well as the moods and creativity of our staff. We often add new products to our inventory before we update the menu so please ask the staff if there are any new items.",
       },
     ],
   },
@@ -222,17 +223,17 @@ const FxxkupMenuWrapper = styled.div`
 `;
 
 const CategoryTitle = styled.h2`
-  // Add styles here
+  margin-bottom: var(--space-2);
 `;
 
 const MenuItem = styled.div`
-  margin-bottom: 10px;
-  // Add styles here
+  margin-bottom: var(--space-1);
+  display: flex;
+  justify-content: space-between;
 `;
 
-const MenuItemName = styled.span`
+const MenuItemName = styled.p`
   font-weight: bold;
-  // Add styles here
 `;
 
 const MenuItemPrice = styled.span`
@@ -242,37 +243,51 @@ const MenuItemPrice = styled.span`
 
 const MenuItemDescription = styled.div`
   font-style: italic;
-  // Add styles here
+  font-family: "Roboto Serif", serif;
+  font-size: var(--font-size-small);
 `;
 
 const MenuTop = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin-block: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-block: var(--space-4);
 `;
 
 const MenuLogo = styled.img`
-    width: 100%;
-    max-width: var(--space-6);
-    filter: drop-shadow(0 0 0.75rem rgba(255, 255, 255, 0.5));
-`
-
-const Subhead = styled.h3`
-    color: var(--danger-500);
+  width: 100%;
+  max-width: var(--space-6);
+  filter: drop-shadow(0 0 0.75rem rgba(255, 255, 255, 0.5));
 `;
 
+const Subhead = styled.h3`
+  color: var(--danger-500);
+`;
+
+const English = styled.small`
+    color: var(--neutral-500);
+    font-weight: normal;
+`
+
 const FxxkupMenu: React.FC = () => {
-  const { language, content } = useLanguage(); // Pull language and content dynamically
+  const { language } = useLanguage(); // Pull language and content dynamically
 
   return (
     <FxxkupMenuWrapper>
       <MenuTop>
         <MenuLogo src={fxxkupLogo} alt="Fxxkup Logo" />
-        <h1>Drink Menu</h1>
-        <Subhead>¥500 cover charge per-person</Subhead>
+        <h1>
+          <TranslationWrapper targetLanguage={language} originalLanguage="en">
+            Drink Menu
+          </TranslationWrapper>
+        </h1>
+        <Subhead>
+          <TranslationWrapper targetLanguage={language} originalLanguage="en">
+            ¥500 cover charge per-person
+          </TranslationWrapper>
+        </Subhead>
       </MenuTop>
       <div className="auto-grid-medium">
         {menuData.map((category, categoryIndex) => (
@@ -282,7 +297,7 @@ const FxxkupMenu: React.FC = () => {
                 targetLanguage={language}
                 originalLanguage="en"
               >
-                {content[category.category] || category.category}
+                {category.category}
               </TranslationWrapper>
             </CategoryTitle>
             {category.items.map((item, itemIndex) => (
@@ -292,20 +307,22 @@ const FxxkupMenu: React.FC = () => {
                     targetLanguage={language}
                     originalLanguage="en"
                   >
-                    {content[item.name] || item.name}
+                    {item.name}
                   </TranslationWrapper>
-                </MenuItemName>
-                <MenuItemPrice>¥{item.price}</MenuItemPrice>
-                {item.description && (
+                  <English>{item.name}</English>
+                  {item.description && (
                   <MenuItemDescription>
                     <TranslationWrapper
                       targetLanguage={language}
                       originalLanguage="en"
                     >
-                      {content[item.description] || item.description}
+                      {item.description}
                     </TranslationWrapper>
                   </MenuItemDescription>
                 )}
+                </MenuItemName>
+                <MenuItemPrice>¥{item.price}</MenuItemPrice>
+
               </MenuItem>
             ))}
           </div>

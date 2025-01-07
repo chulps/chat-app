@@ -14,6 +14,7 @@ import ResetPassword from './components/ResetPassword';
 import ForgotPassword from './components/ForgotPassword';
 import Chatrooms from './components/ChatRooms';
 import CreateChatroom from './components/CreateChatRoom';
+import FxxkupMenu from './components/FxxkupMenu';
 import TermsAndConditions from './components/TermsAndConditions';
 import VerifyEmail from './components/VerifyEmail';
 import { AuthProvider } from './contexts/AuthContext';
@@ -26,6 +27,7 @@ const App: React.FC = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/fxxkup-menu" element={<FxxkupMenu />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/chatroom/:chatroomId" element={<ChatRoom />} />
@@ -40,6 +42,4 @@ const App: React.FC = () => {
       </Routes>
     </AuthProvider>
   );
-};
-
-export default App;
+};export default App;

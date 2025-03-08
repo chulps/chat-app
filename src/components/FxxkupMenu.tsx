@@ -36,11 +36,14 @@ const MasonryItem = styled.div`
 
 const CategoryTitle = styled.h3`
   margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--neutral-500);
+  padding-bottom: var(--space-1);
 `;
 
 const SubCategoryTitle = styled.label`
   color: var(--danger-500);
   margin-top: var(--space-3);
+  border-bottom: 1px solid var(--neutral-500);
 `;
 
 const MenuItem = styled.div`
@@ -232,7 +235,7 @@ const menuData = [
         price: 800,
       },
       {
-        name: "Corona Extra",
+        name: "Corona. Extra",
         description:
           "The default Mexican beer served with a lime wedge - 330mL glass bottle",
         price: 900,
@@ -255,127 +258,84 @@ const menuData = [
       {
         subCategory: "Nikka",
         items: [
+          { name: "Nikka Frontier", price: 900, description: "" },
+          { name: "Nikka Session", price: 1000, description: "" },
+          { name: "Nikka From the Barrel", price: 1200, description: "" },
+        ],
+      },
+      {
+        subCategory: "Miyagikyo",
+        items: [
+          { name: "Miyagikyo", price: 1200, description: "" },
+        ],
+      },
+      {
+        subCategory: "Taketsuru",
+        items: [
+          { name: "Taketsuru", price: 1400, description: "" },
+          { name: "Taketsuru 17 Year", price: 5000, description: "" },
+        ],
+      },
+      {
+        subCategory: "Yoichi",
+        items: [
+          { name: "Yoichi", price: 1200, description: "" },
           {
-            name: "Nikka Frontier",
-            price: 1100,
-            description: "",
-          },
-          {
-            name: "Nikka Session",
-            price: 1000,
-            description: "",
-          },
-          {
-            name: "Nikka from the Barrel",
+            name: "Yoichi Distillery Limited Blended Whiskey",
             price: 1200,
-            description:
-              "A blended whiskey with a bold and complex flavor profile.",
-          },
-          {
-            name: "Miyagikyo",
-            price: 1200,
             description: "",
           },
-          {
-            name: "Yoichi Distillery Limited Whiskey",
-            price: 1200,
-            description:
-              "A rich and peaty single malt from the Yoichi distillery.",
-          },
-          {
-            name: "Yoichi 12 Year",
-            price: 2500,
-            description: "",
-          },
-          {
-            name: "Taketsuru",
-            price: 1500,
-            description:
-              "A smooth and well-balanced whiskey, named after the founder of Nikka.",
-          },
-          {
-            name: "Taketsuru 17 Year",
-            price: 1400,
-            description: "",
-          },
+          { name: "Yoichi 12 Year", price: 5200, description: "" },
         ],
       },
       {
         subCategory: "Suntory",
         items: [
+          { name: "Chita", price: 1100, description: "" },
+          { name: "Hibiki Japanese Harmony", price: 1700, description: "" },
+          { name: "Hibiki Blender’s Choice", price: 2400, description: "" },
+          { name: "Hibiki 12 Year", price: 5200, description: "" },
+          { name: "Hibiki 17 Year", price: 6800, description: "" },
+          { name: "Hibiki 21 Year", price: 8800, description: "" },
+        ],
+      },
+      {
+        subCategory: "Hakushu",
+        items: [
+          { name: "Hakushu", price: 1700, description: "" },
           {
-            name: "Chita",
-            price: 1700,
+            name: "Hakushu SOD 2024 (Limited Edition)",
+            price: 2800,
             description: "",
           },
+          { name: "Hakushu 12 Year", price: 3300, description: "" },
+          { name: "Hakushu 18 Year", price: 8800, description: "" },
+        ],
+      },
+      {
+        subCategory: "Yamazaki",
+        items: [
+          { name: "Yamazaki", price: 1800, description: "" },
           {
-            name: "Hakushu",
-            price: 1700,
-            description:
-              "A fresh and herbal single malt from the Japanese Alps.",
-          },
-          {
-            name: "Hakushu 12 Year",
-            price: 2300,
+            name: "Yamazaki SOD 2024 (Limited Edition)",
+            price: 3000,
             description: "",
           },
+          { name: "Yamazaki 12 Year", price: 3300, description: "" },
+          { name: "Yamazaki 18 Year", price: 10000, description: "" },
+        ],
+      },
+      {
+        subCategory: "Other",
+        items: [
+          { name: "Ichiro's Malt White Label", price: 1000, description: "" },
+          { name: "Ichiro's Malt Classical Edition", price: 1300, description: "" },
           {
-            name: "Hakushu 18 Year",
-            price: 18800,
+            name: "Ichiro's Malt Mizunara Wood Reserve",
+            price: 1600,
             description: "",
           },
-          {
-            name: "Hakushu 21 Year",
-            price: 38800,
-            description: "",
-          },
-          {
-            name: "Hakushu SDD 2024 (Limited Edition)",
-            price: 23800,
-            description: "",
-          },
-          {
-            name: "Yamazaki",
-            price: 1800,
-            description:
-              "Japan's oldest malt whiskey, known for its fruity and floral notes.",
-          },
-          {
-            name: "Yamazaki 12 Year",
-            price: 3300,
-            description: "",
-          },
-          {
-            name: "Yamazaki 18 Year",
-            price: 10000,
-            description: "",
-          },
-          {
-            name: "Yamazaki SDD 2024 (Limited Edition)",
-            price: 33300,
-            description:
-              "Limited Edition flavor from the Yamazaki Distillery, showcasing the craftsmanship and heritage of Japanese whiskey.",
-          },
-          {
-            name: "Hibiki Japanese Harmony",
-            price: 2100,
-            description: "",
-          },
-          {
-            name: "Hibiki Blender's Choice",
-            price: 4200,
-            description: "",
-          },
-          {
-            name: "Hibiki 17 Year",
-            price: 6800,
-            description: "",
-          },
-          {
-            name: "Hibiki 21 Year",
-            price: 8800,
-            description: "",
-          },
+          { name: "Yamazakura Asaka", price: 1800, description: "" },
         ],
       },
     ],
@@ -439,6 +399,17 @@ const menuData = [
         ],
       },
       {
+        subCategory: "Isle of Skye",
+        items: [
+          {
+            name: "Talisker 10 Year",
+            price: 1000,
+            description:
+              "A single malt from the Isle of Skye, known for its maritime character and peaty, smoky flavors.",
+          },
+        ],
+      },
+      {
         subCategory: "Highland",
         items: [
           {
@@ -486,27 +457,16 @@ const menuData = [
             description: "",
           },
           {
+            name: "Laphroig 10 Year",
+            price: 1100,
+            description:
+            "A heavily peated Islay whisky, famous for its bold, smoky flavor and medicinal notes.",
+          },
+          {
             name: "Caol Ila 12 Year",
             price: 1200,
             description:
               "An Islay single malt with a balance of smoke and sweetness, featuring citrus and floral notes.",
-          },
-          {
-            name: "Laphroig 10 Year",
-            price: 1100,
-            description:
-              "A heavily peated Islay whisky, famous for its bold, smoky flavor and medicinal notes.",
-          },
-        ],
-      },
-      {
-        subCategory: "Isle of Skye",
-        items: [
-          {
-            name: "Talisker 10 Year",
-            price: 1000,
-            description:
-              "A single malt from the Isle of Skye, known for its maritime character and peaty, smoky flavors.",
           },
         ],
       },

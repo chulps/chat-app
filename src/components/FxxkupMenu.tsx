@@ -205,6 +205,11 @@ const menuData = [
         price: 1000,
         description: "Red Bull and Jägermeister",
       },
+      {
+        name: "Rootbomb",
+        price: 1000,
+        description: "Root Beer and Jägermeister",
+      },
     ],
   },
   {

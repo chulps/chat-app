@@ -312,6 +312,7 @@ const menuData: MenuCategory[] = [
         items: [
           { name: "Yoichi", price: 1200 },
           { name: "Yoichi Distillery Limited Blended Whiskey", price: 1300 },
+          { name: "Yoichi 10 Year", price: 2800 },
           { name: "Yoichi 12 Year", price: 6000 },
         ],
       },

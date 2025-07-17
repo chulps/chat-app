@@ -11,7 +11,8 @@ import { translateText } from "../utils/translate";
  * ------------------------------------------------------------------ */
 
 const FxxkupMenuWrapper = styled.div`
-  width: 100%;
+  width: 100vw
+  ;
   max-width: 1200px;
   margin: 0 auto;
 `;
@@ -22,7 +23,7 @@ const MenuTabsHeader = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    width: 100%;
+    width: calc(100vw - var(--space-3));
     overflow-x: auto;
     padding-bottom: var(--space-1);
     position: sticky;

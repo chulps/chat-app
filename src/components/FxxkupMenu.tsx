@@ -11,26 +11,20 @@ import { translateText } from "../utils/translate";
  * ------------------------------------------------------------------ */
 
 const FxxkupMenuWrapper = styled.div`
-  width: 100vw
-  ;
+  width: calc(100vw - var(--space-3));
   max-width: 1200px;
   margin: 0 auto;
 `;
 
 /* Horizontal scroll JUST for the tab row */
 const MenuTabsHeader = styled.div`
-    margin-block: var(--space-4) var(--space-2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: calc(100vw - var(--space-3));
-    overflow-x: auto;
-    padding-bottom: var(--space-1);
-    position: sticky;
-    top: 0
-    ;
-    z-index: 1;
-    background: var(--background-color);
+  margin-block: var(--space-4) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: var(--space-1); /* room for scrollbar */
 `;
 
 /* Vertical content region (panels) */
@@ -72,7 +66,6 @@ const CategoryTitle = styled.h3`
 const SubCategoryTitle = styled.label`
   color: var(--danger-500);
   margin-top: var(--space-3);
-  padding-bottom: var(--space-0);
   border-bottom: 1px solid var(--neutral-500);
 `;
 
@@ -117,6 +110,7 @@ const Subhead = styled.h3`
   color: white;
   border-radius: var(--space-1);
   padding: var(--space-1);
+  text-align: center;
 `;
 
 const English = styled.small`
@@ -232,7 +226,9 @@ const menuData: MenuCategory[] = [
         description: "Energy drink + Jägermeister.",
         price: 1000,
       },
-      { name: "Cocabomb", price: 1200 },
+      { name: "Cocabomb", 
+        description: "Cocarelo and Redbull",
+        price: 1200 },
     ],
   },
 
@@ -316,7 +312,6 @@ const menuData: MenuCategory[] = [
         items: [
           { name: "Yoichi", price: 1200 },
           { name: "Yoichi Distillery Limited Blended Whiskey", price: 1300 },
-          { name: "Yoichi 10 year", price: 2800 },
           { name: "Yoichi 12 Year", price: 6000 },
         ],
       },

@@ -84,7 +84,7 @@ const Label = styled.span`
 `;
 
 interface TabProps {
-  label?: string;
+  label?: React.ReactNode;
   icon: any;
   children?: ReactNode;
   badge?: number | null;

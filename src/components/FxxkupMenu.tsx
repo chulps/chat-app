@@ -1,13 +1,41 @@
-import React from "react";
-import TranslationWrapper from "./TranslationWrapper";
+import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import fxxkupLogo from "../images/fxxkup_logo.svg";
+import TranslationWrapper from "./TranslationWrapper";
 import { useLanguage } from "../contexts/LanguageContext";
+import Tabs, { Tab } from "./Tabs";
+import { translateText } from "../utils/translate";
+
+/* ------------------------------------------------------------------ *
+ * Styles
+ * ------------------------------------------------------------------ */
 
 const FxxkupMenuWrapper = styled.div`
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+`;
+
+/* Horizontal scroll JUST for the tab row */
+const MenuTabsHeader = styled.div`
+    margin-block: var(--space-4) var(--space-2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    position: sticky;
+    top: 0
+    ;
+    z-index: 1;
+    background: var(--background-color);
+`;
+
+/* Vertical content region (panels) */
+const MenuContentWrapper = styled.div`
+  width: 100%;
+  overflow-x: hidden;
 `;
 
 const MasonryContainer = styled.div`
@@ -43,6 +71,7 @@ const CategoryTitle = styled.h3`
 const SubCategoryTitle = styled.label`
   color: var(--danger-500);
   margin-top: var(--space-3);
+  padding-bottom: var(--space-0);
   border-bottom: 1px solid var(--neutral-500);
 `;
 
@@ -92,13 +121,43 @@ const Subhead = styled.h3`
 const English = styled.small`
   color: var(--neutral-300);
   font-weight: normal;
+  display: block;
 `;
 
 const CategoryDescription = styled.p`
   margin-bottom: var(--space-1);
 `;
 
-const menuData = [
+/* ------------------------------------------------------------------ *
+ * Types
+ * ------------------------------------------------------------------ */
+
+interface MenuItemData {
+  name: string;
+  price: number | string;
+  description?: string;
+}
+
+interface MenuSubcategory {
+  subCategory: string;
+  items: MenuItemData[];
+}
+
+interface MenuCategory {
+  category: string;
+  items?: MenuItemData[];
+  subcategories?: MenuSubcategory[];
+  categoryDescription?: string;
+}
+
+/* ------------------------------------------------------------------ *
+ * Updated Menu Data
+ * ------------------------------------------------------------------ */
+
+const menuData: MenuCategory[] = [
+  /* -------------------------------------------------------------- */
+  /* Popular in Japan                                               */
+  /* -------------------------------------------------------------- */
   {
     category: "Popular in Japan",
     items: [
@@ -120,60 +179,28 @@ const menuData = [
           "Refreshing green tea and Japanese shochu served over ice in a highball glass.",
         price: 600,
       },
-      {
-        name: "Lemon Sour",
-        description:
-          "A tangy lemon drink with a hint of sweetness and bubbles.",
-        price: 600,
-      },
-      {
-        name: "Black Tea-hai",
-        description:
-          "Rich black tea and Japanese shochu served over ice in a highball glass.",
-        price: 600,
-      },
+      { name: "Lemon Sour", description: "A tangy lemon drink with bubbles.", price: 700 },
+      { name: "Otoko Ume Sour", price: 700 },
       {
         name: "Kaku Highball",
         description:
           "Japan's most popular highball with Suntory Whisky and soda over ice.",
         price: 700,
       },
-      {
-        name: "Plum Wine",
-        description: "Sweet and fruity plum wine served chilled.",
-        price: 700,
-      },
-      {
-        name: "Cassis Soda",
-        description: "A fizzy drink with a sweet cassis flavor.",
-        price: 700,
-      },
-      {
-        name: "Cassis Oolong",
-        description: "A blend of cassis and oolong tea for a unique taste.",
-        price: 700,
-      },
-      {
-        name: "Cassis Peach",
-        description: "A refreshing mix of cassis and peach flavors.",
-        price: 700,
-      },
-      {
-        name: "Peach Orange",
-        description: "A fruity blend of peach liqueur and orange juice.",
-        price: 700,
-      },
-      {
-        name: "Peach Oolong",
-        description: "A delightful combination of peach and oolong tea.",
-        price: 700,
-      },
+      { name: "Plum Wine", description: "Sweet and fruity plum wine.", price: 700 },
+      { name: "Cassis Soda", description: "Sweet cassis, fizzy soda.", price: 700 },
+      { name: "Cassis Oolong", description: "Cassis + oolong tea.", price: 700 },
+      { name: "Peach Soda", price: 700 },
+      { name: "Peach Oolong", price: 700 },
+      { name: "Cassis Ginger Ale", price: 700 },
+      { name: "Peach Ginger Ale", price: 700 },
       {
         name: "Gin & Tonic",
         description:
           "Classic mix of gin and tonic water over ice with citrus garnish.",
-        price: 700,
+        price: 800,
       },
+      { name: "Peach Orange", price: 800 },
       {
         name: "Fuzzy Navel",
         description: "A sweet blend of peach liqueur and orange juice.",
@@ -181,325 +208,388 @@ const menuData = [
       },
       {
         name: "Cassis Orange",
-        description:
-          "Cassis liqueur and orange juice for a refreshing, fruity cocktail.",
+        description: "Cassis liqueur and orange juice.",
         price: 800,
       },
       {
         name: "Rum & Coke",
+        description: "White rum and Coca-cola.",
         price: 800,
-        description: "White rum and Coca-cola",
       },
       {
         name: "Jack & Coke",
+        description: "Jack Daniel's and Coca-cola.",
         price: 800,
-        description: "With Coca-cola",
       },
       {
         name: "Moscow Mule",
+        description: "Vodka and ginger ale with fresh lime wedge.",
         price: 800,
-        description: "Vodka and ginger ale with fresh lime wedge",
       },
       {
-        name: "Jägerbomb",
+        name: "Jagerbomb",
+        description: "Energy drink + Jägermeister.",
         price: 1000,
-        description: "Red Bull and Jägermeister",
       },
-      {
-        name: "Rootbomb",
-        price: 1000,
-        description: "Root Beer and Jägermeister",
-      },
+      { name: "Cocabomb", price: 1200 },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Softdrinks                                                     */
+  /* -------------------------------------------------------------- */
   {
-    category: "Soft Drinks",
+    category: "Softdrinks",
     items: [
-      { name: "Apple Juice", price: 600 },
-      { name: "Coca-Cola", price: 600 },
-      { name: "Ginger Ale", price: 600 },
+      { name: "Green Tea", price: 600 },
       { name: "Jasmine Tea", price: 600 },
       { name: "Oolong Tea", price: 600 },
+      { name: "Ginger Ale", price: 600 },
       { name: "Orange Juice", price: 600 },
       { name: "Pineapple Juice", price: 600 },
-      { name: "A&W Root Beer", price: 600 },
+      { name: "Coca-cola", price: 600 },
       { name: "Red Bull", price: 700 },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Beer                                                           */
+  /* -------------------------------------------------------------- */
   {
     category: "Beer",
     items: [
       {
-        name: "Asahi",
-        description: "Japan's most popular beer - 330mL glass bottle",
+        name: "Asahi (330mL bottle)",
+        description: "Japan's most popular beer.",
         price: 700,
       },
+      { name: "Suntory (330mL can)", price: 700 },
+      { name: "Orion (330mL can)", description: "From Okinawa.", price: 800 },
       {
-        name: "Orion Beer",
-        description: "Chuck's favorite beer from Okinawa - 330mL aluminum can",
-        price: 800,
-      },
-      {
-        name: "Corona. Extra",
-        description:
-          "The default Mexican beer served with a lime wedge - 330mL glass bottle",
+        name: "Corona Extra (330mL bottle)",
+        description: "Served with a lime wedge.",
         price: 900,
       },
+      { name: "Heineken (330mL bottle)", description: "From Holland.", price: 900 },
       {
-        name: "Heineken",
-        description: "From Holland - 330mL glass bottle",
-        price: 900,
-      },
-      {
-        name: "Sapporo Classic Pint",
-        description: "The Local Champion - 500mL glass bottle",
+        name: "Sapporo Classic Pint (500mL bottle)",
+        description: "The Local Champion.",
         price: 1000,
       },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Japanese Whiskey (subcategories)                               */
+  /* -------------------------------------------------------------- */
   {
     category: "Japanese Whiskey",
     subcategories: [
       {
         subCategory: "Nikka",
         items: [
-          { name: "Nikka Frontier", price: 900, description: "" },
-          { name: "Nikka Session", price: 1000, description: "" },
-          { name: "Nikka From the Barrel", price: 1200, description: "" },
+          { name: "Nikka Frontier", price: 800 },
+          { name: "Nikka Session", price: 900 },
+          { name: "Nikka Days", price: 1000 },
+          { name: "Caffey Grain", price: 1100 },
+          { name: "Nikka From the Barrel", price: 1100 },
+          { name: "Pure Malt Black Distillery Limited", price: 1300 },
+          { name: "Pure Malt Red Distillery Limited", price: 1300 },
+          { name: "The Nikka Tailored", price: 1400 },
         ],
       },
       {
         subCategory: "Miyagikyo",
-        items: [
-          { name: "Miyagikyo", price: 1200, description: "" },
-        ],
+        items: [{ name: "Miyagikyo", price: 1200 }],
       },
       {
         subCategory: "Taketsuru",
         items: [
-          { name: "Taketsuru", price: 1400, description: "" },
-          { name: "Taketsuru 17 Year", price: 5000, description: "" },
+          { name: "Taketsuru", price: 1300 },
+          { name: "Taketsuru Black Label", price: 1500 },
+          { name: "Taketsuru 17 Year", price: 5000 },
         ],
       },
       {
         subCategory: "Yoichi",
         items: [
-          { name: "Yoichi", price: 1200, description: "" },
-          {
-            name: "Yoichi Distillery Limited Blended Whiskey",
-            price: 1200,
-            description: "",
-          },
-          { name: "Yoichi 12 Year", price: 5200, description: "" },
+          { name: "Yoichi", price: 1200 },
+          { name: "Yoichi Distillery Limited Blended Whiskey", price: 1300 },
+          { name: "Yoichi 10 year", price: 2800 },
+          { name: "Yoichi 12 Year", price: 6000 },
         ],
       },
       {
         subCategory: "Suntory",
         items: [
-          { name: "Chita", price: 1100, description: "" },
-          { name: "Hibiki Japanese Harmony", price: 1700, description: "" },
-          { name: "Hibiki Blender’s Choice", price: 2400, description: "" },
-          { name: "Hibiki 12 Year", price: 5200, description: "" },
-          { name: "Hibiki 17 Year", price: 6800, description: "" },
-          { name: "Hibiki 21 Year", price: 8800, description: "" },
+          { name: "Special Reserve", price: 800 },
+          { name: "Chita", price: 1100 },
+          { name: "Hibiki Japanese Harmony", price: 1500 },
+          { name: "Hibiki Blender’s Choice", price: 2300 },
+          { name: "Hibiki blossom Harmony 2025", price: 2500 },
+          { name: "Hibiki 12 Year", price: 5000 },
+          { name: "Hibiki 17 Year", price: 6000 },
+          { name: "Hibiki 21 Year", price: 8000 },
         ],
       },
       {
         subCategory: "Hakushu",
         items: [
-          { name: "Hakushu", price: 1700, description: "" },
-          {
-            name: "Hakushu SOD 2024 (Limited Edition)",
-            price: 2800,
-            description: "",
-          },
-          { name: "Hakushu 12 Year", price: 3300, description: "" },
-          { name: "Hakushu 18 Year", price: 8800, description: "" },
+          { name: "Hakushu", price: 1500 },
+          { name: "Hakushu SOD 2024 (Limited Edition)", price: 2800 },
+          { name: "Hakushu SOD 2025 (Limited Edition)", price: 2800 },
+          { name: "Hakushu Japanese Forest Bittersweet", price: 3300 },
+          { name: "Hakushu 12 Year", price: 2800 },
+          { name: "Hakushu 18 Year", price: 8000 },
         ],
       },
       {
         subCategory: "Yamazaki",
         items: [
-          { name: "Yamazaki", price: 1800, description: "" },
-          {
-            name: "Yamazaki SOD 2024 (Limited Edition)",
-            price: 3000,
-            description: "",
-          },
-          { name: "Yamazaki 12 Year", price: 3300, description: "" },
-          { name: "Yamazaki 18 Year", price: 10000, description: "" },
+          { name: "Yamazaki", price: 1500 },
+          { name: "Yamazaki SOD 2024 (Limited Edition)", price: 2800 },
+          { name: "Yamazaki 12 Year", price: 2800 },
+          { name: "Yamazaki 18 Year", price: 10000 },
         ],
       },
       {
         subCategory: "Other",
         items: [
-          { name: "Ichiro's Malt White Label", price: 1000, description: "" },
-          { name: "Ichiro's Malt Classical Edition", price: 1300, description: "" },
-          {
-            name: "Ichiro's Malt Mizunara Wood Reserve",
-            price: 1600,
-            description: "",
-          },
-          { name: "Yamazakura Asaka", price: 1800, description: "" },
+          { name: "Ichiro’s Malt White Label", price: 1000 },
+          { name: "Ichiro’s Malt Classical Edition", price: 1200 },
+          { name: "Ichiro’s Malt Mizunara Wood Reserve", price: 1500 },
+          { name: "Sakurao", price: 1200 },
+          { name: "Fuji Single Malt", price: 1200 },
+          { name: "Yamazakura Asaka", price: 1800 },
+          { name: "Akkeshi Rikka", price: 3300 },
         ],
       },
     ],
   },
 
-  /*
-   * SCOTCH: Updated EXACTLY to match the screenshot’s subcategories, names, and prices,
-   * while retaining any existing descriptions you previously had.
-   */
+  /* -------------------------------------------------------------- */
+  /* Bourbon                                                         */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Bourbon",
+    items: [
+      {
+        name: "Jim Beam",
+        description:
+          "A classic bourbon known for its smoothness and hints of vanilla.",
+        price: 700,
+      },
+      {
+        name: "Four Roses",
+        description:
+          "A unique blend of 10 distinct bourbon recipes; rich & fruity.",
+        price: 700,
+      },
+      {
+        name: "Maker’s Mark",
+        description:
+          "Premium bourbon with a sweet profile; iconic red wax seal.",
+        price: 900,
+      },
+      {
+        name: "Bulleit",
+        description: "High-rye bourbon with a bold, spicy character.",
+        price: 900,
+      },
+      {
+        name: "Woodford Reserve",
+        description:
+          "Small-batch bourbon with dried fruit & vanilla notes.",
+        price: 1000,
+      },
+      { name: "I.W. Harper 12 Year", price: 1300 },
+    ],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Irish Whiskey                                                   */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Irish Whiskey",
+    items: [
+      {
+        name: "Jameson",
+        description: "Smooth and versatile; great for sipping or mixing.",
+        price: 800,
+      },
+      { name: "Bushmills Black Bush", price: 800 },
+      { name: "Busker", price: 800 },
+      { name: "Pogues Triple Distilled & Matured", price: 800 },
+      { name: "Pogues Single Malt", price: 800 },
+      { name: "Connemara", price: 1000 },
+      { name: "Green Spot", price: 1100 },
+    ],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Scotch (subcategories)                                          */
+  /* -------------------------------------------------------------- */
   {
     category: "Scotch",
     subcategories: [
       {
         subCategory: "Speyside",
         items: [
+          { name: "Singleton 12 year", price: 900 },
+          { name: "Ballantine 12 Year", price: 1000 },
+          { name: "GlenGrant 10 Year", price: 1000 },
+          { name: "Glenlivet 12 Year", price: 1000 },
           {
-            name: "Chivas Regal Mizunara 12 Year",
-            price: 1000,
-            description:
-              "A blend that incorporates Japanese Mizunara oak, offering a unique floral and spicy character.",
+            name: "Glenlivet 12 Year Old 200th Anniversary Limited Edition",
+            price: 1200,
           },
-          {
-            name: "Ballantine 12 Year",
-            price: 1000,
-            description: "",
-          },
-          {
-            name: "Speyburn 10 Year",
-            price: 1000,
-            description:
-              "Chuck's favorite Scotch! A Speyside single malt with a fresh and fruity flavor, featuring notes of apple and honey.",
-          },
-          {
-            name: "Speyburn 15 Year",
-            price: 1400,
-            description:
-              "Aged in a mix of American and European oak, offering a rich and complex flavor with hints of spice.",
-          },
-          {
-            name: "Macallan 12 Year (Double Cask)",
-            price: 1400,
-            description:
-              "A rich and smooth single malt aged in both American and European oak, with notes of vanilla and dried fruits.",
-          },
-          {
-            name: "Macallan 12 Year (Sherry Oak)",
-            price: 1800,
-            description:
-              "A classic sherried whisky with rich flavors of dried fruits, spice, and chocolate.",
-          },
-          {
-            name: "Glenburgie 2007 First Edition",
-            price: 3500,
-            description: "",
-          },
-          {
-            name: "Octomore 15.1",
-            price: 3500,
-            description: "",
-          },
-        ],
-      },
-      {
-        subCategory: "Isle of Skye",
-        items: [
-          {
-            name: "Talisker 10 Year",
-            price: 1000,
-            description:
-              "A single malt from the Isle of Skye, known for its maritime character and peaty, smoky flavors.",
-          },
+          { name: "Glenfiddich 12 Year", price: 1100 },
+          { name: "Speyburn 10 Year", price: 1000 },
+          { name: "Speyburn 15 Year", price: 1400 },
+          { name: "Speyburn 16 Year", price: 1500 },
+          { name: "Speyburn 18 Year", price: 2400 },
+          { name: "Macallan 12 Year (Double Cask)", price: 1500 },
+          { name: "Macallan 12 Year (Sherry Oak)", price: 1800 },
+          { name: "AD Rattray Glenburgie 12 Year", price: 3000 },
+          { name: "Octomore 15.1", price: 3500 },
+          { name: "SMWS Kiss Me Pedro! 17 Year", price: 4600 },
         ],
       },
       {
         subCategory: "Highland",
         items: [
-          {
-            name: "Clynelish 14 Year",
-            price: 1400,
-            description:
-              "A Highland single malt with a waxy texture and flavors of citrus and coastal brine.",
-          },
-        ],
-      },
-      {
-        subCategory: "Lowland",
-        items: [
-          {
-            name: "Johnnie Walker Black Label 12 Year",
-            price: 900,
-            description:
-              "A blended Scotch whisky from various regions, known for its rich and smoky flavor profile.",
-          },
-          {
-            name: "Johnnie Walker Green Label 15 Year",
-            price: 1100,
-            description: "",
-          },
-          {
-            name: "Johnnie Walker Blue Label",
-            price: 2900,
-            description:
-              "A premium blended Scotch with a velvety smoothness and complex flavors of smoke, spice, and sweetness.",
-          },
+          { name: "Ardmore Legacy", price: 900 },
+          { name: "Glen Turner 12 year", price: 900 },
+          { name: "Talisker 10 Year", price: 1100 },
+          { name: "Arran Barrel Reserve", price: 1000 },
+          { name: "Glenmorangie 12 Year", price: 1100 },
+          { name: "Highland Park 12 Year", price: 1200 },
+          { name: "Clynelish 14 Year", price: 1400 },
+          { name: "Glengoyne Legacy Series Chapter 3", price: 1400 },
+          { name: "Glengoyne Legacy Series Chapter 2", price: 1800 },
+          { name: "Ledaig Hebridean Moon", price: 3000 },
+          { name: "Ledaig 2008 Amarone Cask Finish", price: 3500 },
         ],
       },
       {
         subCategory: "Islay",
         items: [
-          {
-            name: "Ardbeg 10 Year",
-            price: 1100,
-            description:
-              "A heavily peated Islay whisky, famous for its bold, smoky flavor and medicinal notes.",
-          },
-          {
-            name: "Bruichladdich Classic Laddie",
-            price: 1100,
-            description: "",
-          },
-          {
-            name: "Laphroig 10 Year",
-            price: 1100,
-            description:
-            "A heavily peated Islay whisky, famous for its bold, smoky flavor and medicinal notes.",
-          },
-          {
-            name: "Caol Ila 12 Year",
-            price: 1200,
-            description:
-              "An Islay single malt with a balance of smoke and sweetness, featuring citrus and floral notes.",
-          },
+          { name: "Ardbeg 10 Year", price: 1200 },
+          { name: "Bruichladdich Classic Laddie", price: 1200 },
+          { name: "Bowmore 12 Year", price: 1100 },
+          { name: "Caol Ila 12 Year", price: 1200 },
+          { name: "Laphroig 10 Year", price: 1200 },
+          { name: "Port Charlotte 10 Year", price: 1300 },
+          { name: "Lagavulin 8 Year", price: 1400 },
+          { name: "Lagavulin 16 Year", price: 1800 },
+        ],
+      },
+      {
+        subCategory: "Blended",
+        items: [
+          { name: "Johnnie Walker Red Label", price: 700 },
+          { name: "Johnnie Walker Black Label 12 Year", price: 900 },
+          { name: "Johnnie Walker Green Label 15 Year", price: 1100 },
+          { name: "Johnnie Walker Blue Label", price: 3000 },
+          { name: "The Deacon", price: 900 },
+          { name: "Chivas Regal 12 Year", price: 900 },
+          { name: "Chivas Regal Japanese Oak 12 Year", price: 1000 },
+          { name: "Old Parr 12 Year", price: 1000 },
+          { name: "Monkey Shoulder", price: 1000 },
+        ],
+      },
+      {
+        subCategory: "Campbeltown",
+        items: [
+          { name: "Kilkerran 12 Year", price: 1800 },
+          { name: "Springbank 10 Year", price: 2200 },
+          { name: "Springbank 12 Year Cask Strength", price: 6500 },
         ],
       },
     ],
   },
 
+  /* -------------------------------------------------------------- */
+  /* Tennessee Whiskey                                               */
+  /* -------------------------------------------------------------- */
   {
-    category: "Wine (Red/White)",
+    category: "Tennessee Whiskey",
     items: [
       {
-        name: "Glass",
+        name: "Jack Daniels",
         description:
-          "Sorry, we don't serve wine by the glass. Please order a bottle.",
-        price: "×",
+          "Classic Tennessee whiskey known for its smoothness and distinct flavor.",
+        price: 800,
       },
       {
-        name: "Small Bottle (375 mL)",
-        description:
-          "A small bottle of wine perfect for 1 or 2 people. 3-4 glasses of wine per bottle.",
-        price: 1700,
-      },
-      {
-        name: "Regular Bottle (750 mL)",
-        description: "6-8 glasses per bottle, perfect for 3 or 4 people.",
-        price: 3000,
+        name: "Gentleman Jack",
+        description: "Double charcoal mellowed for extra smoothness.",
+        price: 900,
       },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Iowa Whiskey                                                     */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Iowa Whiskey",
+    items: [{ name: "Slipknot No. 9", price: 1200 }],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Canadian Whiskey                                                 */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Canadian Whiskey",
+    items: [{ name: "Canadian Club 12 Year", price: 800 }],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Swedish Whiskey                                                  */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Swedish Whiskey",
+    items: [{ name: "Motörhead", price: 1600 }],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Rye Whiskey                                                      */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Rye Whiskey",
+    items: [{ name: "Wild Turkey 101", price: 1000 }],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Tequila / Mezcal                                                 */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Tequila/Mezcal",
+    items: [
+      { name: "Olmeca Reposado", price: 700 },
+      { name: "Jose Cuervo Tradicional Silver", price: 800 },
+      { name: "Kirkland Añejo", price: 900 },
+      { name: "Scorpion (contains scorpion)", price: 1100 },
+      { name: "1800 Añejo", price: 1200 },
+      { name: "Montelobos Tobalá", price: 2200 },
+    ],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Wine                                                             */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Wine (Red/White)",
+    items: [
+      { name: "Small Bottle (375 mL)", price: 1700 },
+      { name: "Regular Bottle (750 mL)", price: 3000 },
+    ],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Sparkling Wine                                                   */
+  /* -------------------------------------------------------------- */
   {
     category: "Sparkling Wine (Bottle)",
     items: [
@@ -509,422 +599,403 @@ const menuData = [
       { name: "Segura Viudas Cava (Magnum)", price: 15000 },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Champagne                                                        */
+  /* -------------------------------------------------------------- */
   {
     category: "Champagne (Bottle)",
     items: [
       { name: "Piper Heidsieck Brut", price: 18000 },
       { name: "Veuve Clicquot", price: 23000 },
-      { name: "Yellow Label Brut N.V.", price: 23000 },
-      { name: "Moët & Chandon Nectar Impérial", price: 25000 },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Rum                                                              */
+  /* -------------------------------------------------------------- */
   {
     category: "Rum",
     items: [
       {
         name: "Bacardi White Rum",
+        description: "Light & crisp; cocktail friendly.",
         price: 700,
-        description: "A light and crisp rum, perfect for cocktails.",
       },
-      {
-        name: "Bacardi Superior",
-        price: 700,
-        description: "A premium white rum with a smooth finish.",
-      },
-      {
-        name: "Gold Rum",
-        price: 700,
-        description: "A rich and flavorful rum with hints of caramel.",
-      },
+      { name: "Bacardi Superior Gold Rum", price: 700 },
       {
         name: "Malibu Coconut Rum",
+        description: "Sweet coconut-flavored rum.",
         price: 700,
-        description: "A sweet coconut-flavored rum, ideal for tropical drinks.",
       },
-      {
-        name: "Bacardi Superior Black Rum",
-        price: 800,
-        description: "A dark rum with a robust flavor and notes of molasses.",
-      },
+      { name: "Bacardi Superior Black Rum", price: 800 },
     ],
   },
-  {
-    category: "Vodka",
-    items: [
-      {
-        name: "Absolut Vanilla",
-        price: 700,
-        description: "A smooth vodka infused with natural vanilla flavor.",
-      },
-      {
-        name: "Kirkland Vodka",
-        price: 700,
-        description:
-          "A high-quality vodka known for its purity and smoothness.",
-      },
-      {
-        name: "Stolichnaya",
-        price: 800,
-        description: "",
-      },
-    ],
-  },
+
+  /* -------------------------------------------------------------- */
+  /* Gin                                                              */
+  /* -------------------------------------------------------------- */
   {
     category: "Gin",
     items: [
-      {
-        name: "Kirkland",
-        price: 700,
-        description: "A smooth and versatile gin, perfect for cocktails.",
-      },
-      {
-        name: "Bombay Sapphire",
-        price: 700,
-        description: "",
-      },
+      { name: "Kirkland London Dry Gin", price: 700 },
+      { name: "Bombay Sapphire", price: 800 },
       {
         name: "The Botanist 22",
-        price: 1100,
-        description:
-          "An artisanal gin with 22 hand-foraged botanicals, offering a complex flavor profile.",
+        description: "Islay gin distilled with 22 foraged botanicals.",
+        price: 900,
       },
+      { name: "Roku", price: 900 },
+      { name: "Engine", price: 1000 },
     ],
   },
+
+  /* -------------------------------------------------------------- */
+  /* Vodka                                                            */
+  /* -------------------------------------------------------------- */
+  {
+    category: "Vodka",
+    items: [
+      { name: "Absolut Vanilla", price: 700 },
+      { name: "Kirkland Premium French", price: 800 },
+      { name: "Stolichnaya", price: 800 },
+    ],
+  },
+
+  /* -------------------------------------------------------------- */
+  /* Other Stuff                                                      */
+  /* -------------------------------------------------------------- */
   {
     category: "Other Stuff",
     items: [
       {
         name: "Jägermeister",
+        description: "56 herbs & spices herbal liqueur.",
         price: 700,
-        description:
-          "A herbal liqueur with a unique blend of 56 herbs and spices.",
       },
-      {
-        name: "Fireball",
-        price: 700,
-        description: "A cinnamon whiskey with a sweet and spicy kick.",
-      },
-      {
-        name: "Kleiner Mini Shots",
-        price: 700,
-        description: "Small shots of assorted flavored liqueurs.",
-      },
-      {
-        name: "Sma* Shots",
-        price: 700,
-        description: "Fun-sized shots with a variety of flavors.",
-      },
-    ],
-  },
-  {
-    category: "Bourbon",
-    items: [
-      {
-        name: "Jim Beam",
-        price: 700,
-        description:
-          "A classic bourbon known for its smoothness and hints of vanilla.",
-      },
-      {
-        name: "Four Roses",
-        price: 700,
-        description:
-          "A unique blend of 10 distinct bourbon recipes, offering a rich and fruity flavor.",
-      },
-      {
-        name: "Maker's Mark",
-        price: 900,
-        description:
-          "A premium bourbon with a sweet and smooth profile, known for its red wax seal.",
-      },
-      {
-        name: "Bulleit",
-        price: 900,
-        description:
-          "A high-rye bourbon with a bold, spicy character and a clean finish.",
-      },
-      {
-        name: "Woodford Reserve",
-        price: 1000,
-        description:
-          "A small-batch bourbon with a rich flavor profile, featuring notes of dried fruit and vanilla.",
-      },
-    ],
-  },
-  {
-    category: "Irish Whiskey",
-    items: [
-      {
-        name: "Jameson",
-        price: 800,
-        description:
-          "A smooth and versatile Irish whiskey, perfect for sipping or mixing.",
-      },
-      {
-        name: "Connemara",
-        price: 1000,
-        description:
-          "A peated single malt Irish whiskey, known for its unique smoky flavor.",
-      },
-    ],
-  },
-  {
-    category: "Canadian Whiskey",
-    items: [
-      {
-        name: "Canadian Club 12 Year",
-        price: 900,
-        description:
-          "A classic Canadian whiskey known for its light and smooth flavor.",
-      },
-      {
-        name: "Sortilege",
-        price: 1300,
-        description: "A unique blend of Canadian whisky and maple syrup.",
-      },
-    ],
-  },
-  {
-    category: "Swedish Whiskey",
-    items: [
-      {
-        name: "Mötorhead",
-        price: 1600,
-        description: "The Ace of Spades!",
-      },
-    ],
-  },
-  {
-    category: "Rye Whiskey",
-    items: [
-      {
-        name: "Wild Turkey 101",
-        price: 1000,
-        description: "The wildest turkey in the woods!",
-      },
-    ],
-  },
-  {
-    category: "Tennessee Whiskey",
-    items: [
-      {
-        name: "Jack Daniels",
-        price: 800,
-        description:
-          "A classic Tennessee whiskey known for its smoothness and distinct flavor.",
-      },
-      {
-        name: "Gentleman Jack",
-        price: 900,
-        description:
-          "A premium Tennessee whiskey that undergoes a double charcoal filtering process for extra smoothness.",
-      },
-    ],
-  },
-  {
-    category: "Tequila/Mezcal",
-    items: [
-      {
-        name: "Olmeca Reposado",
-        price: 700,
-        description:
-          "Aged in oak barrels for a smooth flavor with hints of vanilla.",
-      },
-      {
-        name: "Kirkland Añejo",
-        price: 900,
-        description:
-          "Aged for at least a year, offering rich flavors of caramel and oak.",
-      },
-      {
-        name: "Jose Cuervo Tradicional Silver",
-        price: 800,
-        description: "",
-      },
-      {
-        name: "1800 Añejo",
-        price: 1300,
-        description:
-          "Aged for over a year in French and American oak barrels, providing a complex flavor profile.",
-      },
-      {
-        name: "Montelobos Tobala",
-        price: 2200,
-        description: "A premium mezcal made from Tobalá agave with a spicy and smoky flavor.",
-      },
-    ],
-  },
-  {
-    category: "Premium Cocktails",
-    categoryDescription:
-      "These items are only available when Chuck is in the bar. Thank you for understanding.",
-    items: [
-      {
-        name: "Old Fashioned",
-        price: 1100,
-        description:
-          "Bulleit bourbon, grenadine syrup, angostura bitters, orange peel",
-      },
-      {
-        name: "Margarita",
-        price: 1100,
-        description: "Tequila, Cointreau, fresh lime juice and lime wedge with a salted rim",
-      },
-      {
-        name: "Negroni",
-        price: 1100,
-        description:
-          "Equal parts Campari, vermouth rosso, and gin, served with a fresh orange peel",
-      },
-      {
-        name: "Pomegranate Cosmopolitan",
-        price: 1100,
-        description:
-          "Pomegranate juice, Cointreau, vodka, and fresh lime garnish",
-      },
-      {
-        name: "Strawberry Daiquiri",
-        price: 1100,
-        description:
-          "White rum, strawberry liqueur, lime juice",
-      },
-      {
-        name: "Piña Colada (contains dairy)",
-        price: 1100,
-        description:
-          "Malibu rum, pineapple juice, cream of coconut",
-      },
-      {
-        name: "Coco-Paloma",
-        price: 1100,
-        description:
-          "Grapefruit juice, coconut cream, lime juice, tequila, cointreau, and lime wedge with a salted rim",
-      },
-    ],
-  },
-  {
-    category: "Secret Menu & Custom Cocktails",
-    categoryDescription: "Chuck is always developing new cocktails, so if he is behind the bar ask him about what he is working on!",
-    items: [
-      {
-        name: "Custom Cocktails",
-        price: "???",
-        description:
-          "• Prices may vary. Availability depends on what ingredients are in stock, as well as the moods and creativity of our staff. We often add new products to our inventory before we update the menu so please ask the staff if there are any new items.",
-      },
+      { name: "Fireball", description: "Cinnamon whisky liqueur.", price: 700 },
+      { name: "Kleiner Mini Shots", price: 700 },
+      { name: "Små Shots", price: 700 },
+      { name: "Motorhead Bomber Smokey Shot", price: 1100 },
+      { name: "Yellow Chartreuse", price: 1500 },
+      { name: "Green Chartreuse", price: 1500 },
     ],
   },
 ];
 
+
+/* ------------------------------------------------------------------ *
+ * Count helpers
+ * ------------------------------------------------------------------ */
+function countItemsInCategory(cat: MenuCategory): number {
+  if (cat.subcategories?.length) {
+    return cat.subcategories.reduce(
+      (sum, sc) => sum + (sc.items?.length ?? 0),
+      0
+    );
+  }
+  return cat.items?.length ?? 0;
+}
+function countAll(cats: MenuCategory[]): number {
+  return cats.reduce((sum, c) => sum + countItemsInCategory(c), 0);
+}
+
+/* ------------------------------------------------------------------ *
+ * Collect unique strings to translate (once)
+ * ------------------------------------------------------------------ */
+function collectMenuStrings(): string[] {
+  const set = new Set<string>();
+  for (const cat of menuData) {
+    set.add(cat.category);
+    if (cat.categoryDescription) set.add(cat.categoryDescription);
+    if (cat.subcategories?.length) {
+      for (const sc of cat.subcategories) {
+        set.add(sc.subCategory);
+        for (const it of sc.items) {
+          set.add(it.name);
+          if (it.description) set.add(it.description);
+        }
+      }
+    } else if (cat.items?.length) {
+      for (const it of cat.items) {
+        set.add(it.name);
+        if (it.description) set.add(it.description);
+      }
+    }
+  }
+  return Array.from(set);
+}
+const menuStrings = collectMenuStrings();
+
+/* Cache across component mounts */
+const menuTranslationsCache: Record<string, Record<string, string>> = {};
+
+/* ------------------------------------------------------------------ *
+ * Hook: batch-translate all menu strings once per language
+ * ------------------------------------------------------------------ */
+function useMenuTranslations(targetLanguage: string) {
+  const [map, setMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const lang = targetLanguage.split("-")[0];
+    if (lang === "en") {
+      setMap({});
+      return;
+    }
+    if (menuTranslationsCache[lang]) {
+      setMap(menuTranslationsCache[lang]);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // send JSON array payload
+        const payload = JSON.stringify(menuStrings);
+        const translatedJson = await translateText(payload, lang);
+
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(translatedJson);
+        } catch {
+          parsed = null;
+        }
+
+        let out: Record<string, string> = {};
+        if (Array.isArray(parsed) && parsed.length === menuStrings.length) {
+          menuStrings.forEach((s, i) => {
+            out[s] = (parsed as string[])[i] ?? s;
+          });
+        } else {
+          // Fallback: translate one by one (happens if service translated the JSON punctuation)
+          for (const s of menuStrings) {
+            try {
+              const tr = await translateText(s, lang);
+              out[s] = tr;
+            } catch {
+              out[s] = s;
+            }
+          }
+        }
+
+        if (!cancelled) {
+          menuTranslationsCache[lang] = out;
+          setMap(out);
+        }
+      } catch (err) {
+        console.error("[FxxkupMenu] batch translate error:", err);
+        if (!cancelled) setMap({});
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [targetLanguage]);
+
+  /* translation fn */
+  const t = (s: string): string => {
+    const lang = targetLanguage.split("-")[0];
+    if (lang === "en") return s;
+    return map[s] ?? s;
+  };
+
+  return t;
+}
+
+/* ------------------------------------------------------------------ *
+ * Render helpers (use t() results; English original shown faint)
+ * ------------------------------------------------------------------ */
+
+function CategoryBlock({
+  category,
+  language,
+  t,
+}: {
+  category: MenuCategory;
+  language: string;
+  t: (s: string) => string;
+}) {
+  const isEnglish = language.split("-")[0] === "en";
+
+  const catLabel = isEnglish ? category.category : t(category.category);
+  const catDesc =
+    category.categoryDescription &&
+    (isEnglish ? category.categoryDescription : t(category.categoryDescription));
+
+  return (
+    <MasonryItem>
+      <CategoryTitle>{catLabel}</CategoryTitle>
+
+      {catDesc && <CategoryDescription>{catDesc}</CategoryDescription>}
+
+      {category.subcategories?.length
+        ? category.subcategories.map((subCat, subCatIndex) => {
+            const scLabel = isEnglish ? subCat.subCategory : t(subCat.subCategory);
+            return (
+              <div key={subCatIndex}>
+                <SubCategoryTitle>{scLabel}</SubCategoryTitle>
+                {subCat.items.map((item, itemIndex) => {
+                  const nm = isEnglish ? item.name : t(item.name);
+                  const desc =
+                    item.description && !isEnglish ? t(item.description) : item.description;
+                  return (
+                    <MenuItem key={itemIndex}>
+                      <MenuItemName>
+                        {nm}
+                        <English>{item.name}</English>
+                        {desc && (
+                          <MenuItemDescription>{desc}</MenuItemDescription>
+                        )}
+                      </MenuItemName>
+                      <MenuItemPrice>¥{item.price}</MenuItemPrice>
+                    </MenuItem>
+                  );
+                })}
+              </div>
+            );
+          })
+        : category.items?.map((item, itemIndex) => {
+            const nm = isEnglish ? item.name : t(item.name);
+            const desc =
+              item.description && !isEnglish ? t(item.description) : item.description;
+            return (
+              <MenuItem key={itemIndex}>
+                <MenuItemName>
+                  {nm}
+                  <English>{item.name}</English>
+                  {desc && <MenuItemDescription>{desc}</MenuItemDescription>}
+                </MenuItemName>
+                <MenuItemPrice>¥{item.price}</MenuItemPrice>
+              </MenuItem>
+            );
+          })}
+    </MasonryItem>
+  );
+}
+
+function CategoryMasonryAll({
+  cats,
+  language,
+  t,
+}: {
+  cats: MenuCategory[];
+  language: string;
+  t: (s: string) => string;
+}) {
+  return (
+    <MasonryContainer>
+      {cats.map((category, i) => (
+        <CategoryBlock key={i} category={category} language={language} t={t} />
+      ))}
+    </MasonryContainer>
+  );
+}
+
+function CategoryMasonrySingle({
+  cat,
+  language,
+  t,
+}: {
+  cat: MenuCategory;
+  language: string;
+  t: (s: string) => string;
+}) {
+  return (
+    <MasonryContainer>
+      <CategoryBlock category={cat} language={language} t={t} />
+    </MasonryContainer>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ * Component
+ * ------------------------------------------------------------------ */
+
 const FxxkupMenu: React.FC = () => {
   const { language } = useLanguage();
+  const [activeTab, setActiveTab] = useState(0);
+
+  /* translation fn for menu strings */
+  const t = useMenuTranslations(language);
+
+  /* tab base labels + counts */
+  const baseLabels = useMemo(
+    () => ["All", ...menuData.map((c) => c.category)],
+    []
+  );
+  const counts = useMemo(() => {
+    const perCat = menuData.map(countItemsInCategory);
+    return [countAll(menuData), ...perCat];
+  }, []);
+
+  /* content memoization */
+  const allContent = useMemo(
+    () => <CategoryMasonryAll cats={menuData} language={language} t={t} />,
+    [language, t]
+  );
+  const perCatContent = useMemo(
+    () =>
+      menuData.map((c) => (
+        <CategoryMasonrySingle
+          key={c.category}
+          cat={c}
+          language={language}
+          t={t}
+        />
+      )),
+    [language, t]
+  );
+  const activeContent =
+    activeTab === 0 ? allContent : perCatContent[activeTab - 1];
+
+  const isEnglish = language.split("-")[0] === "en";
 
   return (
     <FxxkupMenuWrapper>
+      {/* Top header */}
       <MenuTop>
         <MenuLogo src={fxxkupLogo} alt="Fxxkup Logo" />
         <h1>
-          <TranslationWrapper targetLanguage={language} originalLanguage="en">
+          {/* keep wrapper so header always translates even if batch fails */}
+          <TranslationWrapper
+            targetLanguage={language}
+            originalLanguage="en"
+          >
             Drink Menu
           </TranslationWrapper>
         </h1>
         <Subhead>
-          <TranslationWrapper targetLanguage={language} originalLanguage="en">
+          <TranslationWrapper
+            targetLanguage={language}
+            originalLanguage="en"
+          >
             ¥500 cover charge per-person
           </TranslationWrapper>
         </Subhead>
       </MenuTop>
 
-      <MasonryContainer>
-        {menuData.map((category, categoryIndex) => (
-          <MasonryItem key={categoryIndex}>
-            <CategoryTitle>
-              <TranslationWrapper
-                targetLanguage={language}
-                originalLanguage="en"
-              >
-                {category.category}
-              </TranslationWrapper>
-            </CategoryTitle>
+      {/* Tabs (horizontal scroll) */}
+      <MenuTabsHeader>
+        <Tabs activeTab={activeTab} onTabClick={setActiveTab}>
+          <Tab icon={null} label={`${isEnglish ? baseLabels[0] : t(baseLabels[0])} (${counts[0]})`}>
+            <></>
+          </Tab>
+          {menuData.map((cat, idx) => (
+            <Tab
+              key={cat.category}
+              icon={null}
+              label={`${isEnglish ? cat.category : t(cat.category)} (${counts[idx + 1]})`}
+            >
+              <></>
+            </Tab>
+          ))}
+        </Tabs>
+      </MenuTabsHeader>
 
-            {/* Add the category description if it exists */}
-            {category.categoryDescription && (
-              <CategoryDescription>
-                <TranslationWrapper
-                  targetLanguage={language}
-                  originalLanguage="en"
-                >
-                  {category.categoryDescription}
-                </TranslationWrapper>
-              </CategoryDescription>
-            )}
-
-            {category.subcategories
-              ? category.subcategories.map((subCat, subCatIndex) => (
-                  <div key={subCatIndex}>
-                    <SubCategoryTitle>
-                      <TranslationWrapper
-                        targetLanguage={language}
-                        originalLanguage="en"
-                      >
-                        {subCat.subCategory}
-                      </TranslationWrapper>
-                    </SubCategoryTitle>
-
-                    {subCat.items.map((item, itemIndex) => (
-                      <MenuItem key={itemIndex}>
-                        <MenuItemName>
-                          <TranslationWrapper
-                            targetLanguage={language}
-                            originalLanguage="en"
-                          >
-                            {item.name}
-                          </TranslationWrapper>
-                          <English>{item.name}</English>
-                          {"description" in item && (
-                            <MenuItemDescription>
-                              <TranslationWrapper
-                                targetLanguage={language}
-                                originalLanguage="en"
-                              >
-                                {item.description}
-                              </TranslationWrapper>
-                            </MenuItemDescription>
-                          )}
-                        </MenuItemName>
-                        <MenuItemPrice>¥{item.price}</MenuItemPrice>
-                      </MenuItem>
-                    ))}
-                  </div>
-                ))
-              : // If no subcategories, just map items normally
-                category.items?.map((item, itemIndex) => (
-                  <MenuItem key={itemIndex}>
-                    <MenuItemName>
-                      <TranslationWrapper
-                        targetLanguage={language}
-                        originalLanguage="en"
-                      >
-                        {item.name}
-                      </TranslationWrapper>
-                      <English>{item.name}</English>
-                      {"description" in item && (
-                        <MenuItemDescription>
-                          <TranslationWrapper
-                            targetLanguage={language}
-                            originalLanguage="en"
-                          >
-                            {item.description}
-                          </TranslationWrapper>
-                        </MenuItemDescription>
-                      )}
-                    </MenuItemName>
-                    <MenuItemPrice>¥{item.price}</MenuItemPrice>
-                  </MenuItem>
-                ))}
-          </MasonryItem>
-        ))}
-      </MasonryContainer>
+      {/* Vertical scroll content */}
+      <MenuContentWrapper>{activeContent}</MenuContentWrapper>
     </FxxkupMenuWrapper>
   );
 };
